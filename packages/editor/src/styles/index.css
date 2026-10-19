@@ -297,6 +297,58 @@
   border-radius: 6px;
 }
 
+.nd-html-block,
+.nd-html-inline {
+  white-space: normal;
+}
+
+.nd-html-block[hidden] {
+  display: none;
+}
+
+.nd-html-inline.is-block {
+  display: block;
+}
+
+.nd-html-block > :first-child,
+.nd-html-inline > :first-child {
+  margin-top: 0;
+}
+
+.nd-html-block > :last-child,
+.nd-html-inline > :last-child {
+  margin-bottom: 0;
+}
+
+.nd-editor .milkdown .ProseMirror .nd-html-block table,
+.nd-editor .milkdown .ProseMirror .nd-html-inline table {
+  width: auto;
+  max-width: 100%;
+  table-layout: auto;
+}
+
+.nd-html-block pre,
+.nd-html-inline pre {
+  margin: 0.9em 0;
+  padding: 12px 16px;
+  overflow-x: auto;
+  border: 1px solid var(--nd-code-border);
+  border-radius: 8px;
+  background: var(--nd-code-bg);
+  white-space: pre;
+}
+
+.nd-html-block details,
+.nd-html-inline details {
+  margin: 0.6em 0;
+}
+
+.nd-html-block summary,
+.nd-html-inline summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
 .nd-mermaid {
   position: relative;
   margin: 1.2em 0;

@@ -284,6 +284,9 @@ importers:
       '@notadown/shared':
         specifier: workspace:*
         version: link:../shared
+      dompurify:
+        specifier: ^3.4.17
+        version: 3.4.17
       katex:
         specifier: ^0.16.11
         version: 0.16.47
@@ -297,6 +300,9 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      vitest:
+        specifier: ^5.0.5
+        version: 5.0.5(@types/node@24.19.2)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0))
 
   packages/exporter:
     dependencies:

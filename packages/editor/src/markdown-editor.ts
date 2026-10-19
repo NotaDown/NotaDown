@@ -33,6 +33,7 @@ import {
   type OutlineItem,
 } from '@notadown/shared'
 import { createCodeMirrorTheme } from './codemirror-theme'
+import { createHtmlPlugins } from './html'
 import { createMermaidPlugins } from './mermaid'
 import {
   centerCaret,
@@ -66,13 +67,15 @@ export async function createMarkdownEditor(
   const objectUrls: string[] = []
 
   const mermaid = createMermaidPlugins(labels.mermaid)
+  const openLink = (href: string) => {
+    if (options.onOpenLink) options.onOpenLink(href)
+    else window.open(href, '_blank', 'noopener,noreferrer')
+  }
+  const html = createHtmlPlugins(openLink, options.onImageError)
 
   const focusPlugin = createFocusModePlugin(() => focusMode)
   const typewriterPlugin = createTypewriterPlugin(() => typewriterMode)
-  const linkClickPlugin = createLinkClickPlugin((href) => {
-    if (options.onOpenLink) options.onOpenLink(href)
-    else window.open(href, '_blank', 'noopener,noreferrer')
-  })
+  const linkClickPlugin = createLinkClickPlugin(openLink)
 
   const commandKeymap = $prose((ctx) =>
     keymap({
@@ -207,6 +210,7 @@ export async function createMarkdownEditor(
 
   crepe.editor.use([
     ...mermaid.plugins,
+    ...html.plugins,
     focusPlugin,
     typewriterPlugin,
     linkClickPlugin,
