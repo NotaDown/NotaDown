@@ -263,6 +263,14 @@ export class WebPlatform implements Platform {
     })
   }
 
+  documentRefForPath(): DocumentRef {
+    throw new Error('UNSUPPORTED')
+  }
+
+  async takeOpenFiles(): Promise<string[]> {
+    return []
+  }
+
   async readDocument(ref: DocumentRef): Promise<OpenedDocument> {
     if (ref.origin === 'workspace') {
       const root = this.requireRoot()
@@ -522,6 +530,10 @@ export class WebPlatform implements Platform {
   }
 
   onMenuCommand(): () => void {
+    return () => undefined
+  }
+
+  onOpenFiles(): () => void {
     return () => undefined
   }
 

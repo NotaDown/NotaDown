@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest'
 import {
   buildImageFileName,
   extractHeadings,
+  fileDocumentRef,
   fuzzyMatch,
   joinFrontmatter,
   joinPosix,
+  openableFileArgs,
   relativePosix,
   sanitizeFileName,
   searchText,
@@ -55,6 +57,25 @@ describe('path helpers', () => {
   it('sanitizes file names', () => {
     expect(sanitizeFileName('a<b>:c*.md')).toBe('a-b--c-.md')
     expect(sanitizeFileName('...')).toBe('-')
+  })
+
+  it('builds file refs for posix and Windows paths', () => {
+    expect(fileDocumentRef('/tmp/note.md')).toMatchObject({
+      key: 'file:/tmp/note.md',
+      name: 'note.md',
+      origin: 'file',
+    })
+    expect(fileDocumentRef('C:\\docs\\Note.MD')).toMatchObject({
+      key: 'file:C:\\docs\\Note.MD',
+      name: 'Note.MD',
+      origin: 'file',
+    })
+  })
+
+  it('selects openable files from shell arguments', () => {
+    expect(
+      openableFileArgs(['--inspect', '.', 'notes.md', 'C:\\docs\\A.MARKDOWN', 'image.png']),
+    ).toEqual(['notes.md', 'C:\\docs\\A.MARKDOWN'])
   })
 })
 

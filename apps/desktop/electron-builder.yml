@@ -14,6 +14,17 @@ files:
 asar: true
 publish: null
 
+fileAssociations:
+  - ext:
+      - md
+      - markdown
+      - mdown
+      - mkd
+    name: Markdown Document
+    description: Markdown document
+    role: Editor
+    mimeType: text/markdown
+
 win:
   target:
     - target: nsis

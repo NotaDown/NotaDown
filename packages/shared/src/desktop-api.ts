@@ -87,6 +87,7 @@ export interface DesktopInvokeMap {
   getTitleBarMode: { args: []; result: 'integrated' | 'native' }
   setTitleBarOverlay: { args: [color: string, symbolColor: string]; result: void }
   openExternal: { args: [url: string]; result: void }
+  takeOpenFiles: { args: []; result: string[] }
 }
 
 export type DesktopInvokeMethod = keyof DesktopInvokeMap
@@ -103,12 +104,14 @@ export interface DesktopBridge {
   getPathForFile(file: File): string | null
   onWorkspaceEvents(callback: (events: WorkspaceEvent[]) => void): () => void
   onMenuCommand(callback: (command: string) => void): () => void
+  onOpenFiles(callback: () => void): () => void
   platform: string
 }
 
 export const DESKTOP_INVOKE_CHANNEL = 'notadown:invoke'
 export const DESKTOP_WORKSPACE_EVENTS_CHANNEL = 'notadown:workspace-events'
 export const DESKTOP_MENU_COMMAND_CHANNEL = 'notadown:menu-command'
+export const DESKTOP_OPEN_FILES_CHANNEL = 'notadown:open-files'
 export const DESKTOP_ASSET_SCHEME = 'notadown-asset'
 
 declare global {

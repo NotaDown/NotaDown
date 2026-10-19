@@ -11,6 +11,7 @@ import { getWindowChrome, updateOverlayColors } from './chrome'
 import { exportHtml, exportPdf } from './export'
 import { normalizeError } from './errors'
 import * as history from './history'
+import { takeOpenFiles } from './open-files'
 import * as state from './state'
 import * as workspace from './workspace'
 
@@ -167,6 +168,9 @@ async function dispatch(
       await shell.openExternal(url)
       return undefined
     }
+
+    case 'takeOpenFiles':
+      return takeOpenFiles()
 
     default:
       throw new Error('UNSUPPORTED')

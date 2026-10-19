@@ -2,6 +2,7 @@ import {
   DESKTOP_ASSET_SCHEME,
   DESKTOP_INVOKE_CHANNEL,
   DESKTOP_MENU_COMMAND_CHANNEL,
+  DESKTOP_OPEN_FILES_CHANNEL,
   DESKTOP_WORKSPACE_EVENTS_CHANNEL,
   type DesktopBridge,
   type DesktopInvokeArgs,
@@ -41,6 +42,11 @@ const bridge: DesktopBridge = {
     const listener = (_event: unknown, command: string) => callback(command)
     ipcRenderer.on(DESKTOP_MENU_COMMAND_CHANNEL, listener)
     return () => ipcRenderer.removeListener(DESKTOP_MENU_COMMAND_CHANNEL, listener)
+  },
+  onOpenFiles(callback: () => void): () => void {
+    const listener = () => callback()
+    ipcRenderer.on(DESKTOP_OPEN_FILES_CHANNEL, listener)
+    return () => ipcRenderer.removeListener(DESKTOP_OPEN_FILES_CHANNEL, listener)
   },
   platform: process.platform,
 }

@@ -23,11 +23,13 @@ export function useAppLifecycle(commands: AppCommands): void {
     await settings.init()
 
     disposers.push(platform.onMenuCommand((command) => void commands.run(command)))
+    disposers.push(platform.onOpenFiles(() => void openPendingFiles()))
     disposers.push(
       workspace.subscribeEvents((events) => void tabs.handleWorkspaceEvents(events)),
     )
 
     await restoreSession()
+    await openPendingFiles()
 
     historyTimer = window.setInterval(() => void tabs.tickHistory(), 20_000)
 
@@ -48,6 +50,11 @@ export function useAppLifecycle(commands: AppCommands): void {
     () => [tabs.activeTab?.name, tabs.activeTab ? tabs.isDirty(tabs.activeTab) : false],
     () => updateTitle(),
   )
+
+  async function openPendingFiles(): Promise<void> {
+    const paths = await platform.takeOpenFiles()
+    if (paths.length) await tabs.openAbsolutePaths(paths)
+  }
 
   async function restoreSession(): Promise<void> {
     if (!settings.settings.restoreSession) return

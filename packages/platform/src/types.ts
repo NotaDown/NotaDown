@@ -49,6 +49,8 @@ export interface Platform {
   workspaceDocumentRef(path: string): DocumentRef
 
   openFileDialog(): Promise<OpenedDocument | null>
+  documentRefForPath(absolutePath: string): DocumentRef
+  takeOpenFiles(): Promise<string[]>
   readDocument(ref: DocumentRef): Promise<OpenedDocument>
   writeDocument(ref: DocumentRef, content: string): Promise<DocumentWriteResult>
   saveDocumentAs(
@@ -81,4 +83,5 @@ export interface Platform {
   openExternal(url: string): Promise<void>
   getPathForFile(file: File): string | null
   onMenuCommand(callback: (command: string) => void): () => void
+  onOpenFiles(callback: () => void): () => void
 }

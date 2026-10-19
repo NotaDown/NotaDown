@@ -1,5 +1,6 @@
 import {
   basename,
+  fileDocumentRef,
   normalizeSlashes,
   type AppSettings,
   type AssetReadResult,
@@ -111,6 +112,24 @@ export class DesktopPlatform implements Platform {
 
   async openFileDialog(): Promise<OpenedDocument | null> {
     return this.bridge.invoke('openFileDialog')
+  }
+
+  documentRefForPath(absolutePath: string): DocumentRef {
+    const root = this.workspace?.rootPath
+    if (root) {
+      const normalizedRoot = normalizeSlashes(root).replace(/\/+$/, '')
+      const normalizedPath = normalizeSlashes(absolutePath)
+      const prefix = `${normalizedRoot}/`
+      const inside = /^[a-zA-Z]:\//.test(normalizedRoot)
+        ? normalizedPath.toLowerCase().startsWith(prefix.toLowerCase())
+        : normalizedPath.startsWith(prefix)
+      if (inside) return this.workspaceDocumentRef(normalizedPath.slice(prefix.length))
+    }
+    return fileDocumentRef(absolutePath)
+  }
+
+  async takeOpenFiles(): Promise<string[]> {
+    return this.bridge.invoke('takeOpenFiles')
   }
 
   async readDocument(ref: DocumentRef): Promise<OpenedDocument> {
@@ -249,6 +268,10 @@ export class DesktopPlatform implements Platform {
 
   onMenuCommand(callback: (command: string) => void): () => void {
     return this.bridge.onMenuCommand(callback)
+  }
+
+  onOpenFiles(callback: () => void): () => void {
+    return this.bridge.onOpenFiles(callback)
   }
 
   private requireWorkspacePath(ref: DocumentRef): string {

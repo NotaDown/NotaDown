@@ -1,3 +1,5 @@
+import type { DocumentRef } from '../types'
+
 const MARKDOWN_EXTENSIONS = new Set(['md', 'markdown', 'mdown', 'mkd', 'txt'])
 
 export function normalizeSlashes(value: string): string {
@@ -19,10 +21,23 @@ export function isOpenableTextFile(fileName: string): boolean {
   return MARKDOWN_EXTENSIONS.has(extensionOf(fileName))
 }
 
+export function openableFileArgs(args: string[]): string[] {
+  return args.filter((arg) => !arg.startsWith('-') && isOpenableTextFile(arg))
+}
+
 export function basename(path: string): string {
   const clean = normalizeSlashes(path).replace(/\/+$/, '')
   const index = clean.lastIndexOf('/')
   return index === -1 ? clean : clean.slice(index + 1)
+}
+
+export function fileDocumentRef(absolutePath: string): DocumentRef {
+  return {
+    key: `file:${absolutePath}`,
+    name: basename(absolutePath),
+    path: absolutePath,
+    origin: 'file',
+  }
 }
 
 export function dirname(path: string): string {

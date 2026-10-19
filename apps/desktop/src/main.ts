@@ -1,10 +1,11 @@
-import { DESKTOP_ASSET_SCHEME } from '@notadown/shared'
+import { DESKTOP_ASSET_SCHEME, DESKTOP_OPEN_FILES_CHANNEL } from '@notadown/shared'
 import { app, BrowserWindow, nativeTheme, net, protocol, shell } from 'electron'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { getWindowChrome, resolveWindowChrome } from './chrome'
 import { registerIpcHandlers } from './ipc'
 import { installMenu } from './menu'
+import { queueOpenFiles } from './open-files'
 import { stopWatch } from './workspace'
 
 app.setName('NotaDown')
@@ -100,16 +101,36 @@ function assetFilePath(rawUrl: string): string | null {
   }
 }
 
+function focusWindow(): void {
+  const window = BrowserWindow.getAllWindows()[0]
+  if (!window) return
+  if (window.isMinimized()) window.restore()
+  window.focus()
+}
+
+function notifyOpenFiles(): void {
+  const window = BrowserWindow.getAllWindows()[0]
+  if (!window || window.isDestroyed()) return
+  window.webContents.send(DESKTOP_OPEN_FILES_CHANNEL)
+}
+
 const hasLock = app.requestSingleInstanceLock()
 
 if (!hasLock) {
   app.quit()
 } else {
-  app.on('second-instance', () => {
-    const window = BrowserWindow.getAllWindows()[0]
-    if (!window) return
-    if (window.isMinimized()) window.restore()
-    window.focus()
+  queueOpenFiles(process.argv.slice(1))
+
+  app.on('open-file', (event, filePath) => {
+    event.preventDefault()
+    queueOpenFiles([filePath])
+    notifyOpenFiles()
+  })
+
+  app.on('second-instance', (_event, argv, workingDirectory) => {
+    queueOpenFiles(argv.slice(1), workingDirectory)
+    focusWindow()
+    notifyOpenFiles()
   })
 
   void app.whenReady().then(async () => {

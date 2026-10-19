@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import {
   createId,
   ensureMarkdownExtension,
+  isOpenableTextFile,
   LARGE_DOCUMENT_THRESHOLD,
   normalizeSlashes,
   type DocumentRef,
@@ -190,6 +191,13 @@ export const useTabsStore = defineStore('tabs', () => {
     } catch (error) {
       ui.toast('error', t('toasts.openFailed'), describeError(error))
       return null
+    }
+  }
+
+  async function openAbsolutePaths(paths: string[]): Promise<void> {
+    for (const path of paths) {
+      if (!isOpenableTextFile(path)) continue
+      await openRef(platform.documentRefForPath(path))
     }
   }
 
@@ -699,6 +707,7 @@ export const useTabsStore = defineStore('tabs', () => {
     openRef,
     openWorkspaceFile,
     openFileDialog,
+    openAbsolutePaths,
     openRecent,
     updateContent,
     setViewMode,
