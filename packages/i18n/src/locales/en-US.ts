@@ -157,6 +157,7 @@ export const enUS = {
     sourceMode: 'Source',
     richMode: 'Write',
     sourceHint: 'Editing raw Markdown. Switch back to Write when you are done.',
+    largeDocument: 'This document is large, so it opened in source mode for smoother editing.',
     frontmatter: 'Front matter',
     frontmatterHint: 'YAML metadata at the top of the document',
     editFrontmatter: 'Edit front matter',

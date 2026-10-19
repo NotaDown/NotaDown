@@ -1,0 +1,1 @@
+export const LARGE_DOCUMENT_THRESHOLD = 1_000_000

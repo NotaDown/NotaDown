@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import {
   createId,
   ensureMarkdownExtension,
+  LARGE_DOCUMENT_THRESHOLD,
   normalizeSlashes,
   type DocumentRef,
   type HistoryOptions,
@@ -14,7 +15,7 @@ import {
 import { i18n } from '@/i18n'
 import { platform } from '@/platform'
 import { describeError, errorCode } from '@/errors'
-import { focusEditor } from '@/editor-registry'
+import { flushEditor, focusEditor } from '@/editor-registry'
 import { useSettingsStore } from './settings'
 import { useUiStore } from './ui'
 import { useRecentStore, type RecentDocument } from './recent'
@@ -107,6 +108,8 @@ export const useTabsStore = defineStore('tabs', () => {
   }
 
   function addTab(ref: DocumentRef, content: string, mtime: number | null): EditorTab {
+    const largeDocument =
+      ref.origin !== 'untitled' && content.length >= LARGE_DOCUMENT_THRESHOLD
     const tab: EditorTab = {
       key: createId('tab'),
       ref,
@@ -119,7 +122,7 @@ export const useTabsStore = defineStore('tabs', () => {
       missing: false,
       conflict: false,
       pendingDiskContent: null,
-      viewMode: 'rich',
+      viewMode: largeDocument ? 'source' : 'rich',
       outline: [],
       reloadToken: 0,
       downloadOnly: false,
@@ -129,6 +132,9 @@ export const useTabsStore = defineStore('tabs', () => {
     tabs.value.push(tab)
     activeKey.value = tab.key
     if (ref.origin !== 'untitled') recent.record(ref)
+    if (largeDocument) {
+      ui.toast('info', t('editor.largeDocument'), tab.name, 5000)
+    }
     window.requestAnimationFrame(() => focusEditor(tab.key))
     return tab
   }
@@ -265,6 +271,7 @@ export const useTabsStore = defineStore('tabs', () => {
     if (!tab) return false
     clearAutosave(tab.key)
     if (tab.saving) return false
+    flushEditor(tab.key)
     if (tab.ref.origin === 'untitled' || tab.missing) return saveAsTab(tab)
 
     const content = tab.content
@@ -298,6 +305,7 @@ export const useTabsStore = defineStore('tabs', () => {
     if (!tab) return false
     clearAutosave(tab.key)
     if (tab.saving) return false
+    flushEditor(tab.key)
     const content = tab.content
     tab.saving = true
     try {
@@ -353,6 +361,7 @@ export const useTabsStore = defineStore('tabs', () => {
 
   async function requestClose(tab: EditorTab): Promise<boolean> {
     clearAutosave(tab.key)
+    flushEditor(tab.key)
     if (!isDirty(tab) && !tab.saving) return true
     const choice = await ui.askUnsaved(tab.name)
     if (choice === 'cancel') return false
@@ -551,6 +560,7 @@ export const useTabsStore = defineStore('tabs', () => {
     if (snapshotting.has(tab.key)) return
     const content = tab.content
     if (!content.trim()) return
+    if (source === 'auto' && content.length >= LARGE_DOCUMENT_THRESHOLD) return
     if (source !== 'manual' && content === tab.lastSnapshotContent) return
     snapshotting.add(tab.key)
     try {

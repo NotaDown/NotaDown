@@ -72,14 +72,15 @@ export function createSourceEditor(options: SourceEditorOptions): SourceEditor {
       dropCursor(),
       EditorState.allowMultipleSelections.of(true),
       indentOnInput(),
-      bracketMatching(),
+      ...(options.largeDocument
+        ? []
+        : [bracketMatching(), highlightSelectionMatches()]),
       rectangularSelection(),
       crosshairCursor(),
       EditorView.lineWrapping,
       EditorView.contentAttributes.of({
         spellcheck: String(options.spellcheck ?? true),
       }),
-      highlightSelectionMatches(),
       keymap.of([...defaultKeymap, ...historyKeymap]),
       markdown({ base: markdownLanguage, codeLanguages: languages }),
       createCodeMirrorTheme(),

@@ -157,6 +157,7 @@ export const zhCN = {
     sourceMode: '源码',
     richMode: '书写',
     sourceHint: '正在编辑原始 Markdown。完成后切回「书写」即可继续所见即所得编辑。',
+    largeDocument: '文档较大，已自动使用源码模式以获得更流畅的编辑体验。',
     frontmatter: 'Front Matter',
     frontmatterHint: '文档顶部的 YAML 元数据',
     editFrontmatter: '编辑 Front Matter',

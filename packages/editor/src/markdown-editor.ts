@@ -220,17 +220,32 @@ export async function createMarkdownEditor(
   const view = crepe.editor.action((ctx) => ctx.get(editorViewCtx))
   view.dom.spellcheck = options.spellcheck ?? true
 
-  const onBodyUpdated = (body: string) => {
-    if (suppressUpdates) return
-    const full = joinFrontmatter(frontmatter, body)
+  let serializeTimer: number | null = null
+  const serializeDelay = options.largeDocument ? 700 : 180
+
+  function flushUpdates(): void {
+    if (serializeTimer !== null) {
+      window.clearTimeout(serializeTimer)
+      serializeTimer = null
+    }
+    if (suppressUpdates || destroyed) return
+    const full = joinFrontmatter(frontmatter, crepe.getMarkdown())
     if (full === lastMarkdown) return
     lastMarkdown = full
     options.onChange?.(full)
     updateOutline()
   }
 
+  function scheduleUpdates(): void {
+    if (suppressUpdates || serializeTimer !== null) return
+    serializeTimer = window.setTimeout(() => {
+      serializeTimer = null
+      flushUpdates()
+    }, serializeDelay)
+  }
+
   crepe.on((listener) => {
-    listener.markdownUpdated((_ctx, markdown) => onBodyUpdated(markdown))
+    listener.updated(() => scheduleUpdates())
   })
 
   function updateOutline(): void {
@@ -254,7 +269,12 @@ export async function createMarkdownEditor(
 
   return {
     getMarkdown: () => joinFrontmatter(frontmatter, crepe.getMarkdown()),
+    flush: flushUpdates,
     setMarkdown(markdown: string, setOptions?: { silent?: boolean }) {
+      if (serializeTimer !== null) {
+        window.clearTimeout(serializeTimer)
+        serializeTimer = null
+      }
       const next = splitFrontmatter(markdown)
       frontmatter = next.frontmatter
       const silent = setOptions?.silent ?? true
@@ -271,6 +291,10 @@ export async function createMarkdownEditor(
     focus: () => view.focus(),
     destroy() {
       if (destroyed) return
+      if (serializeTimer !== null) {
+        window.clearTimeout(serializeTimer)
+        serializeTimer = null
+      }
       destroyed = true
       view.dom.removeEventListener('focus', focusListener)
       view.dom.removeEventListener('blur', blurListener)

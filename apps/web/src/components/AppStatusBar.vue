@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onScopeDispose, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   AlignVerticalJustifyCenter,
@@ -20,7 +20,24 @@ const settings = useSettingsStore()
 const tabs = useTabsStore()
 
 const active = computed(() => tabs.activeTab)
-const counts = computed(() => countWords(active.value?.content ?? ''))
+const counts = ref({ words: 0, characters: 0 })
+let countTimer: number | null = null
+
+watch(
+  () => active.value?.content ?? '',
+  (content) => {
+    if (countTimer !== null) window.clearTimeout(countTimer)
+    countTimer = window.setTimeout(() => {
+      countTimer = null
+      counts.value = countWords(content)
+    }, 300)
+  },
+  { immediate: true },
+)
+
+onScopeDispose(() => {
+  if (countTimer !== null) window.clearTimeout(countTimer)
+})
 
 const saveState = computed(() => {
   const tab = active.value

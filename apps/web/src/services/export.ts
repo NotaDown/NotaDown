@@ -9,6 +9,7 @@ import {
 import { renderStandaloneHtml } from '@notadown/exporter'
 import type { AssetTarget } from '@notadown/platform'
 import { platform } from '@/platform'
+import { flushEditor } from '@/editor-registry'
 import { useSettingsStore } from '@/stores/settings'
 import type { EditorTab } from '@/stores/tabs'
 
@@ -16,6 +17,7 @@ export async function exportTabDocument(
   tab: EditorTab,
   format: 'html' | 'pdf',
 ): Promise<boolean> {
+  flushEditor(tab.key)
   const settings = useSettingsStore()
   const html = await renderStandaloneHtml(tab.content, {
     title: stripExtension(tab.name) || tab.name,

@@ -1,7 +1,7 @@
 import { onBeforeUnmount, onMounted, watch } from 'vue'
 import type { SessionState } from '@notadown/shared'
 import { platform } from '@/platform'
-import { refreshEditors } from '@/editor-registry'
+import { flushAllEditors, refreshEditors } from '@/editor-registry'
 import { useSettingsStore } from '@/stores/settings'
 import { useTabsStore } from '@/stores/tabs'
 import { useUiStore } from '@/stores/ui'
@@ -98,6 +98,7 @@ export function useAppLifecycle(commands: AppCommands): void {
   }
 
   function onBeforeUnload(event: BeforeUnloadEvent): void {
+    flushAllEditors()
     settings.flush()
     if (!tabs.hasDirty) return
     event.preventDefault()

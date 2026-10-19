@@ -2,6 +2,7 @@ import type { EditorCommand, FindResult } from '@notadown/editor'
 
 export interface EditorHandle {
   focus(): void
+  flush(): void
   find(query: string, forward?: boolean): FindResult | null
   clearFind(): void
   goToPosition(pos: number): void
@@ -28,6 +29,14 @@ export function getEditor(key: string | null): EditorHandle | null {
 
 export function focusEditor(key: string | null): void {
   getEditor(key)?.focus()
+}
+
+export function flushEditor(key: string | null): void {
+  getEditor(key)?.flush()
+}
+
+export function flushAllEditors(): void {
+  for (const handle of handles.values()) handle.flush()
 }
 
 export function refreshEditors(): void {

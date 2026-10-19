@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { CircleAlert, FileWarning, Save } from 'lucide-vue-next'
 import {
@@ -8,7 +8,12 @@ import {
   type MarkdownEditor,
   type SourceEditor,
 } from '@notadown/editor'
-import { dirname, isOpenableTextFile, joinPosix } from '@notadown/shared'
+import {
+  dirname,
+  isOpenableTextFile,
+  joinPosix,
+  LARGE_DOCUMENT_THRESHOLD,
+} from '@notadown/shared'
 import { platform } from '@/platform'
 import { describeError } from '@/errors'
 import { registerEditor, type EditorHandle } from '@/editor-registry'
@@ -31,6 +36,9 @@ const labels = useEditorLabels()
 const richRoot = ref<HTMLDivElement | null>(null)
 const sourceRoot = ref<HTMLDivElement | null>(null)
 const failed = ref(false)
+const largeDocument = computed(
+  () => props.tab.content.length >= LARGE_DOCUMENT_THRESHOLD,
+)
 
 let rich: MarkdownEditor | null = null
 let source: SourceEditor | null = null
@@ -39,6 +47,7 @@ let generation = 0
 
 const handle: EditorHandle = {
   focus: () => (rich ?? source)?.focus(),
+  flush: () => rich?.flush(),
   find: (query, forward) => rich?.find(query, forward) ?? source?.find(query, forward) ?? null,
   clearFind: () => {
     rich?.clearFind()
@@ -127,6 +136,7 @@ async function rebuild(): Promise<void> {
         labels: labels.value,
         spellcheck: settings.settings.spellcheck,
         readOnly: false,
+        largeDocument: largeDocument.value,
         onChange: (value) => tabs.updateContent(props.tab.key, value),
         onSave: () => void tabs.saveTab(props.tab),
       })
@@ -148,6 +158,7 @@ async function createRichEditor(): Promise<MarkdownEditor | null> {
     spellcheck: settings.settings.spellcheck,
     focusMode: settings.settings.focusMode,
     typewriterMode: settings.settings.typewriterMode,
+    largeDocument: largeDocument.value,
     onChange: (markdown) => tabs.updateContent(props.tab.key, markdown),
     onOutlineChange: (outline) => tabs.setOutline(props.tab.key, outline),
     onOpenLink: (href) => void openLink(href),
@@ -164,6 +175,7 @@ async function createRichEditor(): Promise<MarkdownEditor | null> {
 }
 
 function destroyEditors(): void {
+  rich?.flush()
   rich?.destroy()
   source?.destroy()
   rich = null

@@ -130,10 +130,12 @@ export interface MarkdownEditorOptions {
   typewriterMode?: boolean
   readOnly?: boolean
   spellcheck?: boolean
+  largeDocument?: boolean
 }
 
 export interface MarkdownEditor {
   getMarkdown(): string
+  flush(): void
   setMarkdown(markdown: string, options?: { silent?: boolean }): void
   getOutline(): OutlineItem[]
   focus(): void
@@ -157,6 +159,7 @@ export interface SourceEditorOptions {
   onBlur?: () => void
   readOnly?: boolean
   spellcheck?: boolean
+  largeDocument?: boolean
 }
 
 export interface SourceEditor {
