@@ -56,6 +56,7 @@ async function openResult(result: SearchResult): Promise<void> {
     return
   }
   await tabs.openWorkspaceFile(result.path)
+  if (window.matchMedia('(max-width: 720px)').matches) ui.toggleSidebar(false)
 }
 
 function focusInput(): void {

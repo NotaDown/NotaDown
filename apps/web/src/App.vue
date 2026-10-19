@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { provide } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   APP_COMMANDS_KEY,
   useAppCommands,
@@ -27,6 +28,7 @@ useAppLifecycle(commands)
 useGlobalShortcuts(commands)
 
 const ui = useUiStore()
+const { t } = useI18n()
 </script>
 
 <template>
@@ -36,6 +38,13 @@ const ui = useUiStore()
     <div class="app__body">
       <AppActivityBar />
       <AppSidebar v-show="ui.sidebarOpen" />
+      <button
+        v-if="ui.sidebarOpen"
+        type="button"
+        class="app__backdrop"
+        :aria-label="t('common.collapse')"
+        @click="ui.toggleSidebar(false)"
+      />
       <main class="app__main">
         <AppTabBar />
         <EditorPane />
@@ -75,5 +84,20 @@ const ui = useUiStore()
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+}
+
+.app__backdrop {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .app__backdrop {
+    position: fixed;
+    inset: var(--nd-topbar-height) 0 var(--nd-statusbar-height) 0;
+    z-index: 45;
+    display: block;
+    border: 0;
+    background: rgba(0, 0, 0, 0.32);
+  }
 }
 </style>

@@ -143,4 +143,21 @@ function resetWidth(): void {
 .app-sidebar.is-resizing .app-sidebar__resizer {
   background: color-mix(in srgb, var(--nd-accent) 35%, transparent);
 }
+
+@media (max-width: 720px) {
+  .app-sidebar {
+    position: fixed;
+    z-index: 50;
+    top: var(--nd-topbar-height);
+    bottom: var(--nd-statusbar-height);
+    left: 0;
+    width: min(84vw, 340px) !important;
+    max-width: none;
+    box-shadow: var(--nd-shadow);
+  }
+
+  .app-sidebar__resizer {
+    display: none;
+  }
+}
 </style>

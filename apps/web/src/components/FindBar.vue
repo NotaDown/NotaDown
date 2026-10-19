@@ -184,4 +184,12 @@ function onKeydown(event: KeyboardEvent): void {
   background: var(--nd-surface);
   color: var(--nd-text);
 }
+
+@media (max-width: 720px) {
+  .find-bar {
+    top: 6px;
+    right: 6px;
+    width: calc(100% - 12px);
+  }
+}
 </style>

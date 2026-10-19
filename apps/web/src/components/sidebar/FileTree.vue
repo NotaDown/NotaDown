@@ -11,6 +11,7 @@ import {
   Folder,
   FolderOpen,
   FolderPlus,
+  MoreHorizontal,
   RefreshCw,
 } from 'lucide-vue-next'
 import {
@@ -168,9 +169,24 @@ function handleRow(node: WorkspaceNode): void {
   }
   if (isOpenableTextFile(node.name)) {
     void tabs.openWorkspaceFile(node.path)
+    closeSidebarOnMobile()
   } else {
     ui.toast('warning', t('tree.unsupportedFile'), node.name)
   }
+}
+
+function closeSidebarOnMobile(): void {
+  if (window.matchMedia('(max-width: 720px)').matches) ui.toggleSidebar(false)
+}
+
+function onRowMenu(event: MouseEvent, node: WorkspaceNode): void {
+  workspace.select(node.path)
+  contextPath.value = node.path
+  contextKind.value = node.kind
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+  contextX.value = rect.right - 190
+  contextY.value = rect.bottom + 4
+  contextOpen.value = true
 }
 
 function openDialog(mode: TreeDialog['mode'], parent: string, path?: string, kind?: 'file' | 'directory', name = ''): void {
@@ -515,6 +531,15 @@ function closeDialog(): void {
           class="tree-row__dot"
           :title="t('tabs.unsaved')"
         />
+        <button
+          type="button"
+          class="tree-row__more"
+          :title="t('menu.showMenu')"
+          :aria-label="t('menu.showMenu')"
+          @click.stop="onRowMenu($event, row.node)"
+        >
+          <MoreHorizontal :size="14" />
+        </button>
       </div>
     </div>
 
@@ -721,5 +746,37 @@ function closeDialog(): void {
   margin: 8px 0 0;
   color: var(--nd-danger);
   font-size: 12px;
+}
+
+.tree-row__more {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--nd-text-muted);
+}
+
+.tree-row__more:hover {
+  background: var(--nd-surface-hover);
+  color: var(--nd-text);
+}
+
+@media (max-width: 720px), (hover: none) {
+  .tree-row {
+    height: 34px;
+  }
+
+  .tree-row__more {
+    display: inline-flex;
+  }
+
+  .tree-row__name {
+    font-size: 13px;
+  }
 }
 </style>

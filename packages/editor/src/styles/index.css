@@ -474,3 +474,23 @@
 .nd-source-editor .cm-activeLine {
   background: transparent;
 }
+
+@media (max-width: 720px) {
+  .nd-editor .milkdown .ProseMirror,
+  .nd-source-editor .cm-content {
+    padding: 28px 18px 40vh;
+  }
+
+  .nd-source-editor .cm-content {
+    font-size: calc(var(--nd-editor-font-size, 17px) - 2px);
+  }
+
+  .nd-editor .milkdown .ProseMirror table {
+    font-size: 0.9em;
+  }
+
+  .nd-editor .milkdown .ProseMirror th,
+  .nd-editor .milkdown .ProseMirror td {
+    padding: 6px 9px;
+  }
+}

@@ -349,4 +349,23 @@ async function handleMenuSelect(id: string): Promise<void> {
   width: 26px;
   height: 26px;
 }
+
+@media (max-width: 720px) {
+  .tab {
+    flex-basis: 150px;
+    min-width: 84px;
+    max-width: 170px;
+    padding-left: 9px;
+  }
+
+  .tab__close {
+    width: 22px;
+    height: 22px;
+    opacity: 0.6;
+  }
+
+  .tab-bar__folder {
+    display: none;
+  }
+}
 </style>

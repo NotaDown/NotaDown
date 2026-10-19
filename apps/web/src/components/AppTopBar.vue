@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { FolderOpen, Menu, Moon, Search, Settings, Sun } from 'lucide-vue-next'
+import {
+  FolderOpen,
+  Menu,
+  Moon,
+  PanelLeft,
+  Search,
+  Settings,
+  Sun,
+} from 'lucide-vue-next'
 import { platform } from '@/platform'
 import { useUiStore } from '@/stores/ui'
 import { useWorkspaceStore } from '@/stores/workspace'
@@ -69,6 +77,15 @@ function openWorkspace(): void {
 
 <template>
   <header class="topbar" :class="{ 'is-desktop': isDesktop, 'is-mac': isMac }">
+    <button
+      type="button"
+      class="nd-icon-btn topbar__sidebar-toggle"
+      :title="t('menu.toggleSidebar')"
+      @click="ui.toggleSidebar()"
+    >
+      <PanelLeft :size="17" />
+    </button>
+
     <div class="topbar__brand">
       <BrandMark :size="22" />
       <span class="topbar__name">NotaDown</span>
@@ -158,6 +175,11 @@ function openWorkspace(): void {
   padding-left: 78px;
 }
 
+.topbar__sidebar-toggle {
+  display: none;
+  flex: 0 0 auto;
+}
+
 .topbar__brand {
   display: flex;
   align-items: center;
@@ -211,17 +233,39 @@ function openWorkspace(): void {
   margin-left: auto;
 }
 
-@media (max-width: 640px) {
-  .topbar__name {
-    display: none;
+@media (max-width: 720px) {
+  .topbar {
+    gap: 6px;
+    padding: 0 8px;
   }
 
-  .topbar__settings {
-    display: none;
+  .topbar__sidebar-toggle {
+    display: inline-flex;
+  }
+
+  .workspace-chip {
+    height: 28px;
   }
 
   .workspace-chip__label {
     max-width: 120px;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar__name,
+  .topbar__settings {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .workspace-chip {
+    padding: 0 8px;
+  }
+
+  .workspace-chip__label {
+    display: none;
   }
 }
 </style>

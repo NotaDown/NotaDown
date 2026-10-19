@@ -118,12 +118,14 @@ function toggleTypewriterMode(): void {
       >
         <Code v-if="isSource" :size="13" />
         <Type v-else :size="13" />
-        {{ isSource ? t('editor.sourceMode') : t('editor.richMode') }}
+        <span class="status-bar__mode-label">
+          {{ isSource ? t('editor.sourceMode') : t('editor.richMode') }}
+        </span>
       </button>
 
       <button
         type="button"
-        class="status-bar__button"
+        class="status-bar__button status-bar__toggle"
         :class="{ 'is-active': settings.settings.focusMode }"
         :title="t('editor.focusMode')"
         :aria-pressed="settings.settings.focusMode"
@@ -134,7 +136,7 @@ function toggleTypewriterMode(): void {
 
       <button
         type="button"
-        class="status-bar__button"
+        class="status-bar__button status-bar__toggle"
         :class="{ 'is-active': settings.settings.typewriterMode }"
         :title="t('editor.typewriterMode')"
         :aria-pressed="settings.settings.typewriterMode"
@@ -248,7 +250,20 @@ function toggleTypewriterMode(): void {
 }
 
 @media (max-width: 720px) {
-  .status-bar__counts {
+  .status-bar__counts,
+  .status-bar__toggle,
+  .status-bar__platform {
+    display: none;
+  }
+
+  .status-bar__button {
+    height: 24px;
+    padding: 0 7px;
+  }
+}
+
+@media (max-width: 480px) {
+  .status-bar__mode-label {
     display: none;
   }
 }

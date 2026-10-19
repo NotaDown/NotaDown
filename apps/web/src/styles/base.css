@@ -571,6 +571,40 @@ a {
   opacity: 0;
 }
 
+@media (max-width: 720px) {
+  .nd-icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .nd-overlay,
+  .nd-overlay--center {
+    padding: 8px;
+  }
+
+  .nd-dialog {
+    width: 100%;
+    max-height: calc(100vh - 16px);
+  }
+
+  .nd-dialog-header {
+    padding: 12px 14px;
+  }
+
+  .nd-dialog-body {
+    padding: 14px;
+  }
+
+  .nd-dialog-footer {
+    flex-wrap: wrap;
+    padding: 10px 14px;
+  }
+
+  .nd-menu-item {
+    height: 34px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
