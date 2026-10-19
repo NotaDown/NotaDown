@@ -18,7 +18,7 @@ export async function exportTabDocument(
 ): Promise<boolean> {
   const settings = useSettingsStore()
   const html = await renderStandaloneHtml(tab.content, {
-    title: tab.name,
+    title: stripExtension(tab.name) || tab.name,
     theme: settings.settings.theme,
     mode: settings.effectiveMode,
     lang: document.documentElement.lang || undefined,
