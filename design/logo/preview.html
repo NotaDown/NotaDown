@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NotaDown — logo preview</title>
+<style>
+  :root {
+    --forest: #1c2a24;
+    --paper: #f6f0e1;
+    --persimmon: #e4683f;
+    --canvas: #ebe7dd;
+    --night: #141c18;
+    --line: rgba(28, 42, 36, .1);
+    --muted: #77796f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--forest);
+    font-family: "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 52px 40px 72px; }
+  .eyebrow {
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  h1 { font-size: 24px; font-weight: 600; letter-spacing: -.02em; margin: 0 0 8px; }
+  .intro { margin: 0 0 34px; font-size: 14px; line-height: 1.7; color: var(--muted); max-width: 640px; }
+  .panel {
+    background: var(--paper);
+    border-radius: 24px;
+    overflow: hidden;
+  }
+  .hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    padding: 48px 56px;
+    margin-bottom: 16px;
+  }
+  .hero-logo { width: min(520px, 100%); height: auto; display: block; }
+  .hero-note { max-width: 280px; font-size: 13px; line-height: 1.8; color: var(--muted); }
+  .hero-note strong { display: block; color: var(--forest); font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+  .grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .card { border-radius: 24px; padding: 28px 32px; }
+  .card.light { background: var(--paper); }
+  .card.dark { background: var(--night); color: var(--paper); }
+  .card.dark .card-label { color: #95a79d; }
+  .card-label {
+    font-size: 10px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 26px;
+  }
+  .icon-line { display: flex; align-items: flex-end; gap: 22px; margin-bottom: 24px; }
+  .icon-item { text-align: center; }
+  .icon-item img { display: block; border-radius: 8px; margin: 0 auto 9px; }
+  .icon-item span { font-size: 9px; color: var(--muted); letter-spacing: .04em; }
+  .card.dark .icon-item span { color: #95a79d; }
+  .dark-logo { width: 100%; max-width: 430px; height: auto; display: block; }
+  .mono-row { display: flex; align-items: center; gap: 32px; }
+  .mono-box {
+    flex: 0 0 132px;
+    height: 132px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+  }
+  .mono-box.light { background: #fffdf7; color: var(--forest); }
+  .mono-box.dark { background: var(--forest); color: var(--paper); }
+  .mono-box svg { width: 124px; height: 124px; display: block; }
+  .mono-copy { font-size: 12px; line-height: 1.8; color: var(--muted); }
+  .mono-copy strong { display: block; font-size: 13px; font-weight: 600; color: var(--forest); margin-bottom: 4px; }
+  .mock-stack { display: grid; gap: 16px; margin-bottom: 16px; }
+  .browser, .taskbar { border-radius: 20px; overflow: hidden; }
+  .browser { background: #f8f6f1; border: 1px solid rgba(28,42,36,.08); }
+  .tabbar {
+    height: 46px;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    padding: 0 12px;
+    background: #ded9cf;
+  }
+  .tab {
+    height: 34px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    border-radius: 9px 9px 0 0;
+    font-size: 11px;
+    color: #6f7168;
+    min-width: 168px;
+  }
+  .tab.active { background: #f8f6f1; color: var(--forest); }
+  .tab img { width: 16px; height: 16px; border-radius: 4px; display: block; }
+  .tab .close { margin-left: auto; font-size: 14px; color: #a5a59d; }
+  .toolbar {
+    height: 38px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    border-bottom: 1px solid rgba(28,42,36,.06);
+    background: #f8f6f1;
+  }
+  .toolbar .menu { display: flex; gap: 16px; font-size: 10px; color: #9b9b92; }
+  .taskbar {
+    background: #242924;
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: #f6f0e1;
+    font-size: 11px;
+    letter-spacing: .01em;
+  }
+  .taskbar img { width: 32px; height: 32px; border-radius: 8px; display: block; }
+  .taskbar .sep { width: 1px; align-self: stretch; background: rgba(246,240,225,.16); margin: 0 4px; }
+  .palette { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 30px; }
+  .swatch { display: flex; align-items: center; gap: 11px; font-size: 11px; color: var(--muted); }
+  .chip { width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(28,42,36,.12); }
+  .foot {
+    margin-top: 28px;
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .04em;
+  }
+  @media (max-width: 760px) {
+    .wrap { padding: 32px 20px 52px; }
+    .hero { flex-direction: column; align-items: flex-start; padding: 32px; }
+    .grid { grid-template-columns: 1fr; }
+    .mono-row { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Identity / NotaDown</div>
+  <h1>Logo &amp; app icon</h1>
+  <p class="intro">A serif n and a persimmon full stop. Built from the same Newsreader italic as the wordmark, the mark stays recognizable from a 16 px favicon to a full lockup.</p>
+
+  <section class="panel hero">
+    <img class="hero-logo" src="notadown-logo.svg" alt="NotaDown">
+    <div class="hero-note">
+      <strong>n · full stop</strong>
+      The italic n carries the writing, the square period closes the thought. Two shapes, one ink, a single persimmon accent.
+    </div>
+  </section>
+
+  <div class="grid">
+    <section class="card light">
+      <div class="card-label">App icon / scale check</div>
+      <div class="icon-line">
+        <div class="icon-item"><img src="notadown-icon.svg" width="88" height="88" alt=""><span>88</span></div>
+        <div class="icon-item"><img src="notadown-icon.svg" width="48" height="48" alt=""><span>48</span></div>
+        <div class="icon-item"><img src="notadown-icon.svg" width="32" height="32" alt=""><span>32</span></div>
+        <div class="icon-item"><img src="notadown-icon.svg" width="24" height="24" alt=""><span>24</span></div>
+        <div class="icon-item"><img src="notadown-icon.svg" width="16" height="16" alt=""><span>16</span></div>
+      </div>
+      <div class="card-label" style="margin-bottom:16px">One-color mark</div>
+      <div class="mono-row">
+        <div class="mono-box light"><svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" aria-hidden="true">
+  <g transform="translate(22.12 188.64) scale(0.25820)"><path d="M44-280.50L19.50-290Q40.50-355.50 68.50-392.25Q96.50-429 131.75-444.25Q167-459.50 209-459.50Q225.50-459.50 239-458.50Q252.50-457.50 266.25-455.75Q280-454 296.50-450.50L223.50-201L224-207.50Q255.50-276.50 286.75-324.50Q318-372.50 349.25-402.25Q380.50-432 412-445.75Q443.50-459.50 476-459.50Q529-459.50 551.75-436.25Q574.50-413 574.50-377Q574.50-358 569-333.25Q563.50-308.50 551-277L458.50-37.50L437-75.50Q461-75.50 484-82.50Q507-89.50 532-105.25Q557-121 586.50-146L607-122.50Q565.50-73.50 526.75-43.50Q488-13.50 451.75-0.25Q415.50 13 380 13Q337.50 13 323.75-2.75Q310-18.50 323.50-53.50L411.50-278.50Q419.50-300 423-312.25Q426.50-324.50 426.50-333.50Q426.50-344.50 420-351.50Q413.50-358.50 398-358.50Q378.50-358.50 355.25-342.50Q332-326.50 307.50-294.50Q283-262.50 259.50-214Q236-165.50 216-100.50L185 0L46 0L156.50-365Q155-365 153.25-365Q151.50-365 149.50-365Q128-365 111.25-359Q94.50-353 78.75-335Q63-317 44-280.50" fill="currentColor"/></g>
+  <rect x="192.85" y="156" width="36" height="36" fill="currentColor"/>
+</svg>
+</div>
+        <div class="mono-box dark"><svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" aria-hidden="true">
+  <g transform="translate(22.12 188.64) scale(0.25820)"><path d="M44-280.50L19.50-290Q40.50-355.50 68.50-392.25Q96.50-429 131.75-444.25Q167-459.50 209-459.50Q225.50-459.50 239-458.50Q252.50-457.50 266.25-455.75Q280-454 296.50-450.50L223.50-201L224-207.50Q255.50-276.50 286.75-324.50Q318-372.50 349.25-402.25Q380.50-432 412-445.75Q443.50-459.50 476-459.50Q529-459.50 551.75-436.25Q574.50-413 574.50-377Q574.50-358 569-333.25Q563.50-308.50 551-277L458.50-37.50L437-75.50Q461-75.50 484-82.50Q507-89.50 532-105.25Q557-121 586.50-146L607-122.50Q565.50-73.50 526.75-43.50Q488-13.50 451.75-0.25Q415.50 13 380 13Q337.50 13 323.75-2.75Q310-18.50 323.50-53.50L411.50-278.50Q419.50-300 423-312.25Q426.50-324.50 426.50-333.50Q426.50-344.50 420-351.50Q413.50-358.50 398-358.50Q378.50-358.50 355.25-342.50Q332-326.50 307.50-294.50Q283-262.50 259.50-214Q236-165.50 216-100.50L185 0L46 0L156.50-365Q155-365 153.25-365Q151.50-365 149.50-365Q128-365 111.25-359Q94.50-353 78.75-335Q63-317 44-280.50" fill="currentColor"/></g>
+  <rect x="192.85" y="156" width="36" height="36" fill="currentColor"/>
+</svg>
+</div>
+        <div class="mono-copy"><strong>Same mark, one ink</strong>Without the tile, the n and square period can take any single color. Use it in toolbars, watermarks, print and monochrome UI.</div>
+      </div>
+    </section>
+
+    <section class="card dark">
+      <div class="card-label">Dark surface</div>
+      <img class="dark-logo" src="notadown-logo-dark.svg" alt="NotaDown">
+      <div class="icon-line" style="margin-top:34px;margin-bottom:0">
+        <div class="icon-item"><img src="notadown-icon.svg" width="48" height="48" alt=""><span>48</span></div>
+        <div class="icon-item"><img src="notadown-icon.svg" width="32" height="32" alt=""><span>32</span></div>
+        <div class="icon-item"><img src="notadown-icon.svg" width="24" height="24" alt=""><span>24</span></div>
+        <div class="icon-item"><img src="notadown-icon.svg" width="16" height="16" alt=""><span>16</span></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="mock-stack">
+    <section class="browser" aria-label="Browser tab preview">
+      <div class="tabbar">
+        <div class="tab"><img src="notadown-icon.svg" alt=""><span>Project notes</span></div>
+        <div class="tab active"><img src="notadown-icon.svg" alt=""><span>Untitled — NotaDown</span><span class="close">×</span></div>
+      </div>
+      <div class="toolbar"><div class="menu"><span>File</span><span>Edit</span><span>View</span><span>Markdown</span></div></div>
+    </section>
+    <section class="taskbar" aria-label="Taskbar preview">
+      <img src="notadown-icon.svg" alt="">
+      <span>NotaDown</span>
+      <span class="sep"></span>
+      <span style="color:#9da79f">Favicon / title bar / taskbar</span>
+    </section>
+  </div>
+
+  <div class="palette">
+    <div class="swatch"><span class="chip" style="background:#1c2a24"></span>Forest ink <code>#1C2A24</code></div>
+    <div class="swatch"><span class="chip" style="background:#f6f0e1"></span>Warm paper <code>#F6F0E1</code></div>
+    <div class="swatch"><span class="chip" style="background:#e4683f"></span>Persimmon <code>#E4683F</code></div>
+    <div class="swatch"><span class="chip" style="background:#ebe7dd"></span>Canvas <code>#EBE7DD</code></div>
+  </div>
+
+  <div class="foot">
+    <span>SVG · outlined lettering · no font dependency</span>
+    <span>16 / 24 / 32 / 48 px tested</span>
+  </div>
+</div>
+</body>
+</html>
