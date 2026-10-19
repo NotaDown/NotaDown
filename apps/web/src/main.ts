@@ -12,3 +12,11 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(i18n)
 app.mount('#app')
+
+if (import.meta.env.PROD && !window.notadown && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    void navigator.serviceWorker
+      .register(new URL('sw.js', document.baseURI))
+      .catch(() => undefined)
+  })
+}

@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
+  Download,
   FolderOpen,
   Menu,
   Moon,
@@ -15,6 +16,7 @@ import { useUiStore } from '@/stores/ui'
 import { useWorkspaceStore } from '@/stores/workspace'
 import { useSettingsStore } from '@/stores/settings'
 import { useInjectedCommands } from '@/composables/use-app-commands'
+import { usePwaInstall } from '@/composables/use-pwa-install'
 import { appliedTitleBarMode, desktopPlatform } from '@/window-chrome'
 import BrandMark from './common/BrandMark.vue'
 import PopupMenu from './common/PopupMenu.vue'
@@ -25,6 +27,7 @@ const ui = useUiStore()
 const workspace = useWorkspaceStore()
 const settings = useSettingsStore()
 const commands = useInjectedCommands()
+const { available: installAvailable, install } = usePwaInstall()
 
 const isDesktop = platform.kind === 'desktop'
 const integrated = computed(
@@ -128,6 +131,15 @@ function openWorkspace(): void {
         @click="ui.focusSearch()"
       >
         <Search :size="16" />
+      </button>
+      <button
+        v-if="installAvailable"
+        type="button"
+        class="nd-icon-btn"
+        :title="t('web.installHint')"
+        @click="install"
+      >
+        <Download :size="16" />
       </button>
       <button
         type="button"
