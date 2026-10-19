@@ -23,6 +23,7 @@ NotaDown is a Markdown editor where writing and rendering share one surface. For
 - Export to standalone HTML or PDF.
 - English and Simplified Chinese UI.
 - Web and desktop editions from the same codebase.
+- A native system title bar or an integrated desktop header, configurable in settings.
 
 ## Requirements
 

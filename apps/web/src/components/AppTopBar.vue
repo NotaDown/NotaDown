@@ -15,6 +15,7 @@ import { useUiStore } from '@/stores/ui'
 import { useWorkspaceStore } from '@/stores/workspace'
 import { useSettingsStore } from '@/stores/settings'
 import { useInjectedCommands } from '@/composables/use-app-commands'
+import { appliedTitleBarMode, desktopPlatform } from '@/window-chrome'
 import BrandMark from './common/BrandMark.vue'
 import PopupMenu from './common/PopupMenu.vue'
 import type { MenuItem } from './common/menu-types'
@@ -26,7 +27,15 @@ const settings = useSettingsStore()
 const commands = useInjectedCommands()
 
 const isDesktop = platform.kind === 'desktop'
-const isMac = isDesktop && window.notadown?.platform === 'darwin'
+const integrated = computed(
+  () => isDesktop && appliedTitleBarMode.value === 'integrated',
+)
+const integratedMac = computed(
+  () => integrated.value && desktopPlatform.value === 'darwin',
+)
+const overlayControls = computed(
+  () => integrated.value && desktopPlatform.value !== 'darwin',
+)
 
 const menuOpen = ref(false)
 const menuX = ref(0)
@@ -76,7 +85,15 @@ function openWorkspace(): void {
 </script>
 
 <template>
-  <header class="topbar" :class="{ 'is-desktop': isDesktop, 'is-mac': isMac }">
+  <header
+    class="topbar"
+    :class="{
+      'is-desktop': isDesktop,
+      'is-integrated': integrated,
+      'is-mac': integratedMac,
+      'has-overlay-controls': overlayControls,
+    }"
+  >
     <button
       type="button"
       class="nd-icon-btn topbar__sidebar-toggle"
@@ -163,16 +180,21 @@ function openWorkspace(): void {
   flex: 0 0 auto;
 }
 
-.topbar.is-desktop {
+.topbar.is-desktop.is-integrated {
   -webkit-app-region: drag;
 }
 
-.topbar.is-desktop button {
+.topbar.is-desktop.is-integrated button,
+.topbar.is-desktop.is-integrated input {
   -webkit-app-region: no-drag;
 }
 
 .topbar.is-mac {
   padding-left: 78px;
+}
+
+.topbar.has-overlay-controls {
+  padding-right: 150px;
 }
 
 .topbar__sidebar-toggle {

@@ -84,6 +84,8 @@ export interface DesktopInvokeMap {
   saveSession: { args: [session: SessionState]; result: void }
   exportHtml: { args: [html: string, suggestedName: string]; result: boolean }
   exportPdf: { args: [html: string, suggestedName: string]; result: boolean }
+  getTitleBarMode: { args: []; result: 'integrated' | 'native' }
+  setTitleBarOverlay: { args: [color: string, symbolColor: string]; result: void }
   openExternal: { args: [url: string]; result: void }
 }
 

@@ -3,12 +3,14 @@ import type {
   ImageStorageMode,
   LocalePreference,
   ThemeId,
+  TitleBarMode,
 } from './types'
 
 export interface AppSettings {
   locale: LocalePreference
   colorMode: ColorMode
   theme: ThemeId
+  titleBarMode: TitleBarMode
   customCss: string
   fontFamily: string
   fontSize: number
@@ -39,6 +41,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   locale: 'system',
   colorMode: 'system',
   theme: 'default',
+  titleBarMode: 'integrated',
   customCss: '',
   fontFamily: '',
   fontSize: 17,
@@ -107,6 +110,7 @@ export function normalizeSettings(input: unknown): AppSettings {
       if (typeof value !== 'string') continue
       if (key === 'colorMode' && !COLOR_MODES.has(value)) continue
       if (key === 'theme' && !THEMES.has(value)) continue
+      if (key === 'titleBarMode' && !['integrated', 'native'].includes(value)) continue
       if (key === 'locale' && !LOCALES.has(value)) continue
       if (key === 'imageStorage' && !IMAGE_MODES.has(value)) continue
       if (key === 'defaultFileExtension' && !['md', 'markdown'].includes(value)) continue

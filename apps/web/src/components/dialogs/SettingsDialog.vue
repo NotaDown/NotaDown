@@ -34,6 +34,7 @@ import BrandMark from '../common/BrandMark.vue'
 const { t } = useI18n()
 const settings = useSettingsStore()
 const ui = useUiStore()
+const isDesktop = platform.kind === 'desktop'
 
 const draft = reactive<AppSettings>({ ...settings.settings })
 const section = ref<SettingsSection>(ui.settingsSection)
@@ -121,6 +122,11 @@ function setLocale(event: Event): void {
 
 function setExtension(event: Event): void {
   draft.defaultFileExtension = (event.target as HTMLSelectElement).value as 'md' | 'markdown'
+}
+
+function setTitleBarMode(event: Event): void {
+  draft.titleBarMode =
+    (event.target as HTMLSelectElement).value === 'native' ? 'native' : 'integrated'
 }
 
 function chooseTheme(id: ThemeId): void {
@@ -250,6 +256,26 @@ async function clearHistory(): Promise<void> {
                     />
                     <span class="nd-switch-track" />
                   </label>
+                </div>
+
+                <div v-if="isDesktop" class="nd-field">
+                  <label class="nd-field-label" for="settings-title-bar">
+                    {{ t('settings.generalSection.titleBar') }}
+                  </label>
+                  <select
+                    id="settings-title-bar"
+                    class="nd-select"
+                    :value="draft.titleBarMode"
+                    @change="setTitleBarMode"
+                  >
+                    <option value="integrated">
+                      {{ t('settings.generalSection.titleBarIntegrated') }}
+                    </option>
+                    <option value="native">
+                      {{ t('settings.generalSection.titleBarNative') }}
+                    </option>
+                  </select>
+                  <p class="nd-field-hint">{{ t('settings.generalSection.titleBarHint') }}</p>
                 </div>
               </section>
 

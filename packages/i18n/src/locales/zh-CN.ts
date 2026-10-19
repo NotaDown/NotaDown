@@ -301,6 +301,10 @@ export const zhCN = {
       restoreSessionHint: '启动 NotaDown 时重新打开上次的工作区和标签页。',
       confirmDelete: '删除前确认',
       confirmDeleteHint: '删除文件或文件夹时显示确认提示。',
+      titleBar: '窗口标题栏',
+      titleBarIntegrated: '与 NotaDown 界面一体化',
+      titleBarNative: '使用系统标题栏',
+      titleBarHint: '一体化模式会将窗口控制按钮与顶部栏合并。修改后需重启 NotaDown 生效。',
     },
     appearanceSection: {
       colorMode: '颜色模式',

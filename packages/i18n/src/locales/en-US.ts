@@ -301,6 +301,10 @@ export const enUS = {
       restoreSessionHint: 'Reopen your last workspace and tabs when NotaDown starts.',
       confirmDelete: 'Ask before deleting',
       confirmDeleteHint: 'Show a confirmation dialog for files and folders.',
+      titleBar: 'Window title bar',
+      titleBarIntegrated: 'Integrated with NotaDown',
+      titleBarNative: 'Use the system title bar',
+      titleBarHint: 'Integrated mode merges the window controls with the app header. Restart NotaDown to apply changes.',
     },
     appearanceSection: {
       colorMode: 'Color mode',

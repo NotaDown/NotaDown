@@ -7,6 +7,7 @@ import {
   type SearchOptions,
   type SessionState,
 } from '@notadown/shared'
+import { getWindowChrome, updateOverlayColors } from './chrome'
 import { exportHtml, exportPdf } from './export'
 import { normalizeError } from './errors'
 import * as history from './history'
@@ -139,6 +140,27 @@ async function dispatch(
       return exportHtml(window, String(args[0] ?? ''), String(args[1] ?? ''))
     case 'exportPdf':
       return exportPdf(window, String(args[0] ?? ''), String(args[1] ?? ''))
+
+    case 'getTitleBarMode':
+      return getWindowChrome().titleBarMode
+    case 'setTitleBarOverlay': {
+      const color = String(args[0] ?? '')
+      const symbolColor = String(args[1] ?? '')
+      updateOverlayColors(color, symbolColor)
+      if (
+        window &&
+        process.platform !== 'darwin' &&
+        getWindowChrome().titleBarMode === 'integrated'
+      ) {
+        try {
+          window.setTitleBarOverlay({ color, symbolColor, height: 44 })
+        } catch {
+          // The window may use a native title bar on unsupported platforms.
+        }
+      }
+      return undefined
+    }
+
     case 'openExternal': {
       const url = String(args[0] ?? '')
       if (!/^(https?:|mailto:)/i.test(url)) throw new Error('UNSUPPORTED')

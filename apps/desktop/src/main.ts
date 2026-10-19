@@ -2,6 +2,7 @@ import { DESKTOP_ASSET_SCHEME } from '@notadown/shared'
 import { app, BrowserWindow, nativeTheme, net, protocol, shell } from 'electron'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { getWindowChrome, resolveWindowChrome } from './chrome'
 import { registerIpcHandlers } from './ipc'
 import { installMenu } from './menu'
 import { stopWatch } from './workspace'
@@ -26,6 +27,22 @@ const RENDERER_INDEX = path.join(__dirname, '../renderer/index.html')
 const RENDERER_URL = pathToFileURL(RENDERER_INDEX).toString()
 
 function createWindow(): BrowserWindow {
+  const isMac = process.platform === 'darwin'
+  const chrome = getWindowChrome()
+  const integrated = chrome.titleBarMode === 'integrated'
+  const frameOptions = integrated
+    ? isMac
+      ? { titleBarStyle: 'hiddenInset' as const }
+      : {
+          titleBarStyle: 'hidden' as const,
+          titleBarOverlay: {
+            color: chrome.overlay.color,
+            symbolColor: chrome.overlay.symbolColor,
+            height: 44,
+          },
+        }
+    : {}
+
   const window = new BrowserWindow({
     width: 1180,
     height: 780,
@@ -33,7 +50,8 @@ function createWindow(): BrowserWindow {
     minHeight: 480,
     show: false,
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#1c1d21' : '#ffffff',
-    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+    autoHideMenuBar: integrated && !isMac,
+    ...frameOptions,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -94,8 +112,9 @@ if (!hasLock) {
     window.focus()
   })
 
-  void app.whenReady().then(() => {
+  void app.whenReady().then(async () => {
     app.setAppUserModelId('com.notadown.app')
+    await resolveWindowChrome()
 
     protocol.handle(DESKTOP_ASSET_SCHEME, (request) => {
       const filePath = assetFilePath(request.url)

@@ -2,6 +2,8 @@ export type PlatformKind = 'desktop' | 'web'
 
 export type ColorMode = 'system' | 'light' | 'dark'
 
+export type TitleBarMode = 'integrated' | 'native'
+
 export type LocalePreference = 'system' | 'en-US' | 'zh-CN'
 
 export type ThemeId = 'default' | 'paper' | 'nordic' | 'contrast'
