@@ -1,0 +1,85 @@
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import type { EditorLabels } from '@notadown/editor'
+
+export function useEditorLabels() {
+  const { t } = useI18n()
+  return computed<EditorLabels>(() => ({
+    placeholder: t('editor.placeholder'),
+    slash: {
+      basic: t('editor.slashGroups.basic'),
+      lists: t('editor.slashGroups.lists'),
+      advanced: t('editor.slashGroups.advanced'),
+      text: t('editor.toolbar.paragraph'),
+      heading1: t('editor.toolbar.heading1'),
+      heading2: t('editor.toolbar.heading2'),
+      heading3: t('editor.toolbar.heading3'),
+      heading4: t('editor.toolbar.heading4'),
+      heading5: t('editor.toolbar.heading5'),
+      heading6: t('editor.toolbar.heading6'),
+      quote: t('editor.toolbar.quote'),
+      divider: t('editor.toolbar.horizontalRule'),
+      bulletList: t('editor.toolbar.bulletList'),
+      orderedList: t('editor.toolbar.orderedList'),
+      taskList: t('editor.toolbar.taskList'),
+      image: t('editor.toolbar.image'),
+      codeBlock: t('editor.toolbar.codeBlock'),
+      table: t('editor.toolbar.table'),
+      math: t('editor.toolbar.math'),
+      mermaid: t('editor.toolbar.diagram'),
+    },
+    codeBlock: {
+      searchLanguage: t('editor.codeBlock.searchLanguage'),
+      noResult: t('editor.codeBlock.noResult'),
+      copy: t('editor.codeBlock.copy'),
+      edit: t('editor.codeBlock.edit'),
+      hide: t('editor.codeBlock.hide'),
+      loading: t('editor.codeBlock.loading'),
+    },
+    image: {
+      uploadFile: t('editor.image.uploadBlock'),
+      upload: t('editor.image.uploadInline'),
+      pasteLink: t('editor.image.pasteLink'),
+      caption: t('editor.image.captionPlaceholder'),
+    },
+    mermaid: {
+      title: t('editor.diagram.title'),
+      edit: t('editor.diagram.edit'),
+      done: t('editor.diagram.apply'),
+      cancel: t('editor.diagram.cancel'),
+      copy: t('common.copy'),
+      copied: t('common.copied'),
+      empty: t('editor.diagram.empty'),
+      renderFailed: t('editor.diagram.renderFailed'),
+      sourcePlaceholder: t('editor.diagram.codeHint'),
+    },
+    link: {
+      edit: t('editor.toolbar.edit'),
+      remove: t('editor.link.remove'),
+      confirm: t('editor.link.confirm'),
+      placeholder: t('editor.link.placeholder'),
+      text: t('editor.link.text'),
+    },
+    toolbar: {
+      bold: t('editor.toolbar.bold'),
+      italic: t('editor.toolbar.italic'),
+      strikethrough: t('editor.toolbar.strikethrough'),
+      inlineCode: t('editor.toolbar.inlineCode'),
+      link: t('editor.toolbar.link'),
+      math: t('editor.toolbar.math'),
+    },
+    find: {
+      find: t('editor.find.find'),
+      replace: t('editor.find.replace'),
+      next: t('editor.find.next'),
+      previous: t('editor.find.previous'),
+      all: t('editor.find.all'),
+      matchCase: t('editor.find.matchCase'),
+      byWord: t('editor.find.byWord'),
+      regexp: t('editor.find.regexp'),
+      replaceAction: t('editor.find.replaceAction'),
+      replaceAll: t('editor.find.replaceAll'),
+      close: t('editor.find.close'),
+    },
+  }))
+}
