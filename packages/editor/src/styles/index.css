@@ -156,6 +156,20 @@
   margin: 0.15em 0;
 }
 
+.nd-editor .milkdown .ProseMirror .milkdown-list-item-block .content-dom > p {
+  margin: 0;
+  padding: 0;
+}
+
+.nd-editor .milkdown .ProseMirror .milkdown-list-item-block .content-dom > p + p {
+  margin-top: 0.75em;
+}
+
+/* The marker box must match one text line so it stays centred as the font size changes. */
+.nd-editor .milkdown .ProseMirror .milkdown-list-item-block .label-wrapper {
+  height: 1.5em;
+}
+
 .nd-editor .milkdown .ProseMirror blockquote {
   margin: 1em 0;
   padding: 0.2em 0 0.2em 1.1em;
