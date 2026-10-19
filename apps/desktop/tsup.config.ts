@@ -11,6 +11,7 @@ export default defineConfig({
   outExtension: () => ({ js: '.cjs' }),
   splitting: false,
   clean: true,
+  publicDir: 'assets',
   sourcemap: true,
   external: ['electron'],
   noExternal: ['@notadown/shared', 'chokidar', 'readdirp'],

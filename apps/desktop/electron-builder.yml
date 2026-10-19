@@ -26,6 +26,7 @@ fileAssociations:
     mimeType: text/markdown
 
 win:
+  icon: assets/icon.ico
   target:
     - target: nsis
       arch:
@@ -38,6 +39,7 @@ nsis:
   deleteAppDataOnUninstall: false
 
 mac:
+  icon: assets/icon.png
   target:
     - target: dmg
       arch:
@@ -46,6 +48,7 @@ mac:
   category: public.app-category.productivity
 
 linux:
+  icon: assets/icon.png
   target:
     - AppImage
   category: Office

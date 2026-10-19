@@ -26,6 +26,10 @@ protocol.registerSchemesAsPrivileged([
 const DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
 const RENDERER_INDEX = path.join(__dirname, '../renderer/index.html')
 const RENDERER_URL = pathToFileURL(RENDERER_INDEX).toString()
+const WINDOW_ICON = path.join(
+  __dirname,
+  process.platform === 'win32' ? 'icon.ico' : 'icon.png',
+)
 
 function createWindow(): BrowserWindow {
   const isMac = process.platform === 'darwin'
@@ -49,6 +53,7 @@ function createWindow(): BrowserWindow {
     height: 780,
     minWidth: 720,
     minHeight: 480,
+    icon: WINDOW_ICON,
     show: false,
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#1c1d21' : '#ffffff',
     autoHideMenuBar: integrated && !isMac,
