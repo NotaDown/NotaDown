@@ -1,0 +1,41 @@
+appId: com.notadown.app
+productName: NotaDown
+copyright: Copyright © 2026 NotaDown contributors
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**/*
+  - renderer/**/*
+  - package.json
+
+asar: true
+publish: null
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  category: public.app-category.productivity
+
+linux:
+  target:
+    - AppImage
+  category: Office
+  maintainer: NotaDown contributors

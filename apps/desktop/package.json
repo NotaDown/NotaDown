@@ -1,0 +1,28 @@
+{
+  "name": "@notadown/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NotaDown desktop application",
+  "author": "NotaDown contributors",
+  "license": "MIT",
+  "main": "dist/main.cjs",
+  "scripts": {
+    "build:main": "tsup",
+    "build": "tsup && electron-builder --dir --config electron-builder.yml",
+    "dev": "tsup && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .",
+    "package": "tsup && electron-builder --config electron-builder.yml",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@notadown/shared": "workspace:*",
+    "chokidar": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "cross-env": "^10.1.0",
+    "electron": "^44.9.0",
+    "electron-builder": "^26.15.3",
+    "tsup": "^9.0.0",
+    "typescript": "^5.9.3"
+  }
+}

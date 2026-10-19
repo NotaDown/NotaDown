@@ -1,7 +1,10 @@
 import { i18n } from './i18n'
 
 export function errorCode(error: unknown): string {
-  if (error instanceof Error) return error.message
+  if (error instanceof Error) {
+    const ipcError = /Error: ([A-Z0-9_]+)$/.exec(error.message)
+    return ipcError ? ipcError[1] : error.message
+  }
   if (typeof error === 'string') return error
   return ''
 }

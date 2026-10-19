@@ -1,6 +1,7 @@
 node_modules/
 dist/
 dist-electron/
+apps/desktop/renderer/
 release/
 build/
 *.local
