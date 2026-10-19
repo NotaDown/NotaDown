@@ -92,7 +92,9 @@ export function useAppLifecycle(commands: AppCommands): void {
       sessionTimer = null
     }
     settings.flush()
-    void platform.saveSession(sessionState()).catch(() => undefined)
+    // Reactive proxies are not structured-cloneable for IndexedDB/IPC.
+    const session = JSON.parse(JSON.stringify(sessionState())) as SessionState
+    void platform.saveSession(session).catch(() => undefined)
   }
 
   function onBeforeUnload(event: BeforeUnloadEvent): void {

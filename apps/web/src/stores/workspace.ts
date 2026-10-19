@@ -237,7 +237,8 @@ export const useWorkspaceStore = defineStore('workspace', () => {
   }
 
   async function deleteEntry(path: string): Promise<void> {
-    await platform.deleteWorkspaceEntry(path)
+    const isDirectory = entries.value.find((entry) => entry.path === path)?.kind === 'directory'
+    await platform.deleteWorkspaceEntry(path, isDirectory ?? false)
     if (selectedPath.value?.startsWith(normalizeSlashes(path))) selectedPath.value = null
     await refresh()
   }

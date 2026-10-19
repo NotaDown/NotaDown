@@ -2,10 +2,10 @@ import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 import {
   DEFAULT_SETTINGS,
-  detectLocale,
   normalizeSettings,
   type AppSettings,
 } from '@notadown/shared'
+import { detectLocale } from '@notadown/i18n'
 import { platform } from '@/platform'
 import { i18n } from '@/i18n'
 import { applySettingsTheme, resolveColorMode } from '@/theme'
@@ -43,12 +43,17 @@ export const useSettingsStore = defineStore('settings', () => {
     settings.value = normalizeSettings(null)
   }
 
+  function snapshot(): AppSettings {
+    // Reactive proxies are not structured-cloneable for IndexedDB.
+    return JSON.parse(JSON.stringify(settings.value)) as AppSettings
+  }
+
   function flush(): void {
     if (saveTimer) {
       window.clearTimeout(saveTimer)
       saveTimer = null
     }
-    void platform.saveSettings(settings.value).catch(() => undefined)
+    void platform.saveSettings(snapshot()).catch(() => undefined)
   }
 
   function scheduleSave(): void {
@@ -56,7 +61,7 @@ export const useSettingsStore = defineStore('settings', () => {
     if (saveTimer) window.clearTimeout(saveTimer)
     saveTimer = window.setTimeout(() => {
       saveTimer = null
-      void platform.saveSettings(settings.value).catch(() => undefined)
+      void platform.saveSettings(snapshot()).catch(() => undefined)
     }, 350)
   }
 

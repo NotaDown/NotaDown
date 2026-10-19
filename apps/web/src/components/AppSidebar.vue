@@ -15,7 +15,6 @@ const sidebarRef = ref<HTMLElement | null>(null)
 const resizing = ref(false)
 let startX = 0
 let startWidth = 0
-let startLeft = 0
 
 const title = computed(() => t(`sidebar.${ui.sidebarView}`))
 
@@ -26,7 +25,6 @@ function startResize(event: PointerEvent): void {
   resizing.value = true
   startX = event.clientX
   startWidth = element.getBoundingClientRect().width
-  startLeft = element.getBoundingClientRect().left
   ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
   event.preventDefault()
 }

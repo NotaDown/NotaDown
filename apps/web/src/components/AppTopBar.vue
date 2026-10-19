@@ -7,9 +7,9 @@ import { useUiStore } from '@/stores/ui'
 import { useWorkspaceStore } from '@/stores/workspace'
 import { useSettingsStore } from '@/stores/settings'
 import { useInjectedCommands } from '@/composables/use-app-commands'
-import BrandMark from '../common/BrandMark.vue'
-import PopupMenu from '../common/PopupMenu.vue'
-import type { MenuItem } from '../common/menu-types'
+import BrandMark from './common/BrandMark.vue'
+import PopupMenu from './common/PopupMenu.vue'
+import type { MenuItem } from './common/menu-types'
 
 const { t } = useI18n()
 const ui = useUiStore()

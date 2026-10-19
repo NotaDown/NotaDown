@@ -98,9 +98,12 @@ function toggleFilter(): void {
   showAll.value = false
 }
 
-watch(ui.sidebarView, (view) => {
-  if (view === 'history') void refresh()
-})
+watch(
+  () => ui.sidebarView,
+  (view) => {
+    if (view === 'history') void refresh()
+  },
+)
 
 watch(filterKey, () => {
   if (ui.sidebarView === 'history') void refresh()
