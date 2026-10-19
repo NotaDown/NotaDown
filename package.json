@@ -1,0 +1,24 @@
+{
+  "name": "notadown",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An offline-first Markdown editor inspired by distraction-free writing",
+  "license": "MIT",
+  "packageManager": "pnpm@12.11.2",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @notadown/web dev",
+    "dev:desktop": "concurrently -k -n web,desktop -c cyan,magenta \"pnpm --filter @notadown/web dev\" \"wait-on http://127.0.0.1:5173 && pnpm --filter @notadown/desktop dev\"",
+    "build": "pnpm --filter @notadown/web build",
+    "build:desktop": "pnpm --filter @notadown/web build:desktop && pnpm --filter @notadown/desktop build",
+    "package:desktop": "pnpm --filter @notadown/web build:desktop && pnpm --filter @notadown/desktop package",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "wait-on": "^9.0.1"
+  }
+}

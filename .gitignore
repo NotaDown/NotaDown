@@ -1,0 +1,15 @@
+node_modules/
+dist/
+dist-electron/
+release/
+build/
+*.local
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
