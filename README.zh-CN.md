@@ -42,6 +42,8 @@ pnpm dev
 pnpm dev:desktop
 ```
 
+网页版与桌面版共用开发服务器 `http://127.0.0.1:5813`。
+
 类型检查与测试：
 
 ```bash

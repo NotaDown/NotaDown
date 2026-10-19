@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "pnpm --filter @notadown/web dev",
-    "dev:desktop": "concurrently -k -n web,desktop -c cyan,magenta \"pnpm --filter @notadown/web dev\" \"wait-on http://127.0.0.1:5173 && pnpm --filter @notadown/desktop dev\"",
+    "dev:desktop": "concurrently -k -n web,desktop -c cyan,magenta \"pnpm --filter @notadown/web dev\" \"wait-on http://127.0.0.1:5813 && pnpm --filter @notadown/desktop dev\"",
     "build": "pnpm --filter @notadown/web build",
     "build:desktop": "pnpm --filter @notadown/web build:desktop && pnpm --filter @notadown/desktop build",
     "package:desktop": "pnpm --filter @notadown/web build:desktop && pnpm --filter @notadown/desktop package",

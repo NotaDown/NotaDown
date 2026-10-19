@@ -42,6 +42,8 @@ pnpm dev
 pnpm dev:desktop
 ```
 
+The dev server runs at `http://127.0.0.1:5813` for both the web edition and the desktop renderer.
+
 Type checking and tests:
 
 ```bash
