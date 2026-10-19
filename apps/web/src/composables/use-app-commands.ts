@@ -2,8 +2,10 @@ import { computed, inject, type ComputedRef, type InjectionKey } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   shortcutText,
+  stripExtension,
   type ShortcutPlatform,
 } from '@notadown/shared'
+import { exportTabDocument } from '@/services/export'
 import { useSettingsStore } from '@/stores/settings'
 import { useTabsStore } from '@/stores/tabs'
 import { useUiStore } from '@/stores/ui'
@@ -77,6 +79,18 @@ export function useAppCommands(): AppCommands {
       title: t('menu.saveAs'),
       shortcut: 'file.saveAs',
       run: () => tabs.saveActiveAs(),
+    },
+    {
+      id: 'file.exportHtml',
+      group: 'file',
+      title: t('menu.exportHtml'),
+      run: () => exportActive('html'),
+    },
+    {
+      id: 'file.exportPdf',
+      group: 'file',
+      title: t('menu.exportPdf'),
+      run: () => exportActive('pdf'),
     },
     {
       id: 'file.closeTab',
@@ -215,6 +229,25 @@ export function useAppCommands(): AppCommands {
       ui.setSidebarView('files')
     } catch (error) {
       ui.toast('error', t('toasts.openFailed'), describeError(error))
+    }
+  }
+
+  async function exportActive(format: 'html' | 'pdf'): Promise<void> {
+    const tab = tabs.activeTab
+    if (!tab) return
+    const fileName = `${stripExtension(tab.name)}.${format}`
+    const pending = ui.toast('info', t('export.exporting'), undefined, 60_000)
+    try {
+      const exported = await exportTabDocument(tab, format)
+      if (exported) ui.toast('success', t('toasts.exportSuccess', { name: fileName }))
+    } catch (error) {
+      ui.toast(
+        'error',
+        t(format === 'pdf' ? 'toasts.pdfExportFailed' : 'toasts.exportFailed'),
+        describeError(error),
+      )
+    } finally {
+      ui.dismissToast(pending)
     }
   }
 
