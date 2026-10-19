@@ -6,6 +6,7 @@ import { useSettingsStore } from '@/stores/settings'
 import { useTabsStore } from '@/stores/tabs'
 import { useUiStore } from '@/stores/ui'
 import { useWorkspaceStore } from '@/stores/workspace'
+import { usesNativeTitleBar } from '@/window-chrome'
 import type { AppCommands } from './use-app-commands'
 
 export function useAppLifecycle(commands: AppCommands): void {
@@ -47,7 +48,11 @@ export function useAppLifecycle(commands: AppCommands): void {
   )
 
   watch(
-    () => [tabs.activeTab?.name, tabs.activeTab ? tabs.isDirty(tabs.activeTab) : false],
+    () => [
+      tabs.activeTab?.name,
+      tabs.activeTab ? tabs.isDirty(tabs.activeTab) : false,
+      usesNativeTitleBar.value ? workspace.info?.name : null,
+    ],
     () => updateTitle(),
   )
 
@@ -121,13 +126,15 @@ export function useAppLifecycle(commands: AppCommands): void {
   }
 
   function updateTitle(): void {
+    const workspaceName = usesNativeTitleBar.value ? workspace.info?.name : undefined
+    const suffix = workspaceName ? `${workspaceName} — NotaDown` : 'NotaDown'
     const tab = tabs.activeTab
     if (!tab) {
-      document.title = 'NotaDown'
+      document.title = suffix
       return
     }
     const dirty = tabs.isDirty(tab) ? '• ' : ''
-    document.title = `${dirty}${tab.name} — NotaDown`
+    document.title = `${dirty}${tab.name} — ${suffix}`
   }
 
   onBeforeUnmount(() => {

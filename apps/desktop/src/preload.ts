@@ -3,14 +3,22 @@ import {
   DESKTOP_INVOKE_CHANNEL,
   DESKTOP_MENU_COMMAND_CHANNEL,
   DESKTOP_OPEN_FILES_CHANNEL,
+  DESKTOP_TITLE_BAR_ARG,
   DESKTOP_WORKSPACE_EVENTS_CHANNEL,
   type DesktopBridge,
   type DesktopInvokeArgs,
   type DesktopInvokeMethod,
   type DesktopInvokeResult,
+  type TitleBarMode,
   type WorkspaceEvent,
 } from '@notadown/shared'
 import { contextBridge, ipcRenderer, webUtils } from 'electron'
+
+const titleBarModeArg = process.argv.find((arg) => arg.startsWith(DESKTOP_TITLE_BAR_ARG))
+const titleBarMode: TitleBarMode =
+  titleBarModeArg?.slice(DESKTOP_TITLE_BAR_ARG.length) === 'native'
+    ? 'native'
+    : 'integrated'
 
 const bridge: DesktopBridge = {
   invoke<K extends DesktopInvokeMethod>(
@@ -49,6 +57,7 @@ const bridge: DesktopBridge = {
     return () => ipcRenderer.removeListener(DESKTOP_OPEN_FILES_CHANNEL, listener)
   },
   platform: process.platform,
+  titleBarMode,
 }
 
 contextBridge.exposeInMainWorld('notadown', bridge)

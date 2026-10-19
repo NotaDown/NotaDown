@@ -310,7 +310,8 @@ export const zhCN = {
       titleBar: '窗口标题栏',
       titleBarIntegrated: '与 NotaDown 界面一体化',
       titleBarNative: '使用系统标题栏',
-      titleBarHint: '一体化模式会将窗口控制按钮与顶部栏合并。修改后需重启 NotaDown 生效。',
+      titleBarHint:
+        '一体化模式会将窗口控制按钮与顶部栏合并；系统标题栏模式会隐藏顶部栏，操作改由系统菜单栏提供。修改后需重启 NotaDown 生效。',
     },
     appearanceSection: {
       colorMode: '颜色模式',

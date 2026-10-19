@@ -142,8 +142,6 @@ async function dispatch(
     case 'exportPdf':
       return exportPdf(window, String(args[0] ?? ''), String(args[1] ?? ''))
 
-    case 'getTitleBarMode':
-      return getWindowChrome().titleBarMode
     case 'setTitleBarOverlay': {
       const color = String(args[0] ?? '')
       const symbolColor = String(args[1] ?? '')

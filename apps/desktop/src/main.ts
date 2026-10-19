@@ -1,4 +1,8 @@
-import { DESKTOP_ASSET_SCHEME, DESKTOP_OPEN_FILES_CHANNEL } from '@notadown/shared'
+import {
+  DESKTOP_ASSET_SCHEME,
+  DESKTOP_OPEN_FILES_CHANNEL,
+  DESKTOP_TITLE_BAR_ARG,
+} from '@notadown/shared'
 import { app, BrowserWindow, nativeTheme, net, protocol, shell } from 'electron'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -60,6 +64,7 @@ function createWindow(): BrowserWindow {
     ...frameOptions,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
+      additionalArguments: [`${DESKTOP_TITLE_BAR_ARG}${chrome.titleBarMode}`],
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,

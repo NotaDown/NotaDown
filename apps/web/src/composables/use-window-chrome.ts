@@ -13,12 +13,7 @@ export function useWindowChrome(): void {
   const settings = useSettingsStore()
   desktopPlatform.value = desktopBridge.platform
 
-  onMounted(async () => {
-    try {
-      appliedTitleBarMode.value = await desktopBridge.invoke('getTitleBarMode')
-    } catch {
-      appliedTitleBarMode.value = settings.settings.titleBarMode
-    }
+  onMounted(() => {
     syncOverlay()
   })
 

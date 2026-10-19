@@ -13,6 +13,7 @@ import type {
   SearchOptions,
   SearchResult,
   SessionState,
+  TitleBarMode,
   WorkspaceEvent,
 } from './types'
 
@@ -84,7 +85,6 @@ export interface DesktopInvokeMap {
   saveSession: { args: [session: SessionState]; result: void }
   exportHtml: { args: [html: string, suggestedName: string]; result: boolean }
   exportPdf: { args: [html: string, suggestedName: string]; result: boolean }
-  getTitleBarMode: { args: []; result: 'integrated' | 'native' }
   setTitleBarOverlay: { args: [color: string, symbolColor: string]; result: void }
   openExternal: { args: [url: string]; result: void }
   takeOpenFiles: { args: []; result: string[] }
@@ -106,8 +106,10 @@ export interface DesktopBridge {
   onMenuCommand(callback: (command: string) => void): () => void
   onOpenFiles(callback: () => void): () => void
   platform: string
+  titleBarMode: TitleBarMode
 }
 
+export const DESKTOP_TITLE_BAR_ARG = '--notadown-title-bar='
 export const DESKTOP_INVOKE_CHANNEL = 'notadown:invoke'
 export const DESKTOP_WORKSPACE_EVENTS_CHANNEL = 'notadown:workspace-events'
 export const DESKTOP_MENU_COMMAND_CHANNEL = 'notadown:menu-command'

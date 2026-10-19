@@ -10,6 +10,7 @@ import { useAppLifecycle } from '@/composables/use-app-lifecycle'
 import { useFileDrop } from '@/composables/use-file-drop'
 import { useWindowChrome } from '@/composables/use-window-chrome'
 import { useUiStore } from '@/stores/ui'
+import { usesNativeTitleBar } from '@/window-chrome'
 import AppTopBar from '@/components/AppTopBar.vue'
 import AppActivityBar from '@/components/AppActivityBar.vue'
 import AppSidebar from '@/components/AppSidebar.vue'
@@ -36,8 +37,8 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="app">
-    <AppTopBar />
+  <div class="app" :class="{ 'is-native-chrome': usesNativeTitleBar }">
+    <AppTopBar v-if="!usesNativeTitleBar" />
 
     <div class="app__body">
       <AppActivityBar />
@@ -74,6 +75,10 @@ const { t } = useI18n()
   height: 100%;
   overflow: hidden;
   background: var(--nd-bg);
+}
+
+.app.is-native-chrome {
+  --nd-topbar-height: 0px;
 }
 
 .app__body {
