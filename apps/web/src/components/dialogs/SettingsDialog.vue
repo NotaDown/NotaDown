@@ -63,6 +63,28 @@ const IMAGE_MODES: Array<{ id: ImageStorageMode; label: string }> = [
   { id: 'base64', label: 'settings.filesSection.modes.base64' },
 ]
 
+type NumericSettingKey =
+  | 'fontSize'
+  | 'lineHeight'
+  | 'editorWidth'
+  | 'autosaveDelay'
+  | 'historyIntervalMinutes'
+  | 'historyMaxPerFile'
+  | 'historyRetentionDays'
+
+const NUMBER_LIMITS: Record<
+  NumericSettingKey,
+  { min: number; max: number; step: number }
+> = {
+  fontSize: { min: 12, max: 32, step: 1 },
+  lineHeight: { min: 1.2, max: 2.6, step: 0.05 },
+  editorWidth: { min: 480, max: 1400, step: 10 },
+  autosaveDelay: { min: 200, max: 10000, step: 100 },
+  historyIntervalMinutes: { min: 1, max: 120, step: 1 },
+  historyMaxPerFile: { min: 5, max: 1000, step: 5 },
+  historyRetentionDays: { min: 1, max: 3650, step: 1 },
+}
+
 const localeOptions = computed<Array<{ id: LocalePreference; label: string }>>(() => [
   { id: 'system', label: t('settings.generalSection.languageSystem') },
   ...SUPPORTED_LOCALES.map((id) => ({ id, label: LOCALE_NAMES[id] })),
@@ -139,6 +161,15 @@ function chooseColorMode(id: ColorMode): void {
 
 function chooseImageMode(id: ImageStorageMode): void {
   draft.imageStorage = id
+}
+
+function commitNumber(key: NumericSettingKey, event: Event): void {
+  const input = event.target as HTMLInputElement
+  const { min, max } = NUMBER_LIMITS[key]
+  const parsed = input.valueAsNumber
+  const value = Number.isFinite(parsed) ? Math.min(max, Math.max(min, parsed)) : draft[key]
+  draft[key] = Math.round(value * 100) / 100
+  input.value = String(draft[key])
 }
 
 function pickCssFile(): void {
@@ -353,8 +384,25 @@ async function clearHistory(): Promise<void> {
                     <span class="nd-field-label">{{ t('settings.appearanceSection.fontSize') }}</span>
                   </div>
                   <div class="settings-slider nd-field-control">
-                    <input v-model.number="draft.fontSize" type="range" min="12" max="32" step="1" />
-                    <span class="settings-slider__value">{{ draft.fontSize }}px</span>
+                    <input
+                      v-model.number="draft.fontSize"
+                      type="range"
+                      :min="NUMBER_LIMITS.fontSize.min"
+                      :max="NUMBER_LIMITS.fontSize.max"
+                      :step="NUMBER_LIMITS.fontSize.step"
+                      :aria-label="t('settings.appearanceSection.fontSize')"
+                    />
+                    <input
+                      class="nd-input settings-slider__number"
+                      type="number"
+                      :value="draft.fontSize"
+                      :min="NUMBER_LIMITS.fontSize.min"
+                      :max="NUMBER_LIMITS.fontSize.max"
+                      :step="NUMBER_LIMITS.fontSize.step"
+                      :aria-label="t('settings.appearanceSection.fontSize')"
+                      @change="commitNumber('fontSize', $event)"
+                    />
+                    <span class="settings-slider__unit">px</span>
                   </div>
                 </div>
 
@@ -366,11 +414,21 @@ async function clearHistory(): Promise<void> {
                     <input
                       v-model.number="draft.lineHeight"
                       type="range"
-                      min="1.2"
-                      max="2.6"
-                      step="0.05"
+                      :min="NUMBER_LIMITS.lineHeight.min"
+                      :max="NUMBER_LIMITS.lineHeight.max"
+                      :step="NUMBER_LIMITS.lineHeight.step"
+                      :aria-label="t('settings.appearanceSection.lineHeight')"
                     />
-                    <span class="settings-slider__value">{{ draft.lineHeight.toFixed(2) }}</span>
+                    <input
+                      class="nd-input settings-slider__number"
+                      type="number"
+                      :value="draft.lineHeight"
+                      :min="NUMBER_LIMITS.lineHeight.min"
+                      :max="NUMBER_LIMITS.lineHeight.max"
+                      step="0.01"
+                      :aria-label="t('settings.appearanceSection.lineHeight')"
+                      @change="commitNumber('lineHeight', $event)"
+                    />
                   </div>
                 </div>
 
@@ -382,11 +440,22 @@ async function clearHistory(): Promise<void> {
                     <input
                       v-model.number="draft.editorWidth"
                       type="range"
-                      min="480"
-                      max="1400"
-                      step="20"
+                      :min="NUMBER_LIMITS.editorWidth.min"
+                      :max="NUMBER_LIMITS.editorWidth.max"
+                      :step="NUMBER_LIMITS.editorWidth.step"
+                      :aria-label="t('settings.appearanceSection.editorWidth')"
                     />
-                    <span class="settings-slider__value">{{ draft.editorWidth }}px</span>
+                    <input
+                      class="nd-input settings-slider__number"
+                      type="number"
+                      :value="draft.editorWidth"
+                      :min="NUMBER_LIMITS.editorWidth.min"
+                      :max="NUMBER_LIMITS.editorWidth.max"
+                      :step="NUMBER_LIMITS.editorWidth.step"
+                      :aria-label="t('settings.appearanceSection.editorWidth')"
+                      @change="commitNumber('editorWidth', $event)"
+                    />
+                    <span class="settings-slider__unit">px</span>
                   </div>
                 </div>
 
@@ -472,12 +541,24 @@ async function clearHistory(): Promise<void> {
                     <input
                       v-model.number="draft.autosaveDelay"
                       type="range"
-                      min="200"
-                      max="5000"
-                      step="100"
+                      :min="NUMBER_LIMITS.autosaveDelay.min"
+                      :max="NUMBER_LIMITS.autosaveDelay.max"
+                      :step="NUMBER_LIMITS.autosaveDelay.step"
                       :disabled="!draft.autosave"
+                      :aria-label="t('settings.editorSection.autosaveDelay')"
                     />
-                    <span class="settings-slider__value">{{ draft.autosaveDelay }}ms</span>
+                    <input
+                      class="nd-input settings-slider__number"
+                      type="number"
+                      :value="draft.autosaveDelay"
+                      :min="NUMBER_LIMITS.autosaveDelay.min"
+                      :max="NUMBER_LIMITS.autosaveDelay.max"
+                      :step="NUMBER_LIMITS.autosaveDelay.step"
+                      :disabled="!draft.autosave"
+                      :aria-label="t('settings.editorSection.autosaveDelay')"
+                      @change="commitNumber('autosaveDelay', $event)"
+                    />
+                    <span class="settings-slider__unit">ms</span>
                   </div>
                 </div>
 
@@ -632,13 +713,25 @@ async function clearHistory(): Promise<void> {
                     <input
                       v-model.number="draft.historyIntervalMinutes"
                       type="range"
-                      min="1"
-                      max="60"
-                      step="1"
+                      :min="NUMBER_LIMITS.historyIntervalMinutes.min"
+                      :max="NUMBER_LIMITS.historyIntervalMinutes.max"
+                      :step="NUMBER_LIMITS.historyIntervalMinutes.step"
                       :disabled="!draft.historyEnabled"
+                      :aria-label="t('settings.historySection.interval')"
                     />
-                    <span class="settings-slider__value">
-                      {{ t('settings.historySection.minutes', { count: draft.historyIntervalMinutes }) }}
+                    <input
+                      class="nd-input settings-slider__number"
+                      type="number"
+                      :value="draft.historyIntervalMinutes"
+                      :min="NUMBER_LIMITS.historyIntervalMinutes.min"
+                      :max="NUMBER_LIMITS.historyIntervalMinutes.max"
+                      :step="NUMBER_LIMITS.historyIntervalMinutes.step"
+                      :disabled="!draft.historyEnabled"
+                      :aria-label="t('settings.historySection.interval')"
+                      @change="commitNumber('historyIntervalMinutes', $event)"
+                    />
+                    <span class="settings-slider__unit">
+                      {{ t('settings.historySection.minutesUnit') }}
                     </span>
                   </div>
                 </div>
@@ -649,12 +742,23 @@ async function clearHistory(): Promise<void> {
                     <input
                       v-model.number="draft.historyMaxPerFile"
                       type="range"
-                      min="5"
-                      max="500"
-                      step="5"
+                      :min="NUMBER_LIMITS.historyMaxPerFile.min"
+                      :max="NUMBER_LIMITS.historyMaxPerFile.max"
+                      :step="NUMBER_LIMITS.historyMaxPerFile.step"
                       :disabled="!draft.historyEnabled"
+                      :aria-label="t('settings.historySection.maxVersions')"
                     />
-                    <span class="settings-slider__value">{{ draft.historyMaxPerFile }}</span>
+                    <input
+                      class="nd-input settings-slider__number"
+                      type="number"
+                      :value="draft.historyMaxPerFile"
+                      :min="NUMBER_LIMITS.historyMaxPerFile.min"
+                      :max="NUMBER_LIMITS.historyMaxPerFile.max"
+                      :step="NUMBER_LIMITS.historyMaxPerFile.step"
+                      :disabled="!draft.historyEnabled"
+                      :aria-label="t('settings.historySection.maxVersions')"
+                      @change="commitNumber('historyMaxPerFile', $event)"
+                    />
                   </div>
                 </div>
 
@@ -664,13 +768,25 @@ async function clearHistory(): Promise<void> {
                     <input
                       v-model.number="draft.historyRetentionDays"
                       type="range"
-                      min="1"
-                      max="365"
-                      step="1"
+                      :min="NUMBER_LIMITS.historyRetentionDays.min"
+                      :max="NUMBER_LIMITS.historyRetentionDays.max"
+                      :step="NUMBER_LIMITS.historyRetentionDays.step"
                       :disabled="!draft.historyEnabled"
+                      :aria-label="t('settings.historySection.retention')"
                     />
-                    <span class="settings-slider__value">
-                      {{ t('settings.historySection.days', { count: draft.historyRetentionDays }) }}
+                    <input
+                      class="nd-input settings-slider__number"
+                      type="number"
+                      :value="draft.historyRetentionDays"
+                      :min="NUMBER_LIMITS.historyRetentionDays.min"
+                      :max="NUMBER_LIMITS.historyRetentionDays.max"
+                      :step="NUMBER_LIMITS.historyRetentionDays.step"
+                      :disabled="!draft.historyEnabled"
+                      :aria-label="t('settings.historySection.retention')"
+                      @change="commitNumber('historyRetentionDays', $event)"
+                    />
+                    <span class="settings-slider__unit">
+                      {{ t('settings.historySection.daysUnit') }}
                     </span>
                   </div>
                 </div>
@@ -874,6 +990,7 @@ async function clearHistory(): Promise<void> {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 190px;
 }
 
 .settings-slider input[type='range'] {
@@ -882,13 +999,28 @@ async function clearHistory(): Promise<void> {
   accent-color: var(--nd-accent);
 }
 
-.settings-slider__value {
+.settings-slider__number {
+  flex: 0 0 72px;
+  width: 72px;
+  height: 28px;
+  padding: 0 7px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  appearance: textfield;
+}
+
+.settings-slider__number::-webkit-outer-spin-button,
+.settings-slider__number::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.settings-slider__unit {
   flex: 0 0 auto;
-  min-width: 62px;
+  min-width: 16px;
   color: var(--nd-text-muted);
   font-size: 11.5px;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
 }
 
 .settings-preview {
