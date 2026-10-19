@@ -201,6 +201,18 @@ export const useTabsStore = defineStore('tabs', () => {
     }
   }
 
+  async function openDroppedFiles(files: File[]): Promise<void> {
+    for (const file of files) {
+      if (!isOpenableTextFile(file.name)) continue
+      try {
+        const opened = await platform.openDroppedFile(file)
+        if (opened) addOpenedDocument(opened)
+      } catch (error) {
+        ui.toast('error', t('toasts.openFailed'), describeError(error))
+      }
+    }
+  }
+
   async function openRecent(entry: RecentDocument): Promise<EditorTab | null> {
     if (entry.origin === 'workspace') {
       if (!entry.path) return null
@@ -708,6 +720,7 @@ export const useTabsStore = defineStore('tabs', () => {
     openWorkspaceFile,
     openFileDialog,
     openAbsolutePaths,
+    openDroppedFiles,
     openRecent,
     updateContent,
     setViewMode,

@@ -1,6 +1,7 @@
 import {
   basename,
   fileDocumentRef,
+  isOpenableTextFile,
   normalizeSlashes,
   type AppSettings,
   type AssetReadResult,
@@ -112,6 +113,13 @@ export class DesktopPlatform implements Platform {
 
   async openFileDialog(): Promise<OpenedDocument | null> {
     return this.bridge.invoke('openFileDialog')
+  }
+
+  async openDroppedFile(file: File): Promise<OpenedDocument | null> {
+    if (!isOpenableTextFile(file.name)) return null
+    const absolutePath = this.bridge.getPathForFile(file)
+    if (!absolutePath) return null
+    return this.readDocument(this.documentRefForPath(absolutePath))
   }
 
   documentRefForPath(absolutePath: string): DocumentRef {

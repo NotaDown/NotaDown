@@ -7,6 +7,7 @@ import {
 } from '@/composables/use-app-commands'
 import { useGlobalShortcuts } from '@/composables/use-global-shortcuts'
 import { useAppLifecycle } from '@/composables/use-app-lifecycle'
+import { useFileDrop } from '@/composables/use-file-drop'
 import { useWindowChrome } from '@/composables/use-window-chrome'
 import { useUiStore } from '@/stores/ui'
 import AppTopBar from '@/components/AppTopBar.vue'
@@ -27,6 +28,7 @@ const commands = useAppCommands()
 provide(APP_COMMANDS_KEY, commands)
 useAppLifecycle(commands)
 useGlobalShortcuts(commands)
+useFileDrop()
 useWindowChrome()
 
 const ui = useUiStore()

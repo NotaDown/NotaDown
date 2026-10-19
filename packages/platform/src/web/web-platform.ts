@@ -263,6 +263,18 @@ export class WebPlatform implements Platform {
     })
   }
 
+  async openDroppedFile(file: File): Promise<OpenedDocument | null> {
+    if (!isOpenableTextFile(file.name)) return null
+    const key = createId('webfile')
+    const content = await file.text()
+    this.memoryFiles.set(key, { name: file.name, content, mtime: file.lastModified })
+    return {
+      ref: { key, name: file.name, path: file.name, origin: 'file' },
+      content,
+      mtime: file.lastModified,
+    }
+  }
+
   documentRefForPath(): DocumentRef {
     throw new Error('UNSUPPORTED')
   }
