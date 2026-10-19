@@ -32,6 +32,7 @@ import {
   splitFrontmatter,
   type OutlineItem,
 } from '@notadown/shared'
+import { attachBlockMenu } from './block-menu'
 import { createCodeMirrorTheme } from './codemirror-theme'
 import { createHtmlPlugins } from './html'
 import { createMermaidPlugins } from './mermaid'
@@ -223,6 +224,7 @@ export async function createMarkdownEditor(
 
   const view = crepe.editor.action((ctx) => ctx.get(editorViewCtx))
   view.dom.spellcheck = options.spellcheck ?? true
+  const detachBlockMenu = attachBlockMenu({ view, host, labels: labels.blockMenu })
 
   let serializeTimer: number | null = null
   const serializeDelay = options.largeDocument ? 700 : 180
@@ -302,6 +304,7 @@ export async function createMarkdownEditor(
       destroyed = true
       view.dom.removeEventListener('focus', focusListener)
       view.dom.removeEventListener('blur', blurListener)
+      detachBlockMenu()
       for (const url of objectUrls) URL.revokeObjectURL(url)
       void crepe.destroy()
       host.remove()

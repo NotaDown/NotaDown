@@ -77,4 +77,10 @@ export const DEFAULT_EDITOR_LABELS: EditorLabels = {
     replaceAll: 'replace all',
     close: 'close',
   },
+  blockMenu: {
+    duplicate: 'Duplicate',
+    moveUp: 'Move up',
+    moveDown: 'Move down',
+    delete: 'Delete',
+  },
 }

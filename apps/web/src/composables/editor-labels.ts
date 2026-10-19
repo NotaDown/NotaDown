@@ -81,5 +81,11 @@ export function useEditorLabels() {
       replaceAll: t('editor.find.replaceAll'),
       close: t('editor.find.close'),
     },
+    blockMenu: {
+      duplicate: t('editor.blockMenu.duplicate'),
+      moveUp: t('editor.blockMenu.moveUp'),
+      moveDown: t('editor.blockMenu.moveDown'),
+      delete: t('editor.blockMenu.delete'),
+    },
   }))
 }

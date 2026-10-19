@@ -190,6 +190,12 @@ export const zhCN = {
     },
     focusMode: '专注模式',
     typewriterMode: '打字机模式',
+    blockMenu: {
+      duplicate: '创建副本',
+      moveUp: '上移',
+      moveDown: '下移',
+      delete: '删除',
+    },
     focusModeOn: '已开启专注模式',
     focusModeOff: '已关闭专注模式',
     typewriterModeOn: '已开启打字机模式',

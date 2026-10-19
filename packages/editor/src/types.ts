@@ -77,6 +77,12 @@ export interface EditorLabels {
     replaceAll: string
     close: string
   }
+  blockMenu: {
+    duplicate: string
+    moveUp: string
+    moveDown: string
+    delete: string
+  }
 }
 
 export interface EditorImage {

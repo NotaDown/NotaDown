@@ -190,6 +190,12 @@ export const enUS = {
     },
     focusMode: 'Focus mode',
     typewriterMode: 'Typewriter mode',
+    blockMenu: {
+      duplicate: 'Duplicate',
+      moveUp: 'Move up',
+      moveDown: 'Move down',
+      delete: 'Delete',
+    },
     focusModeOn: 'Focus mode on',
     focusModeOff: 'Focus mode off',
     typewriterModeOn: 'Typewriter mode on',
