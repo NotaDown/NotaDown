@@ -1,0 +1,106 @@
+const MARKDOWN_EXTENSIONS = new Set(['md', 'markdown', 'mdown', 'mkd', 'txt'])
+
+export function normalizeSlashes(value: string): string {
+  return value.replace(/\\/g, '/')
+}
+
+export function extensionOf(fileName: string): string {
+  const clean = normalizeSlashes(fileName).split('/').pop() ?? ''
+  const index = clean.lastIndexOf('.')
+  if (index <= 0) return ''
+  return clean.slice(index + 1).toLowerCase()
+}
+
+export function isMarkdownFile(fileName: string): boolean {
+  return extensionOf(fileName) === 'md' || extensionOf(fileName) === 'markdown'
+}
+
+export function isOpenableTextFile(fileName: string): boolean {
+  return MARKDOWN_EXTENSIONS.has(extensionOf(fileName))
+}
+
+export function basename(path: string): string {
+  const clean = normalizeSlashes(path).replace(/\/+$/, '')
+  const index = clean.lastIndexOf('/')
+  return index === -1 ? clean : clean.slice(index + 1)
+}
+
+export function dirname(path: string): string {
+  const clean = normalizeSlashes(path).replace(/\/+$/, '')
+  const index = clean.lastIndexOf('/')
+  if (index === -1) return ''
+  if (index === 0) return '/'
+  return clean.slice(0, index)
+}
+
+export function joinPosix(...parts: string[]): string {
+  const segments: string[] = []
+  for (const part of parts) {
+    for (const segment of normalizeSlashes(part).split('/')) {
+      if (!segment || segment === '.') continue
+      if (segment === '..') {
+        if (segments.length && segments[segments.length - 1] !== '..') {
+          segments.pop()
+        } else {
+          segments.push('..')
+        }
+        continue
+      }
+      segments.push(segment)
+    }
+  }
+  return segments.join('/')
+}
+
+export function relativePosix(fromDir: string, toPath: string): string {
+  const from = normalizeSlashes(fromDir)
+    .replace(/^\/+|\/+$/g, '')
+    .split('/')
+    .filter(Boolean)
+  const to = normalizeSlashes(toPath)
+    .replace(/^\/+|\/+$/g, '')
+    .split('/')
+    .filter(Boolean)
+
+  let common = 0
+  while (common < from.length && common < to.length && from[common] === to[common]) {
+    common += 1
+  }
+
+  const up = new Array(from.length - common).fill('..')
+  const down = to.slice(common)
+  const result = [...up, ...down].join('/')
+  return result || '.'
+}
+
+export function ensureMarkdownExtension(name: string, extension = 'md'): string {
+  const trimmed = name.trim()
+  if (!trimmed) return `Untitled.${extension}`
+  if (/\.[a-zA-Z0-9]{1,8}$/.test(trimmed)) return trimmed
+  return `${trimmed}.${extension}`
+}
+
+export function sanitizeFileName(name: string): string {
+  return name
+    .trim()
+    .replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-')
+    .replace(/^\.+$/, '-')
+    .slice(0, 180)
+}
+
+export function stripExtension(fileName: string): string {
+  const base = basename(fileName)
+  const index = base.lastIndexOf('.')
+  if (index <= 0) return base
+  return base.slice(0, index)
+}
+
+export function parentDirectoryOfFile(filePath: string): string {
+  return dirname(filePath)
+}
+
+export function isHiddenPath(path: string): boolean {
+  return normalizeSlashes(path)
+    .split('/')
+    .some((segment) => segment.startsWith('.') && segment !== '.' && segment !== '..')
+}
