@@ -14,16 +14,18 @@ NotaDown is a Markdown editor where writing and rendering share one surface. For
 
 ## Features
 
-- Single-surface WYSIWYG editing built on Milkdown, with a full-document source mode when you need it.
+- Single-surface WYSIWYG editing built on Milkdown, with a block menu for duplicating, moving or deleting blocks and a full-document source mode when you need it.
 - Folder workspaces with tabs, drag-to-move, external change detection, global search and a document outline.
 - Autosave, manual save, per-tab save state and silent local version history for recovery.
-- Code highlighting, tables, task lists, KaTeX math and Mermaid diagrams.
+- Code highlighting, tables, task lists, KaTeX math, Mermaid diagrams and sanitized inline or block HTML.
 - Images stored next to the document, in a global attachments folder or embedded as data URLs.
-- Four preset themes, light and dark color modes, custom CSS, focus mode and typewriter mode.
+- Four preset themes, light and dark color modes, custom CSS, exact numeric settings for type and page geometry, focus mode and typewriter mode.
 - Export to standalone HTML or PDF.
 - English and Simplified Chinese UI.
 - Web and desktop editions from the same codebase.
 - A native system title bar or an integrated desktop header, configurable in settings.
+- Open Markdown files from the shell, or drop them onto the window, in the desktop edition.
+- The web edition installs as a PWA and starts offline from its cached shell.
 
 ## Requirements
 
