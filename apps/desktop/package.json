@@ -13,12 +13,10 @@
     "package": "tsup && electron-builder --config electron-builder.yml",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "@notadown/shared": "workspace:*",
-    "chokidar": "^5.0.0"
-  },
   "devDependencies": {
+    "@notadown/shared": "workspace:*",
     "@types/node": "^24.10.0",
+    "chokidar": "^5.0.0",
     "cross-env": "^10.1.0",
     "electron": "^44.9.0",
     "electron-builder": "^26.15.3",

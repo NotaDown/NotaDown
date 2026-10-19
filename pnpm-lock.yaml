@@ -174,17 +174,16 @@ importers:
         version: 9.5.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
 
   apps/desktop:
-    dependencies:
+    devDependencies:
       '@notadown/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      chokidar:
-        specifier: ^5.0.0
-        version: 5.0.0
-    devDependencies:
       '@types/node':
         specifier: ^24.10.0
         version: 24.19.2
+      chokidar:
+        specifier: ^5.0.0
+        version: 5.0.0
       cross-env:
         specifier: ^10.1.0
         version: 10.1.0
