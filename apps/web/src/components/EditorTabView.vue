@@ -10,9 +10,12 @@ import {
 } from '@notadown/editor'
 import {
   dirname,
+  extensionOf,
   isOpenableTextFile,
   joinPosix,
   LARGE_DOCUMENT_THRESHOLD,
+  normalizeSlashes,
+  resolveDocumentPath,
 } from '@notadown/shared'
 import { platform } from '@/platform'
 import { describeError } from '@/errors'
@@ -201,19 +204,60 @@ function applySpellcheck(): void {
 
 async function openLink(href: string): Promise<void> {
   if (!href || href.startsWith('#')) return
-  if (!/^[a-z][a-z0-9+.-]*:/i.test(href) && workspace.isOpen && props.tab.ref.path) {
-    const target = href.split('#')[0]
-    const path = joinPosix(dirname(props.tab.ref.path), target)
-    if (target && isOpenableTextFile(path) && workspace.hasEntry(path)) {
-      void tabs.openWorkspaceFile(path)
-      return
-    }
-  }
+  const target = linkTarget(href)
+  if (target && isLocalLinkTarget(target) && (await openLocalDocument(target))) return
   try {
     await platform.openExternal(href)
   } catch {
     ui.toast('error', t('toasts.openFailed'))
   }
+}
+
+function isLocalLinkTarget(target: string): boolean {
+  if (/^[a-zA-Z]:[\\/]/.test(target)) return true
+  return !/^[a-z][a-z0-9+.-]*:/i.test(target)
+}
+
+function linkTarget(href: string): string {
+  const raw = href.split('#')[0].split('?')[0]
+  try {
+    return decodeURIComponent(raw)
+  } catch {
+    return raw
+  }
+}
+
+async function openLocalDocument(target: string): Promise<boolean> {
+  const documentPath = props.tab.ref.path
+  if (!documentPath) return false
+
+  if (props.tab.ref.origin === 'workspace') {
+    const path = joinPosix(dirname(documentPath), target)
+    const match = documentCandidates(path).find((candidate) => workspace.hasEntry(candidate))
+    if (!match) return false
+    void tabs.openWorkspaceFile(match)
+    return true
+  }
+
+  if (props.tab.ref.origin === 'file' && platform.kind === 'desktop') {
+    const directory = dirname(normalizeSlashes(documentPath))
+    const path = resolveDocumentPath(directory, target)
+    for (const candidate of documentCandidates(path)) {
+      const ref = platform.documentRefForPath(candidate)
+      const stat = await platform.statDocument(ref)
+      if (!stat.exists) continue
+      void tabs.openRef(ref)
+      return true
+    }
+  }
+
+  return false
+}
+
+function documentCandidates(path: string): string[] {
+  if (isOpenableTextFile(path)) return [path]
+  if (extensionOf(path)) return []
+  return [`${path}.md`, `${path}.markdown`]
 }
 
 function keepDisk(): void {

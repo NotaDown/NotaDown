@@ -1,7 +1,12 @@
 import { htmlSchema } from '@milkdown/kit/preset/commonmark'
 import type { MarkdownNode } from '@milkdown/kit/transformer'
 import { $nodeSchema, $remark, $view } from '@milkdown/kit/utils'
-import { HtmlNodeView, type HtmlImageErrorHandler, type HtmlLinkHandler } from './node-view'
+import {
+  HtmlNodeView,
+  type HtmlImageErrorHandler,
+  type HtmlImageUrlResolver,
+  type HtmlLinkHandler,
+} from './node-view'
 import { isBlockHtml } from './sanitize'
 
 const remarkHtmlBlocks = $remark(
@@ -45,6 +50,7 @@ function htmlValue(node: MarkdownNode): string {
 export function createHtmlPlugins(
   onOpenLink: HtmlLinkHandler,
   onImageError?: HtmlImageErrorHandler,
+  resolveImageUrl?: HtmlImageUrlResolver,
 ) {
   const blockSchema = $nodeSchema('html_block', () => ({
     group: 'block',
@@ -87,12 +93,14 @@ export function createHtmlPlugins(
 
   const blockView = $view(
     blockSchema.node,
-    () => (node) => new HtmlNodeView(node, true, onOpenLink, onImageError),
+    () => (node) =>
+      new HtmlNodeView(node, true, onOpenLink, onImageError, resolveImageUrl),
   )
 
   const inlineView = $view(
     htmlSchema.node,
-    () => (node) => new HtmlNodeView(node, false, onOpenLink, onImageError),
+    () => (node) =>
+      new HtmlNodeView(node, false, onOpenLink, onImageError, resolveImageUrl),
   )
 
   return {

@@ -67,6 +67,42 @@ export function joinPosix(...parts: string[]): string {
   return segments.join('/')
 }
 
+export function isAbsoluteFilePath(value: string): boolean {
+  const clean = normalizeSlashes(value)
+  return /^[a-zA-Z]:\//.test(clean) || clean.startsWith('//') || clean.startsWith('/')
+}
+
+export function resolveFilePath(baseDir: string, targetPath: string): string {
+  const target = normalizeSlashes(targetPath)
+  if (isAbsoluteFilePath(target)) return normalizeAbsolutePath(target)
+  const base = normalizeSlashes(baseDir)
+  const joined = joinPosix(base, target)
+  if (base.startsWith('//')) return `//${joined}`
+  if (base.startsWith('/') && !joined.startsWith('/')) return `/${joined}`
+  return joined
+}
+
+export function resolveDocumentPath(documentDir: string, targetPath: string): string {
+  const dir = normalizeSlashes(documentDir)
+  const target = normalizeSlashes(targetPath)
+  const windows = /^[a-zA-Z]:\//.test(dir) || dir.startsWith('//')
+  const relativeTarget =
+    windows && target.startsWith('/') && !target.startsWith('//')
+      ? target.replace(/^\/+/, '')
+      : target
+  return resolveFilePath(dir, relativeTarget)
+}
+
+function normalizeAbsolutePath(value: string): string {
+  const drive = /^[a-zA-Z]:/.exec(value)?.[0] ?? ''
+  const unc = drive ? '' : /^\/\/[^/]+\/[^/]+/.exec(value)?.[0] ?? ''
+  const prefix = drive || unc || (value.startsWith('/') ? '/' : '')
+  const rest = value.slice(prefix.length)
+  const joined = joinPosix(rest)
+  if (!joined) return drive ? `${drive}/` : prefix || '.'
+  return prefix.endsWith('/') ? `${prefix}${joined}` : `${prefix}/${joined}`
+}
+
 export function relativePosix(fromDir: string, toPath: string): string {
   const from = normalizeSlashes(fromDir)
     .replace(/^\/+|\/+$/g, '')

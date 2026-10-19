@@ -73,7 +73,8 @@ export const useTabsStore = defineStore('tabs', () => {
   function findByRef(ref: DocumentRef): EditorTab | null {
     return (
       tabs.value.find(
-        (tab) => tab.ref.key === ref.key && tab.ref.origin === ref.origin,
+        (tab) =>
+          tab.ref.origin === ref.origin && sameDocumentKey(tab.ref.key, ref.key),
       ) ?? null
     )
   }
@@ -623,7 +624,9 @@ export const useTabsStore = defineStore('tabs', () => {
         return false
       }
       const record = detail.record
-      let tab = tabs.value.find((item) => item.ref.key === record.documentKey) ?? null
+      let tab =
+        tabs.value.find((item) => sameDocumentKey(item.ref.key, record.documentKey)) ??
+        null
 
       if (!tab) {
         const workspace = useWorkspaceStore()
@@ -747,6 +750,12 @@ export const useTabsStore = defineStore('tabs', () => {
     dispose,
   }
 })
+
+function sameDocumentKey(a: string, b: string): boolean {
+  if (a === b) return true
+  if (!a.startsWith('file:') || !b.startsWith('file:')) return false
+  return normalizeSlashes(a) === normalizeSlashes(b)
+}
 
 function isAbsolutePath(path: string): boolean {
   return /^([a-zA-Z]:[\\/]|\/)/.test(path)

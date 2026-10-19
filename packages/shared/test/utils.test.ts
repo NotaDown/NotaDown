@@ -4,10 +4,13 @@ import {
   extractHeadings,
   fileDocumentRef,
   fuzzyMatch,
+  isAbsoluteFilePath,
   joinFrontmatter,
   joinPosix,
   openableFileArgs,
   relativePosix,
+  resolveDocumentPath,
+  resolveFilePath,
   sanitizeFileName,
   searchText,
   splitFrontmatter,
@@ -52,6 +55,28 @@ describe('path helpers', () => {
   it('joins and normalizes posix segments', () => {
     expect(joinPosix('notes/../blog', './post.md')).toBe('blog/post.md')
     expect(relativePosix('notes/a', 'assets/x.png')).toBe('../../assets/x.png')
+  })
+
+  it('resolves relative paths against absolute base directories', () => {
+    expect(resolveFilePath('C:/docs/notes', '../assets/x.png')).toBe('C:/docs/assets/x.png')
+    expect(resolveFilePath('C:/docs', './a/b.md')).toBe('C:/docs/a/b.md')
+    expect(resolveFilePath('/home/me/notes', '../other.md')).toBe('/home/me/other.md')
+    expect(resolveFilePath('//server/share/notes', 'a.png')).toBe('//server/share/notes/a.png')
+  })
+
+  it('treats root-relative targets as document-relative on Windows paths', () => {
+    expect(resolveDocumentPath('C:/docs/notes', '/images/x.png')).toBe(
+      'C:/docs/notes/images/x.png',
+    )
+    expect(resolveDocumentPath('/home/me/notes', '/images/x.png')).toBe('/images/x.png')
+  })
+
+  it('normalizes absolute paths without rebasing them', () => {
+    expect(resolveFilePath('C:/docs', 'D:/assets/x.png')).toBe('D:/assets/x.png')
+    expect(resolveFilePath('/home/me', '/etc/notes/a.md')).toBe('/etc/notes/a.md')
+    expect(isAbsoluteFilePath('C:\\docs\\a.md')).toBe(true)
+    expect(isAbsoluteFilePath('/home/me/a.md')).toBe(true)
+    expect(isAbsoluteFilePath('notes/a.md')).toBe(false)
   })
 
   it('sanitizes file names', () => {

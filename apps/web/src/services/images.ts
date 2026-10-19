@@ -9,6 +9,7 @@ import {
   mimeFromFileName,
   normalizeSlashes,
   relativePosix,
+  resolveDocumentPath,
   type AppSettings,
   type ImageStorageMode,
 } from '@notadown/shared'
@@ -70,7 +71,7 @@ export async function resolveEditorImageUrl(src: string, tab: EditorTab): Promis
 
   let clean = src.split('#')[0].split('?')[0]
   try {
-    clean = decodeURI(clean)
+    clean = decodeURIComponent(clean)
   } catch {
     // Keep the original string when it is not valid percent-encoding.
   }
@@ -88,7 +89,7 @@ export async function resolveEditorImageUrl(src: string, tab: EditorTab): Promis
   if (tab.ref.origin === 'file' && tab.ref.path && platform.kind === 'desktop') {
     try {
       const documentDir = dirname(normalizeSlashes(tab.ref.path))
-      const path = /^([a-zA-Z]:[\\/]|\/)/.test(clean) ? clean : joinAbsolute(documentDir, clean)
+      const path = resolveDocumentPath(documentDir, clean)
       return await platform.getAssetUrl({ scope: 'absolute', path })
     } catch {
       return src
