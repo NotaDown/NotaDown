@@ -42,7 +42,7 @@ export interface ThemeDefinition {
 export const THEMES: ThemeDefinition[] = [
   {
     id: 'default',
-    nameKey: 'settings.themes.default',
+    nameKey: 'settings.appearanceSection.themes.default',
     light: {
       bg: '#ffffff',
       bgElevated: '#fbfbfa',
@@ -108,7 +108,7 @@ export const THEMES: ThemeDefinition[] = [
   },
   {
     id: 'paper',
-    nameKey: 'settings.themes.paper',
+    nameKey: 'settings.appearanceSection.themes.paper',
     light: {
       bg: '#fbf7ef',
       bgElevated: '#f6f0e4',
@@ -174,7 +174,7 @@ export const THEMES: ThemeDefinition[] = [
   },
   {
     id: 'nordic',
-    nameKey: 'settings.themes.nordic',
+    nameKey: 'settings.appearanceSection.themes.nordic',
     light: {
       bg: '#f9fbfc',
       bgElevated: '#f2f6f8',
@@ -240,7 +240,7 @@ export const THEMES: ThemeDefinition[] = [
   },
   {
     id: 'contrast',
-    nameKey: 'settings.themes.contrast',
+    nameKey: 'settings.appearanceSection.themes.contrast',
     light: {
       bg: '#ffffff',
       bgElevated: '#ffffff',

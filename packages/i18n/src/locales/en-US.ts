@@ -354,7 +354,7 @@ export const enUS = {
       assetsDir: 'Assets folder name',
       globalDir: 'Attachments folder name',
       pattern: 'Image file name pattern',
-      patternHint: 'Available tokens: ${documentName}, ${originalName}, ${timestamp}, ${date}, ${time}, ${random}, ${index}.',
+      patternHint: "Available tokens: {'${documentName}'}, {'${originalName}'}, {'${timestamp}'}, {'${date}'}, {'${time}'}, {'${random}'}, {'${index}'}.",
       patternPreview: 'Example',
       defaultExtension: 'New file extension',
       base64Warning: 'Embedding images makes documents large and is not recommended for everyday notes.',

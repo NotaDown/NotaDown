@@ -354,7 +354,7 @@ export const zhCN = {
       assetsDir: 'assets 目录名',
       globalDir: '附件目录名',
       pattern: '图片文件名格式',
-      patternHint: '可用占位符：${documentName}、${originalName}、${timestamp}、${date}、${time}、${random}、${index}。',
+      patternHint: "可用占位符：{'${documentName}'}、{'${originalName}'}、{'${timestamp}'}、{'${date}'}、{'${time}'}、{'${random}'}、{'${index}'}。",
       patternPreview: '示例',
       defaultExtension: '新建文件扩展名',
       base64Warning: '嵌入图片会让文档显著变大，不建议用于日常笔记。',
