@@ -10,6 +10,10 @@
 
 <p align="center"><em>一款离线优先、专注于无干扰写作的 Markdown 编辑器。</em></p>
 
+<p align="center">
+  <img src="docs/image/screenshot.png" alt="NotaDown 编辑器界面：文件夹工作区、多标签，以及即时排版的 Markdown 文档">
+</p>
+
 NotaDown 的书写与排版共用同一个界面。格式、公式、图表和图片在输入位置即时呈现，不需要源代码与预览分栏。所有内容都保存在本地磁盘。
 
 ## 功能

@@ -10,6 +10,10 @@
 
 <p align="center"><em>An offline-first Markdown editor inspired by distraction-free writing.</em></p>
 
+<p align="center">
+  <img src="docs/image/screenshot.png" alt="NotaDown editor showing a folder workspace, open tabs and a document with rendered Markdown, inline code and math">
+</p>
+
 NotaDown is a Markdown editor where writing and rendering share one surface. Formatting, math, diagrams and images appear in place while you type, with no source and preview split. Everything stays on your disk.
 
 ## Features
