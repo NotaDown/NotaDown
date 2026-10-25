@@ -27,7 +27,7 @@ function close(value: boolean): void {
     <Transition name="nd-fade">
       <div
         v-if="ui.confirmState"
-        class="nd-overlay nd-overlay--center"
+        class="nd-overlay nd-overlay--center nd-overlay--confirm"
         @click.self="close(false)"
       >
         <div class="nd-dialog confirm-dialog" role="alertdialog" aria-modal="true">
@@ -58,6 +58,11 @@ function close(value: boolean): void {
 </template>
 
 <style scoped>
+/* Above other overlays (100) and popup menus (220), below toasts (300). */
+.nd-overlay--confirm {
+  z-index: 250;
+}
+
 .confirm-dialog {
   width: min(420px, 100%);
 }
