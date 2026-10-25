@@ -5,10 +5,15 @@ import {
   type MenuItemConstructorOptions,
 } from 'electron'
 import { DESKTOP_MENU_COMMAND_CHANNEL } from '@notadown/shared'
+import { menuLabels, type MenuLocale } from './menu-labels'
 
-export function installMenu(getWindow: () => BrowserWindow | null): void {
+export function installMenu(
+  getWindow: () => BrowserWindow | null,
+  locale: MenuLocale = 'en-US',
+): void {
   const isMac = process.platform === 'darwin'
   const isDev = !app.isPackaged
+  const labels = menuLabels(locale)
 
   const send = (command: string): void => {
     const window = getWindow()
@@ -19,101 +24,112 @@ export function installMenu(getWindow: () => BrowserWindow | null): void {
   const template: MenuItemConstructorOptions[] = [
     ...(isMac ? [{ role: 'appMenu' as const }] : []),
     {
-      label: 'File',
+      label: labels.file,
       submenu: [
-        { label: 'New', accelerator: 'CmdOrCtrl+N', click: () => send('file.new') },
-        { label: 'Open File…', accelerator: 'CmdOrCtrl+O', click: () => send('file.open') },
+        { label: labels.newFile, accelerator: 'CmdOrCtrl+N', click: () => send('file.new') },
         {
-          label: 'Open Folder…',
+          label: labels.openFile,
+          accelerator: 'CmdOrCtrl+O',
+          click: () => send('file.open'),
+        },
+        {
+          label: labels.openFolder,
           accelerator: 'CmdOrCtrl+Shift+O',
           click: () => send('file.openWorkspace'),
         },
         { type: 'separator' },
-        { label: 'Save', accelerator: 'CmdOrCtrl+S', click: () => send('file.save') },
+        { label: labels.save, accelerator: 'CmdOrCtrl+S', click: () => send('file.save') },
         {
-          label: 'Save As…',
+          label: labels.saveAs,
           accelerator: 'CmdOrCtrl+Shift+S',
           click: () => send('file.saveAs'),
         },
         { type: 'separator' },
-        { label: 'Export as HTML…', click: () => send('file.exportHtml') },
-        { label: 'Export as PDF…', click: () => send('file.exportPdf') },
+        { label: labels.exportHtml, click: () => send('file.exportHtml') },
+        { label: labels.exportPdf, click: () => send('file.exportPdf') },
         { type: 'separator' },
         {
-          label: 'Close Tab',
+          label: labels.closeTab,
           accelerator: 'CmdOrCtrl+W',
           click: () => send('file.closeTab'),
         },
         ...(isMac
           ? []
-          : ([{ type: 'separator' }, { role: 'quit' }] as MenuItemConstructorOptions[])),
+          : ([
+              { type: 'separator' },
+              { role: 'quit', label: labels.quit },
+            ] as MenuItemConstructorOptions[])),
       ],
     },
     {
-      label: 'Edit',
+      label: labels.edit,
       submenu: [
-        { role: 'undo' },
-        { role: 'redo' },
+        { role: 'undo', label: labels.undo },
+        { role: 'redo', label: labels.redo },
         { type: 'separator' },
-        { role: 'cut' },
-        { role: 'copy' },
-        { role: 'paste' },
-        { role: 'selectAll' },
+        { role: 'cut', label: labels.cut },
+        { role: 'copy', label: labels.copy },
+        { role: 'paste', label: labels.paste },
+        { role: 'selectAll', label: labels.selectAll },
         { type: 'separator' },
-        { label: 'Find', accelerator: 'CmdOrCtrl+F', click: () => send('edit.find') },
+        { label: labels.find, accelerator: 'CmdOrCtrl+F', click: () => send('edit.find') },
       ],
     },
     {
-      label: 'View',
+      label: labels.view,
       submenu: [
         {
-          label: 'Command Palette…',
+          label: labels.commandPalette,
           accelerator: 'CmdOrCtrl+Shift+P',
           click: () => send('navigation.palette'),
         },
         {
-          label: 'Quick Open…',
+          label: labels.quickOpen,
           accelerator: 'CmdOrCtrl+P',
           click: () => send('navigation.quickOpen'),
         },
         { type: 'separator' },
         {
-          label: 'Toggle Sidebar',
+          label: labels.toggleSidebar,
           accelerator: 'CmdOrCtrl+Shift+1',
           click: () => send('view.toggleSidebar'),
         },
-        { label: 'Files', click: () => send('view.files') },
+        { label: labels.files, click: () => send('view.files') },
         {
-          label: 'Search',
+          label: labels.search,
           accelerator: 'CmdOrCtrl+Shift+F',
           click: () => send('view.search'),
         },
         {
-          label: 'Outline',
+          label: labels.outline,
           accelerator: 'CmdOrCtrl+Shift+2',
           click: () => send('view.outline'),
         },
         {
-          label: 'History',
+          label: labels.history,
           accelerator: 'CmdOrCtrl+Shift+H',
           click: () => send('view.history'),
         },
         { type: 'separator' },
         {
-          label: 'Source Mode',
+          label: labels.sourceMode,
           accelerator: 'CmdOrCtrl+/',
           click: () => send('view.sourceMode'),
         },
-        { label: 'Focus Mode', accelerator: 'F8', click: () => send('view.focusMode') },
         {
-          label: 'Typewriter Mode',
+          label: labels.focusMode,
+          accelerator: 'F8',
+          click: () => send('view.focusMode'),
+        },
+        {
+          label: labels.typewriterMode,
           accelerator: 'F9',
           click: () => send('view.typewriterMode'),
         },
-        { label: 'Toggle Light / Dark', click: () => send('view.colorMode') },
+        { label: labels.toggleColorMode, click: () => send('view.colorMode') },
         { type: 'separator' },
         {
-          label: 'Settings…',
+          label: labels.settings,
           accelerator: 'CmdOrCtrl+,',
           click: () => send('settings.open'),
         },
@@ -126,16 +142,16 @@ export function installMenu(getWindow: () => BrowserWindow | null): void {
           : []),
       ],
     },
-    { role: 'windowMenu' },
+    { role: 'windowMenu', label: labels.window },
     {
-      label: 'Help',
+      label: labels.help,
       submenu: [
         {
-          label: 'Keyboard Shortcuts',
+          label: labels.keyboardShortcuts,
           accelerator: 'F1',
           click: () => send('help.shortcuts'),
         },
-        { label: 'About NotaDown', click: () => send('help.about') },
+        { label: labels.about, click: () => send('help.about') },
       ],
     },
   ]

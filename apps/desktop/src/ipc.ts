@@ -19,13 +19,15 @@ import { takeOpenFiles } from './open-files'
 import * as state from './state'
 import * as workspace from './workspace'
 
-export function registerIpcHandlers(): void {
+export function registerIpcHandlers(
+  onSettingsSaved?: (settings: AppSettings) => void,
+): void {
   ipcMain.handle(
     DESKTOP_INVOKE_CHANNEL,
     async (event, method: string, ...args: unknown[]): Promise<unknown> => {
       const window = BrowserWindow.fromWebContents(event.sender)
       try {
-        return await dispatch(method, window, args)
+        return await dispatch(method, window, args, onSettingsSaved)
       } catch (error) {
         throw normalizeError(error)
       }
@@ -37,6 +39,7 @@ async function dispatch(
   method: string,
   window: BrowserWindow | null,
   args: unknown[],
+  onSettingsSaved?: (settings: AppSettings) => void,
 ): Promise<unknown> {
   switch (method) {
     case 'getVersion':
@@ -132,9 +135,12 @@ async function dispatch(
 
     case 'loadSettings':
       return state.loadSettings()
-    case 'saveSettings':
-      await state.saveSettings(args[0] as AppSettings)
+    case 'saveSettings': {
+      const settings = args[0] as AppSettings
+      await state.saveSettings(settings)
+      onSettingsSaved?.(settings)
       return undefined
+    }
     case 'loadSession':
       return state.loadSession()
     case 'saveSession':

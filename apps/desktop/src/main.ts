@@ -9,7 +9,9 @@ import { pathToFileURL } from 'node:url'
 import { getWindowChrome, resolveWindowChrome, TITLE_BAR_OVERLAY_HEIGHT } from './chrome'
 import { registerIpcHandlers } from './ipc'
 import { installMenu } from './menu'
+import { resolveMenuLocale } from './menu-labels'
 import { queueOpenFiles } from './open-files'
+import { loadSettings } from './state'
 import { stopWatch } from './workspace'
 
 app.setName('NotaDown')
@@ -153,8 +155,16 @@ if (!hasLock) {
       return net.fetch(pathToFileURL(filePath).toString())
     })
 
-    registerIpcHandlers()
-    installMenu(() => BrowserWindow.getAllWindows()[0] ?? null)
+    const menuTarget = () => BrowserWindow.getAllWindows()[0] ?? null
+    const settings = await loadSettings()
+    let menuLocale = resolveMenuLocale(settings?.locale, app.getLocale())
+    installMenu(menuTarget, menuLocale)
+    registerIpcHandlers((next) => {
+      const locale = resolveMenuLocale(next.locale, app.getLocale())
+      if (locale === menuLocale) return
+      menuLocale = locale
+      installMenu(menuTarget, locale)
+    })
     createWindow()
 
     app.on('activate', () => {
