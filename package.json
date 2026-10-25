@@ -15,7 +15,8 @@
     "build:desktop": "pnpm --filter @notadown/web build:desktop && pnpm --filter @notadown/desktop build",
     "package:desktop": "pnpm --filter @notadown/web build:desktop && pnpm --filter @notadown/desktop package",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm -r --if-present test"
+    "test": "pnpm -r --if-present test",
+    "screenshot:readme": "node examples/readme-screenshot/capture.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
