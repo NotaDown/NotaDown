@@ -6,7 +6,7 @@ import {
 import { app, BrowserWindow, nativeTheme, net, protocol, shell } from 'electron'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { getWindowChrome, resolveWindowChrome } from './chrome'
+import { getWindowChrome, resolveWindowChrome, TITLE_BAR_OVERLAY_HEIGHT } from './chrome'
 import { registerIpcHandlers } from './ipc'
 import { installMenu } from './menu'
 import { queueOpenFiles } from './open-files'
@@ -47,7 +47,7 @@ function createWindow(): BrowserWindow {
           titleBarOverlay: {
             color: chrome.overlay.color,
             symbolColor: chrome.overlay.symbolColor,
-            height: 44,
+            height: TITLE_BAR_OVERLAY_HEIGHT,
           },
         }
     : {}

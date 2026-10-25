@@ -10,6 +10,9 @@ export interface WindowChrome {
   }
 }
 
+// One pixel shorter than the 44px app title bar so its bottom border stays outside the native caption overlay.
+export const TITLE_BAR_OVERLAY_HEIGHT = 43
+
 let chrome: WindowChrome = {
   titleBarMode: 'integrated',
   overlay: { color: '#fbfbfa', symbolColor: '#575752' },

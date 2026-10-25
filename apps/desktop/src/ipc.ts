@@ -7,7 +7,11 @@ import {
   type SearchOptions,
   type SessionState,
 } from '@notadown/shared'
-import { getWindowChrome, updateOverlayColors } from './chrome'
+import {
+  getWindowChrome,
+  TITLE_BAR_OVERLAY_HEIGHT,
+  updateOverlayColors,
+} from './chrome'
 import { exportHtml, exportPdf } from './export'
 import { normalizeError } from './errors'
 import * as history from './history'
@@ -152,7 +156,11 @@ async function dispatch(
         getWindowChrome().titleBarMode === 'integrated'
       ) {
         try {
-          window.setTitleBarOverlay({ color, symbolColor, height: 44 })
+          window.setTitleBarOverlay({
+            color,
+            symbolColor,
+            height: TITLE_BAR_OVERLAY_HEIGHT,
+          })
         } catch {
           // The window may use a native title bar on unsupported platforms.
         }
