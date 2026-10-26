@@ -8,10 +8,12 @@ import {
   X,
   FileWarning,
 } from 'lucide-vue-next'
+import { basename } from '@notadown/shared'
 import { useTabsStore, type EditorTab } from '@/stores/tabs'
 import { useUiStore } from '@/stores/ui'
 import { useWorkspaceStore } from '@/stores/workspace'
 import { platform } from '@/platform'
+import { describeError } from '@/errors'
 import { useInjectedCommands } from '@/composables/use-app-commands'
 import PopupMenu from './common/PopupMenu.vue'
 import type { MenuItem } from './common/menu-types'
@@ -36,14 +38,26 @@ const contextTab = computed(
 const contextItems = computed<MenuItem[]>(() => {
   const tab = contextTab.value
   const path = tab?.ref.path ?? null
+  const inWorkspace = tab?.ref.origin === 'workspace'
+  const index = tab ? tabs.tabs.findIndex((item) => item.key === tab.key) : -1
   const items: MenuItem[] = [
     { id: 'close', label: t('tabs.close') },
+    { id: 'close-left', label: t('tabs.closeLeft'), disabled: index < 1 },
+    {
+      id: 'close-right',
+      label: t('tabs.closeRight'),
+      disabled: index === -1 || index === tabs.tabs.length - 1,
+    },
     { id: 'close-others', label: t('tabs.closeOthers'), disabled: tabs.tabs.length < 2 },
     { id: 'close-all', label: t('tabs.closeAll') },
   ]
-  if (path) {
+  if (inWorkspace) {
     items.push({ id: 'sep-1', separator: true })
-    if (tab?.ref.origin === 'workspace' && platform.capabilities.revealInFolder) {
+    items.push({ id: 'rename', label: t('sidebar.rename') })
+  }
+  if (path) {
+    items.push({ id: inWorkspace ? 'sep-2' : 'sep-1', separator: true })
+    if (inWorkspace && platform.capabilities.revealInFolder) {
       items.push({ id: 'reveal', label: t('tabs.reveal') })
     }
     items.push({ id: 'copy-path', label: t('tabs.copyPath') })
@@ -113,12 +127,24 @@ async function handleMenuSelect(id: string): Promise<void> {
     await tabs.closeTab(tab.key)
     return
   }
+  if (id === 'close-left') {
+    await tabs.closeLeft(tab.key)
+    return
+  }
+  if (id === 'close-right') {
+    await tabs.closeRight(tab.key)
+    return
+  }
   if (id === 'close-others') {
     await tabs.closeOthers(tab.key)
     return
   }
   if (id === 'close-all') {
     await tabs.closeAll()
+    return
+  }
+  if (id === 'rename') {
+    openRenameDialog(tab)
     return
   }
   if (id === 'copy-path' && tab.ref.path) {
@@ -136,6 +162,56 @@ async function handleMenuSelect(id: string): Promise<void> {
     } catch {
       ui.toast('error', t('tree.revealUnavailable'))
     }
+  }
+}
+
+const renameDialog = ref<{ path: string; name: string } | null>(null)
+const renameInput = ref<HTMLInputElement | null>(null)
+const renameError = ref('')
+const renameBusy = ref(false)
+
+function openRenameDialog(tab: EditorTab): void {
+  const path = tab.ref.path
+  if (tab.ref.origin !== 'workspace' || !path) return
+  renameDialog.value = { path, name: basename(path) }
+  renameError.value = ''
+  void nextTick(() => {
+    renameInput.value?.focus()
+    renameInput.value?.select()
+  })
+}
+
+function closeRenameDialog(): void {
+  if (renameBusy.value) return
+  renameDialog.value = null
+}
+
+async function submitRename(): Promise<void> {
+  const current = renameDialog.value
+  if (!current || renameBusy.value) return
+  const value = current.name.trim()
+  if (!value || /[\\/]/.test(value) || value === '.' || value === '..') {
+    renameError.value = t('tree.invalidName')
+    return
+  }
+  renameBusy.value = true
+  renameError.value = ''
+  try {
+    const target = current.path
+    const nextPath = await workspace.renameEntry(target, value)
+    if (!nextPath) {
+      renameError.value = t('tree.invalidName')
+      return
+    }
+    renameDialog.value = null
+    if (nextPath !== target) {
+      tabs.remapWorkspacePath(target, nextPath, false)
+      ui.toast('success', t('tree.renamed', { name: basename(nextPath) }))
+    }
+  } catch (error) {
+    renameError.value = describeError(error)
+  } finally {
+    renameBusy.value = false
   }
 }
 </script>
@@ -208,6 +284,38 @@ async function handleMenuSelect(id: string): Promise<void> {
       @close="menuOpen = false"
       @select="handleMenuSelect"
     />
+
+    <Teleport to="body">
+      <div v-if="renameDialog" class="nd-overlay nd-overlay--center" @mousedown.self="closeRenameDialog">
+        <div class="nd-dialog tab-rename-dialog" @keydown.esc.stop="closeRenameDialog">
+          <header class="nd-dialog-header">
+            <h2 class="nd-dialog-title">{{ t('sidebar.rename') }}</h2>
+          </header>
+          <div class="nd-dialog-body">
+            <label class="nd-field">
+              <span class="nd-field-label">{{ t('tree.renamePlaceholder') }}</span>
+              <input
+                ref="renameInput"
+                v-model="renameDialog.name"
+                class="nd-input"
+                :placeholder="t('tree.renamePlaceholder')"
+                spellcheck="false"
+                @keydown.enter.prevent="submitRename"
+              >
+            </label>
+            <p v-if="renameError" class="tab-rename-dialog__error">{{ renameError }}</p>
+          </div>
+          <footer class="nd-dialog-footer">
+            <button type="button" class="nd-btn" :disabled="renameBusy" @click="closeRenameDialog">
+              {{ t('common.cancel') }}
+            </button>
+            <button type="button" class="nd-btn nd-btn--primary" :disabled="renameBusy" @click="submitRename">
+              {{ t('sidebar.rename') }}
+            </button>
+          </footer>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -348,6 +456,16 @@ async function handleMenuSelect(id: string): Promise<void> {
 .tab-bar__folder {
   width: 26px;
   height: 26px;
+}
+
+.tab-rename-dialog {
+  width: min(400px, 100%);
+}
+
+.tab-rename-dialog__error {
+  margin: 8px 0 0;
+  color: var(--nd-danger);
+  font-size: 12px;
 }
 
 @media (max-width: 720px) {

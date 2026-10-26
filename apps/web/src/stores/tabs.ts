@@ -536,6 +536,24 @@ export const useTabsStore = defineStore('tabs', () => {
     activate(key)
   }
 
+  async function closeLeft(key: string): Promise<void> {
+    const index = tabs.value.findIndex((tab) => tab.key === key)
+    if (index < 1) return
+    for (const tab of tabs.value.slice(0, index)) {
+      if (!(await requestClose(tab))) return
+      removeTab(tab)
+    }
+  }
+
+  async function closeRight(key: string): Promise<void> {
+    const index = tabs.value.findIndex((tab) => tab.key === key)
+    if (index === -1) return
+    for (const tab of tabs.value.slice(index + 1)) {
+      if (!(await requestClose(tab))) return
+      removeTab(tab)
+    }
+  }
+
   async function closeAll(): Promise<void> {
     for (const tab of [...tabs.value]) {
       if (!(await requestClose(tab))) return
@@ -854,6 +872,8 @@ export const useTabsStore = defineStore('tabs', () => {
     saveActiveAs,
     closeTab,
     closeOthers,
+    closeLeft,
+    closeRight,
     closeAll,
     closeWorkspaceTabs,
     markDeleted,

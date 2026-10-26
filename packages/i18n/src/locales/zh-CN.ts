@@ -95,6 +95,8 @@ export const zhCN = {
     conflict: '磁盘上的文件已变化',
     missing: '文件已丢失',
     close: '关闭标签页',
+    closeLeft: '关闭左侧标签页',
+    closeRight: '关闭右侧标签页',
     closeOthers: '关闭其他标签页',
     closeAll: '关闭所有标签页',
     copyPath: '复制路径',

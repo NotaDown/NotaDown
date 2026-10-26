@@ -95,6 +95,8 @@ export const enUS = {
     conflict: 'Changed on disk',
     missing: 'File missing',
     close: 'Close tab',
+    closeLeft: 'Close tabs to the left',
+    closeRight: 'Close tabs to the right',
     closeOthers: 'Close other tabs',
     closeAll: 'Close all tabs',
     copyPath: 'Copy path',
