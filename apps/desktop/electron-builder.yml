@@ -14,7 +14,7 @@ files:
 
 asar: true
 publish: null
-artifactName: ${productName} ${version}-${arch}.${ext}
+artifactName: ${productName}.${version}-${arch}.${ext}
 
 fileAssociations:
   # One entry per extension: Linux targets reject an array for ext.

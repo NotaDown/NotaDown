@@ -18,9 +18,9 @@ A tag whose version carries a hyphen suffix (`v1.2.3-beta.1`, `v1.2.3-rc.1`) pub
 Release assets (version shown as `1.2.3`):
 
 - `notadown-web.zip` — the static web build, unpacked and served as-is
-- `NotaDown 1.2.3-x64.exe` — Windows NSIS installer
-- `NotaDown 1.2.3-x64.dmg` / `NotaDown 1.2.3-arm64.dmg` — macOS disk images
-- `NotaDown 1.2.3-x64.AppImage` / `NotaDown 1.2.3-x64.deb` — Linux
+- `NotaDown.1.2.3-x64.exe` — Windows NSIS installer
+- `NotaDown.1.2.3-x64.dmg` / `NotaDown.1.2.3-arm64.dmg` — macOS disk images
+- `NotaDown.1.2.3-x86_64.AppImage` / `NotaDown.1.2.3-amd64.deb` — Linux
 
 ## Notes
 

@@ -18,9 +18,9 @@
 发布产物（版本号以 `1.2.3` 为例）：
 
 - `notadown-web.zip` — 静态网页构建，解压即可部署
-- `NotaDown 1.2.3-x64.exe` — Windows NSIS 安装包
-- `NotaDown 1.2.3-x64.dmg` / `NotaDown 1.2.3-arm64.dmg` — macOS 镜像
-- `NotaDown 1.2.3-x64.AppImage` / `NotaDown 1.2.3-x64.deb` — Linux
+- `NotaDown.1.2.3-x64.exe` — Windows NSIS 安装包
+- `NotaDown.1.2.3-x64.dmg` / `NotaDown.1.2.3-arm64.dmg` — macOS 镜像
+- `NotaDown.1.2.3-x86_64.AppImage` / `NotaDown.1.2.3-amd64.deb` — Linux
 
 ## 说明
 
