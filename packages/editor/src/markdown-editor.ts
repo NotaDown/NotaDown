@@ -1,5 +1,5 @@
 import { Crepe, CrepeFeature, type CrepeConfig } from '@milkdown/crepe'
-import { commandsCtx, editorViewCtx } from '@milkdown/kit/core'
+import { commandsCtx, editorViewCtx, remarkStringifyOptionsCtx } from '@milkdown/kit/core'
 import type { Ctx } from '@milkdown/kit/ctx'
 import {
   linkTooltipAPI,
@@ -33,6 +33,7 @@ import {
   type OutlineItem,
 } from '@notadown/shared'
 import { attachBlockMenu } from './block-menu'
+import { detectBulletMarker } from './bullet-marker'
 import { createCodeMirrorTheme } from './codemirror-theme'
 import { createHtmlPlugins } from './html'
 import { createMermaidPlugins } from './mermaid'
@@ -207,6 +208,11 @@ export async function createMarkdownEditor(
       [CrepeFeature.AI]: false,
     },
     featureConfigs,
+  })
+
+  const bullet = detectBulletMarker(parts.body)
+  crepe.editor.config((ctx) => {
+    ctx.update(remarkStringifyOptionsCtx, (options) => ({ ...options, bullet }))
   })
 
   crepe.editor.use([
