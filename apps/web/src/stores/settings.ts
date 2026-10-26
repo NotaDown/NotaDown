@@ -99,5 +99,6 @@ export const useSettingsStore = defineStore('settings', () => {
     update,
     reset,
     flush,
+    snapshot,
   }
 })

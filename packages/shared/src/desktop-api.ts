@@ -86,6 +86,7 @@ export interface DesktopInvokeMap {
   saveSettings: { args: [settings: AppSettings]; result: void }
   loadSession: { args: []; result: SessionState | null }
   saveSession: { args: [session: SessionState]; result: void }
+  restartApp: { args: []; result: void }
   exportHtml: { args: [html: string, suggestedName: string]; result: boolean }
   exportPdf: { args: [html: string, suggestedName: string]; result: boolean }
   setTitleBarOverlay: { args: [color: string, symbolColor: string]; result: void }

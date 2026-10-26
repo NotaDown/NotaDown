@@ -154,6 +154,10 @@ async function dispatch(
     case 'saveSession':
       await state.saveSession(args[0] as SessionState)
       return undefined
+    case 'restartApp':
+      app.relaunch()
+      app.quit()
+      return undefined
 
     case 'exportHtml':
       return exportHtml(window, String(args[0] ?? ''), String(args[1] ?? ''))

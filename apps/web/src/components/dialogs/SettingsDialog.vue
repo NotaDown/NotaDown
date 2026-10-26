@@ -7,6 +7,7 @@ import {
   Keyboard,
   Palette,
   RotateCcw,
+  RotateCw,
   SlidersHorizontal,
   Trash2,
   Type,
@@ -27,18 +28,26 @@ import {
 import { LOCALE_NAMES, SUPPORTED_LOCALES } from '@notadown/i18n'
 import { platform } from '@/platform'
 import { useSettingsStore } from '@/stores/settings'
+import { useTabsStore } from '@/stores/tabs'
 import { useUiStore, type SettingsSection } from '@/stores/ui'
+import { appliedTitleBarMode } from '@/window-chrome'
 import ShortcutsList from '../common/ShortcutsList.vue'
 import BrandMark from '../common/BrandMark.vue'
 
 const { t } = useI18n()
 const settings = useSettingsStore()
+const tabs = useTabsStore()
 const ui = useUiStore()
 const isDesktop = platform.kind === 'desktop'
 
 const draft = reactive<AppSettings>({ ...settings.settings })
 const section = ref<SettingsSection>(ui.settingsSection)
 const cssInput = ref<HTMLInputElement | null>(null)
+const restarting = ref(false)
+
+const titleBarRestartPending = computed(
+  () => isDesktop && draft.titleBarMode !== appliedTitleBarMode.value,
+)
 
 const SECTIONS: Array<{ id: SettingsSection; icon: typeof Info; label: string }> = [
   { id: 'general', icon: SlidersHorizontal, label: 'settings.general' },
@@ -196,6 +205,24 @@ async function resetSettings(): Promise<void> {
   Object.assign(draft, settings.settings)
 }
 
+async function restartApp(): Promise<void> {
+  const bridge = window.notadown
+  if (!bridge || restarting.value) return
+  if (tabs.hasDirty) {
+    ui.toast('warning', t('settings.generalSection.restartUnsaved'))
+    return
+  }
+  restarting.value = true
+  try {
+    await platform.saveSettings(settings.snapshot())
+    await bridge.invoke('restartApp')
+  } catch {
+    ui.toast('error', t('errors.generic'))
+  } finally {
+    restarting.value = false
+  }
+}
+
 async function clearHistory(): Promise<void> {
   const confirmed = await ui.confirm({
     title: t('dialogs.deleteHistoryTitle'),
@@ -307,6 +334,20 @@ async function clearHistory(): Promise<void> {
                     </option>
                   </select>
                   <p class="nd-field-hint">{{ t('settings.generalSection.titleBarHint') }}</p>
+                  <div v-if="titleBarRestartPending" class="settings-restart">
+                    <span class="settings-restart__notice">
+                      {{ t('settings.generalSection.titleBarRestartNotice') }}
+                    </span>
+                    <button
+                      type="button"
+                      class="nd-btn nd-btn--primary nd-btn--sm"
+                      :disabled="restarting"
+                      @click="restartApp"
+                    >
+                      <RotateCw :size="13" />
+                      {{ t('settings.generalSection.restartApp') }}
+                    </button>
+                  </div>
                 </div>
               </section>
 
@@ -1041,6 +1082,24 @@ async function clearHistory(): Promise<void> {
 
 .settings-file-input {
   display: none;
+}
+
+.settings-restart {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--nd-border);
+  border-radius: var(--nd-radius-md);
+  background: var(--nd-surface);
+}
+
+.settings-restart__notice {
+  color: var(--nd-text-secondary);
+  font-size: 11.5px;
+  line-height: 1.5;
 }
 
 .settings-inline-actions {

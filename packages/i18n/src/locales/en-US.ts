@@ -312,6 +312,9 @@ export const enUS = {
       titleBarNative: 'Use the system title bar',
       titleBarHint:
         'Integrated mode merges the window controls with the app header; system title bar mode hides the header and moves its actions into the system menu bar. Restart NotaDown to apply changes.',
+      titleBarRestartNotice: 'Title bar mode changed. Restart the app to apply it.',
+      restartApp: 'Restart app',
+      restartUnsaved: 'Save or close your unsaved changes before restarting.',
     },
     appearanceSection: {
       colorMode: 'Color mode',
