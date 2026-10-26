@@ -1,4 +1,10 @@
-import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
+import {
+  defaultKeymap,
+  history,
+  historyKeymap,
+  indentWithTab,
+  toggleComment,
+} from '@codemirror/commands'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { bracketMatching, indentOnInput } from '@codemirror/language'
 import { languages } from '@codemirror/language-data'
@@ -39,6 +45,10 @@ export function createSourceEditor(options: SourceEditorOptions): SourceEditor {
       },
     },
     indentWithTab,
+    {
+      key: 'Mod-Shift-/',
+      run: toggleComment,
+    },
   ])
 
   const blurListener = EditorView.domEventHandlers({
@@ -81,7 +91,12 @@ export function createSourceEditor(options: SourceEditorOptions): SourceEditor {
       EditorView.contentAttributes.of({
         spellcheck: String(options.spellcheck ?? true),
       }),
-      keymap.of([...defaultKeymap, ...historyKeymap]),
+      // Mod-/ belongs to the app-level source-mode toggle; without filtering it out,
+      // CodeMirror's toggleComment consumes the keydown before the global handler runs.
+      keymap.of([
+        ...defaultKeymap.filter((binding) => binding.key !== 'Mod-/'),
+        ...historyKeymap,
+      ]),
       markdown({ base: markdownLanguage, codeLanguages: languages }),
       createCodeMirrorTheme(),
       updateListener,

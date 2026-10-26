@@ -440,6 +440,7 @@ export const zhCN = {
         undo: '撤销',
         redo: '重做',
         find: '在文档中查找',
+        toggleComment: '切换注释（源码模式）',
       },
       format: {
         bold: '粗体',

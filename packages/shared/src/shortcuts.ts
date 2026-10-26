@@ -21,6 +21,7 @@ export const SHORTCUTS: ShortcutDefinition[] = [
   { id: 'edit.undo', category: 'edit', keys: 'Mod+Z' },
   { id: 'edit.redo', category: 'edit', keys: 'Mod+Shift+Z', macKeys: 'Mod+Shift+Z' },
   { id: 'edit.find', category: 'edit', keys: 'Mod+F' },
+  { id: 'edit.toggleComment', category: 'edit', keys: 'Mod+Shift+/' },
   { id: 'format.bold', category: 'format', keys: 'Mod+B' },
   { id: 'format.italic', category: 'format', keys: 'Mod+I' },
   { id: 'format.strikethrough', category: 'format', keys: 'Mod+Shift+X' },

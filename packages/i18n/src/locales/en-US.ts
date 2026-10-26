@@ -440,6 +440,7 @@ export const enUS = {
         undo: 'Undo',
         redo: 'Redo',
         find: 'Find in document',
+        toggleComment: 'Toggle comment (source mode)',
       },
       format: {
         bold: 'Bold',
