@@ -5,7 +5,6 @@ import {
   generateMarkDown,
   getCurrentGitRef,
   getGitDiff,
-  getLastGitTag,
   loadChangelogConfig,
   parseCommits,
 } from 'changelogen'
@@ -33,7 +32,10 @@ const from =
   [...changelog.matchAll(/^##\s+(v?[\d.]+)/gm)]
     .map((match) => match[1])
     .find((tag) => gitRefExists(tag)) ||
-  (await getLastGitTag(cwd)) ||
+  // The fallback skips prerelease tags too, otherwise the final release would only describe its last prerelease.
+  git(['tag', '--sort=-creatordate'])
+    .split(/\r?\n/)
+    .find((tag) => tag !== '' && !tag.includes('-')) ||
   git(['rev-list', '--max-parents=0', 'HEAD'])
 
 const config = await loadChangelogConfig(cwd, {
