@@ -44,6 +44,7 @@ const update = useUpdateStore()
 const ui = useUiStore()
 const isDesktop = platform.kind === 'desktop'
 const canDefaultAppSettings = platform.capabilities.defaultAppSettings
+const REPOSITORY_URL = 'https://github.com/NotaDown/NotaDown'
 
 const draft = reactive<AppSettings>({ ...settings.settings })
 const section = ref<SettingsSection>(ui.settingsSection)
@@ -233,6 +234,14 @@ async function openDefaultAppSettings(): Promise<void> {
     await platform.openDefaultAppSettings()
   } catch {
     ui.toast('error', t('defaultApp.openFailed'))
+  }
+}
+
+async function openRepository(): Promise<void> {
+  try {
+    await platform.openExternal(REPOSITORY_URL)
+  } catch {
+    ui.toast('error', t('toasts.openFailed'))
   }
 }
 
@@ -904,6 +913,21 @@ async function clearHistory(): Promise<void> {
                     <dd>{{ platform.kind === 'desktop' ? t('status.desktop') : t('status.web') }}</dd>
                   </div>
                   <div>
+                    <dt>{{ t('settings.aboutSection.repository') }}</dt>
+                    <dd>
+                      <a
+                        class="settings-about__link"
+                        :href="REPOSITORY_URL"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        @click.prevent="openRepository"
+                      >
+                        {{ REPOSITORY_URL }}
+                        <ExternalLink :size="12" />
+                      </a>
+                    </dd>
+                  </div>
+                  <div>
                     <dt>{{ t('settings.aboutSection.builtWith') }}</dt>
                     <dd>Milkdown · Vue · Electron</dd>
                   </div>
@@ -1262,6 +1286,18 @@ async function clearHistory(): Promise<void> {
   margin: 0;
   color: var(--nd-text);
   text-align: right;
+}
+
+.settings-about__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--nd-accent);
+  text-decoration: none;
+}
+
+.settings-about__link:hover {
+  text-decoration: underline;
 }
 
 .settings-about__actions {

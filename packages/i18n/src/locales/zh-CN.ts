@@ -444,6 +444,7 @@ export const zhCN = {
       version: '版本',
       license: '许可证',
       platform: '平台',
+      repository: '开源地址',
       builtWith: '基于开源编辑器技术构建。',
     },
     reset: '重置设置',

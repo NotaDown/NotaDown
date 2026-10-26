@@ -445,6 +445,7 @@ export const enUS = {
       version: 'Version',
       license: 'License',
       platform: 'Platform',
+      repository: 'Open source',
       builtWith: 'Built with an open-source editor stack.',
     },
     reset: 'Reset settings',
