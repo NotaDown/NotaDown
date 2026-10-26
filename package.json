@@ -16,9 +16,11 @@
     "package:desktop": "pnpm --filter @notadown/web build:desktop && pnpm --filter @notadown/desktop package",
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
+    "changelog": "node scripts/changelog.mjs",
     "screenshot:readme": "node examples/readme-screenshot/capture.mjs"
   },
   "devDependencies": {
+    "changelogen": "^0.6.2",
     "concurrently": "^9.2.1",
     "wait-on": "^9.0.1"
   }
