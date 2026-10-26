@@ -78,6 +78,19 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  user-select: none;
+}
+
+input,
+textarea,
+[contenteditable]:not([contenteditable='false']) {
+  user-select: text;
+}
+
+.app.nd-modal-open input,
+.app.nd-modal-open textarea,
+.app.nd-modal-open [contenteditable]:not([contenteditable='false']) {
+  user-select: none;
 }
 
 ::selection {

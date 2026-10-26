@@ -37,7 +37,13 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="app" :class="{ 'is-native-chrome': usesNativeTitleBar }">
+  <div
+    class="app"
+    :class="{
+      'nd-modal-open': ui.hasBlockingModal,
+      'is-native-chrome': usesNativeTitleBar,
+    }"
+  >
     <AppTopBar v-if="!usesNativeTitleBar" />
 
     <div class="app__body">

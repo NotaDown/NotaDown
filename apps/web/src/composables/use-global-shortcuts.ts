@@ -51,10 +51,29 @@ const FORMAT_BINDINGS: Array<[shortcutId: string, command: EditorCommand]> = [
   ['format.mermaid', 'mermaid'],
 ]
 
+const EDITABLE_SELECTOR = 'input, textarea, [contenteditable]:not([contenteditable="false"])'
+
 export function useGlobalShortcuts(commands: AppCommands): void {
   const tabs = useTabsStore()
   const ui = useUiStore()
   const platform = commands.platform
+
+  // ProseMirror consumes Ctrl+A before bubble-phase listeners reach the window.
+  function onSelectAllKeydown(event: KeyboardEvent): void {
+    if (event.isComposing || !ui.hasBlockingModal) return
+    if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) return
+    if (event.key.toLowerCase() !== 'a') return
+    const target = event.target
+    if (
+      target instanceof Element &&
+      target.closest('.nd-dialog') &&
+      target.closest(EDITABLE_SELECTOR)
+    ) {
+      return
+    }
+    event.preventDefault()
+    event.stopPropagation()
+  }
 
   function onKeydown(event: KeyboardEvent): void {
     if (event.isComposing) return
@@ -108,10 +127,12 @@ export function useGlobalShortcuts(commands: AppCommands): void {
   }
 
   onMounted(() => {
+    window.addEventListener('keydown', onSelectAllKeydown, true)
     window.addEventListener('keydown', onKeydown)
   })
 
   onBeforeUnmount(() => {
+    window.removeEventListener('keydown', onSelectAllKeydown, true)
     window.removeEventListener('keydown', onKeydown)
   })
 }
