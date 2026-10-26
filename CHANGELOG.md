@@ -2,6 +2,28 @@
 
 English is canonical; entries are generated from conventional commits by `pnpm changelog`.
 
+## v0.1.0-alpha.2
+
+
+### 🚀 Features
+
+- **design:** Add Markdown file icon (7f0ac57)
+- **desktop:** Use the Markdown file icon for file associations (d4b642b)
+- **editor:** Edit block HTML as raw source and space out diagram blocks (a200729)
+
+### 🔥 Performance
+
+- Load workspace folders lazily and scope file watching (2cdcab8)
+
+### 🩹 Bug Fixes
+
+- Align release artifact names and download links (59518c8)
+- Stop rewriting untouched documents on open (204364e)
+- Keep the mermaid source panel hidden until editing (6ce80bb)
+- Report unsupported file types consistently when opening links (4578a40)
+- Keep earlier sections when regenerating the changelog (a05fb06)
+
+
 ## v0.1.0-alpha.1
 
 
