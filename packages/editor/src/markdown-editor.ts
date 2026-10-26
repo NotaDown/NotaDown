@@ -235,13 +235,17 @@ export async function createMarkdownEditor(
   let serializeTimer: number | null = null
   const serializeDelay = options.largeDocument ? 700 : 180
 
+  function currentMarkdown(): string {
+    return joinFrontmatter(frontmatter, crepe.getMarkdown())
+  }
+
   function flushUpdates(): void {
     if (serializeTimer !== null) {
       window.clearTimeout(serializeTimer)
       serializeTimer = null
     }
     if (suppressUpdates || destroyed) return
-    const full = joinFrontmatter(frontmatter, crepe.getMarkdown())
+    const full = currentMarkdown()
     if (full === lastMarkdown) return
     lastMarkdown = full
     options.onChange?.(full)
@@ -259,6 +263,10 @@ export async function createMarkdownEditor(
   crepe.on((listener) => {
     listener.updated(() => scheduleUpdates())
   })
+
+  // Milkdown's normalized form (including its trailing paragraph) is the loaded baseline, not an edit.
+  view.dispatch(view.state.tr)
+  lastMarkdown = currentMarkdown()
 
   function updateOutline(): void {
     const items = collectOutline(view)
@@ -280,7 +288,7 @@ export async function createMarkdownEditor(
   view.dom.addEventListener('blur', blurListener)
 
   return {
-    getMarkdown: () => joinFrontmatter(frontmatter, crepe.getMarkdown()),
+    getMarkdown: currentMarkdown,
     flush: flushUpdates,
     setMarkdown(markdown: string, setOptions?: { silent?: boolean }) {
       if (serializeTimer !== null) {
@@ -296,7 +304,7 @@ export async function createMarkdownEditor(
       } finally {
         suppressUpdates = false
       }
-      lastMarkdown = markdown
+      lastMarkdown = currentMarkdown()
       updateOutline()
     },
     getOutline: () => collectOutline(view),
