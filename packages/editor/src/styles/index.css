@@ -515,6 +515,10 @@
   gap: 10px;
 }
 
+.nd-mermaid__editor[hidden] {
+  display: none;
+}
+
 .nd-mermaid__source {
   width: 100%;
   min-height: 140px;
