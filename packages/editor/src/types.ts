@@ -49,6 +49,12 @@ export interface EditorLabels {
     renderFailed: string
     sourcePlaceholder: string
   }
+  html: {
+    edit: string
+    apply: string
+    cancel: string
+    sourcePlaceholder: string
+  }
   link: {
     edit: string
     remove: string

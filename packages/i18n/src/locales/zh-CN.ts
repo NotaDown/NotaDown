@@ -275,6 +275,12 @@ export const zhCN = {
       empty: '空图表',
       insert: '插入图表',
     },
+    html: {
+      edit: '编辑 HTML',
+      apply: '应用',
+      cancel: '取消',
+      codeHint: '输入 HTML',
+    },
     link: {
       placeholder: '粘贴链接',
       confirm: '应用',

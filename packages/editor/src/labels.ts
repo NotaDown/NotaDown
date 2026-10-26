@@ -49,6 +49,12 @@ export const DEFAULT_EDITOR_LABELS: EditorLabels = {
     renderFailed: 'This diagram could not be rendered.',
     sourcePlaceholder: 'Write Mermaid syntax',
   },
+  html: {
+    edit: 'Edit HTML',
+    apply: 'Apply',
+    cancel: 'Cancel',
+    sourcePlaceholder: 'Write HTML',
+  },
   link: {
     edit: 'Edit',
     remove: 'Remove',

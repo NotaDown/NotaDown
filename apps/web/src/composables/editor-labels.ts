@@ -53,6 +53,12 @@ export function useEditorLabels() {
       renderFailed: t('editor.diagram.renderFailed'),
       sourcePlaceholder: t('editor.diagram.codeHint'),
     },
+    html: {
+      edit: t('editor.html.edit'),
+      apply: t('editor.html.apply'),
+      cancel: t('editor.html.cancel'),
+      sourcePlaceholder: t('editor.html.codeHint'),
+    },
     link: {
       edit: t('editor.toolbar.edit'),
       remove: t('editor.link.remove'),

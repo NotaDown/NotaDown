@@ -275,6 +275,12 @@ export const enUS = {
       empty: 'Empty diagram',
       insert: 'Insert diagram',
     },
+    html: {
+      edit: 'Edit HTML',
+      apply: 'Apply',
+      cancel: 'Cancel',
+      codeHint: 'Write HTML',
+    },
     link: {
       placeholder: 'Paste a link',
       confirm: 'Apply',

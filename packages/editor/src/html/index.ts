@@ -1,6 +1,7 @@
 import { htmlSchema } from '@milkdown/kit/preset/commonmark'
 import type { MarkdownNode } from '@milkdown/kit/transformer'
 import { $nodeSchema, $remark, $view } from '@milkdown/kit/utils'
+import type { EditorLabels } from '../types'
 import {
   HtmlNodeView,
   type HtmlImageErrorHandler,
@@ -48,6 +49,7 @@ function htmlValue(node: MarkdownNode): string {
 }
 
 export function createHtmlPlugins(
+  labels: EditorLabels['html'],
   onOpenLink: HtmlLinkHandler,
   onImageError?: HtmlImageErrorHandler,
   resolveImageUrl?: HtmlImageUrlResolver,
@@ -93,14 +95,23 @@ export function createHtmlPlugins(
 
   const blockView = $view(
     blockSchema.node,
-    () => (node) =>
-      new HtmlNodeView(node, true, onOpenLink, onImageError, resolveImageUrl),
+    () => (node, view, getPos) =>
+      new HtmlNodeView(
+        node,
+        true,
+        view,
+        getPos,
+        labels,
+        onOpenLink,
+        onImageError,
+        resolveImageUrl,
+      ),
   )
 
   const inlineView = $view(
     htmlSchema.node,
     () => (node) =>
-      new HtmlNodeView(node, false, onOpenLink, onImageError, resolveImageUrl),
+      new HtmlNodeView(node, false, null, null, null, onOpenLink, onImageError, resolveImageUrl),
   )
 
   return {

@@ -73,7 +73,12 @@ export async function createMarkdownEditor(
     if (options.onOpenLink) options.onOpenLink(href)
     else window.open(href, '_blank', 'noopener,noreferrer')
   }
-  const html = createHtmlPlugins(openLink, options.onImageError, options.resolveImageUrl)
+  const html = createHtmlPlugins(
+    labels.html,
+    openLink,
+    options.onImageError,
+    options.resolveImageUrl,
+  )
 
   const focusPlugin = createFocusModePlugin(() => focusMode)
   const typewriterPlugin = createTypewriterPlugin(() => typewriterMode)
