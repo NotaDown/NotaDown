@@ -128,6 +128,20 @@
   .palette { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 30px; }
   .swatch { display: flex; align-items: center; gap: 11px; font-size: 11px; color: var(--muted); }
   .chip { width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(28,42,36,.12); }
+  .file-panel { display: flex; align-items: center; gap: 40px; margin-bottom: 16px; }
+  .file-panel > img { width: 138px; height: 138px; flex: none; }
+  .file-ladders { display: grid; gap: 10px; }
+  .file-line { display: flex; align-items: flex-end; gap: 18px; padding: 10px 16px; border-radius: 14px; background: #fffdf7; }
+  .file-line.dark { background: var(--night); }
+  .file-line .cell { display: grid; place-items: center; }
+  .file-line .cell span { display: block; font-size: 9px; color: var(--muted); margin-top: 4px; }
+  .file-line.dark .cell span { color: #95a79d; }
+  .file-copy { max-width: 292px; margin-left: auto; font-size: 11px; line-height: 1.8; color: var(--muted); }
+  .file-copy strong { display: block; font-size: 12px; font-weight: 600; color: var(--forest); margin-bottom: 6px; }
+  .explorer { background: #f8f6f1; border-radius: 16px; padding: 12px 18px; }
+  .explorer .row { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 11px; color: #4d524b; }
+  .explorer .row img { width: 16px; height: 16px; display: block; }
+  .explorer .row .size { margin-left: auto; color: #9b9b92; font-size: 10px; }
   .foot {
     margin-top: 28px;
     display: flex;
@@ -196,6 +210,33 @@
       </div>
     </section>
   </div>
+
+  <section class="card light file-panel">
+    <img src="notadown-file.svg" alt="Markdown file icon">
+    <div class="file-ladders">
+      <div class="file-line">
+        <div class="cell"><img src="notadown-file.svg" width="48" height="48" alt=""><span>48</span></div>
+        <div class="cell"><img src="notadown-file.svg" width="32" height="32" alt=""><span>32</span></div>
+        <div class="cell"><img src="notadown-file-small.svg" width="24" height="24" alt=""><span>24</span></div>
+        <div class="cell"><img src="notadown-file-small.svg" width="16" height="16" alt=""><span>16</span></div>
+      </div>
+      <div class="file-line dark">
+        <div class="cell"><img src="notadown-file.svg" width="48" height="48" alt=""><span>48</span></div>
+        <div class="cell"><img src="notadown-file.svg" width="32" height="32" alt=""><span>32</span></div>
+        <div class="cell"><img src="notadown-file-small.svg" width="24" height="24" alt=""><span>24</span></div>
+        <div class="cell"><img src="notadown-file-small.svg" width="16" height="16" alt=""><span>16</span></div>
+      </div>
+    </div>
+    <div class="explorer">
+      <div class="row"><img src="notadown-file-small.svg" alt=""><span>README.md</span><span class="size">2 KB</span></div>
+      <div class="row"><img src="notadown-file-small.svg" alt=""><span>release-notes.markdown</span><span class="size">6 KB</span></div>
+      <div class="row"><img src="notadown-file-small.svg" alt=""><span>Untitled-1.md</span><span class="size">0 KB</span></div>
+    </div>
+    <div class="file-copy">
+      <strong>Markdown file icon</strong>
+      The app keeps the tile; documents get a warm paper page. The forest outline holds up on light and dark Explorer backgrounds, and the packed small-size art keeps the n readable at 16 and 24 px.
+    </div>
+  </section>
 
   <div class="mock-stack">
     <section class="browser" aria-label="Browser tab preview">
