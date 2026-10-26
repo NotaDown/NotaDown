@@ -144,18 +144,20 @@ export const useTabsStore = defineStore('tabs', () => {
   }
 
   function addOpenedDocument(opened: OpenedDocument): EditorTab {
-    const existing = findByRef(opened.ref)
+    const ref = canonicalDocumentRef(opened.ref)
+    const existing = findByRef(ref)
     if (existing) {
       activate(existing.key)
       return existing
     }
-    return addTab(opened.ref, opened.content, opened.mtime)
+    return addTab(ref, opened.content, opened.mtime)
   }
 
   async function openRef(
-    ref: DocumentRef,
+    target: DocumentRef,
     options: { silent?: boolean } = {},
   ): Promise<EditorTab | null> {
+    const ref = canonicalDocumentRef(target)
     const existing = findByRef(ref)
     if (existing) {
       activate(existing.key)
@@ -163,6 +165,11 @@ export const useTabsStore = defineStore('tabs', () => {
     }
     try {
       const opened = await platform.readDocument(ref)
+      const concurrent = findByRef(ref)
+      if (concurrent) {
+        activate(concurrent.key)
+        return concurrent
+      }
       const tab = addTab(opened.ref, opened.content, opened.mtime)
       if (ref.origin === 'workspace' && ref.path) {
         const workspace = useWorkspaceStore()
@@ -395,8 +402,9 @@ export const useTabsStore = defineStore('tabs', () => {
         tab.name,
         settings.settings.defaultFileExtension,
       )
-      const ref = await platform.saveDocumentAs(tab.ref, content, suggested)
-      if (!ref) return false
+      const saved = await platform.saveDocumentAs(tab.ref, content, suggested)
+      if (!saved) return false
+      const ref = canonicalDocumentRef(saved)
       tab.ref = ref
       tab.name = ref.name
       watchDocumentTab(tab)
@@ -820,6 +828,12 @@ function sameDocumentKey(a: string, b: string): boolean {
   if (a === b) return true
   if (!a.startsWith('file:') || !b.startsWith('file:')) return false
   return normalizeSlashes(a) === normalizeSlashes(b)
+}
+
+function canonicalDocumentRef(ref: DocumentRef): DocumentRef {
+  if (ref.origin !== 'file' || !ref.path) return ref
+  if (platform.kind !== 'desktop' || !isAbsolutePath(ref.path)) return ref
+  return platform.documentRefForPath(ref.path)
 }
 
 function isAbsolutePath(path: string): boolean {

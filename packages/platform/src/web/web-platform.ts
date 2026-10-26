@@ -220,7 +220,7 @@ export class WebPlatform implements Platform {
       if (!(await ensurePermission(handle, 'readwrite'))) throw new Error('PERMISSION_DENIED')
       const file = await handle.getFile()
       const content = await file.text()
-      const key = createId('webfile')
+      const key = (await this.findHandleKey(handle)) ?? createId('webfile')
       this.fileHandles.set(key, handle)
       await kvSet(`file:${key}`, handle)
       return {
@@ -248,8 +248,8 @@ export class WebPlatform implements Platform {
           finish(null)
           return
         }
-        const key = createId('webfile')
         const content = await file.text()
+        const key = this.findMemoryFileKey(file.name, content) ?? createId('webfile')
         this.memoryFiles.set(key, { name: file.name, content, mtime: file.lastModified })
         finish({
           ref: { key, name: file.name, path: file.name, origin: 'file' },
@@ -265,8 +265,8 @@ export class WebPlatform implements Platform {
 
   async openDroppedFile(file: File): Promise<OpenedDocument | null> {
     if (!isOpenableTextFile(file.name)) return null
-    const key = createId('webfile')
     const content = await file.text()
+    const key = this.findMemoryFileKey(file.name, content) ?? createId('webfile')
     this.memoryFiles.set(key, { name: file.name, content, mtime: file.lastModified })
     return {
       ref: { key, name: file.name, path: file.name, origin: 'file' },
@@ -572,6 +572,26 @@ export class WebPlatform implements Platform {
     } catch {
       return parent.getDirectoryHandle(name)
     }
+  }
+
+  private async findHandleKey(handle: FsFileHandle): Promise<string | null> {
+    for (const [key, existing] of this.fileHandles) {
+      if (existing === handle) return key
+      if (!handle.isSameEntry) continue
+      try {
+        if (await handle.isSameEntry(existing)) return key
+      } catch {
+        // Stale persisted handles can reject comparison; keep scanning.
+      }
+    }
+    return null
+  }
+
+  private findMemoryFileKey(name: string, content: string): string | null {
+    for (const [key, entry] of this.memoryFiles) {
+      if (entry.name === name && entry.content === content) return key
+    }
+    return null
   }
 
   private async getFileHandle(key: string): Promise<FsFileHandle | null> {

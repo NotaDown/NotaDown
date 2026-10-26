@@ -11,6 +11,7 @@ export interface FsHandle {
   readonly name: string
   queryPermission?(descriptor?: { mode?: 'read' | 'readwrite' }): Promise<PermissionState>
   requestPermission?(descriptor?: { mode?: 'read' | 'readwrite' }): Promise<PermissionState>
+  isSameEntry?(other: FsHandle): Promise<boolean>
   move?(parent: FsDirectoryHandle, name?: string): Promise<void>
 }
 
