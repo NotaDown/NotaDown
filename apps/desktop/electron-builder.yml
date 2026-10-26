@@ -52,9 +52,6 @@ nsis:
   allowToChangeInstallationDirectory: true
   deleteAppDataOnUninstall: false
   include: packaging/installer.nsh
-  # installer.nsh defines its custom LangStrings only for en/zh-CN; the
-  # per-language 6040 fallback warnings are expected, not failures.
-  warningsAsErrors: false
 
 mac:
   icon: assets/icon.png

@@ -1,29 +1,9 @@
 !include "LogicLib.nsh"
 !include "nsDialogs.nsh"
+!include "WinMessages.nsh"
 
 !define NOTADOWN_ASSOC_PROGID "Markdown Document"
 !define NOTADOWN_ASSOC_BACKUP "Software\NotaDown\AssociationBackup"
-
-LangString NOTADOWN_ASSOC_TITLE 1033 "File associations"
-LangString NOTADOWN_ASSOC_TITLE 2052 "文件关联"
-
-LangString NOTADOWN_ASSOC_SUBTITLE 1033 "Choose which Markdown file types should open with NotaDown."
-LangString NOTADOWN_ASSOC_SUBTITLE 2052 "选择要与 NotaDown 关联的 Markdown 文件类型。"
-
-LangString NOTADOWN_ASSOC_HINT 1033 "The selected types are added to the Open with menu. Windows keeps your current default app until you change it in system settings."
-LangString NOTADOWN_ASSOC_HINT 2052 "勾选的文件类型会出现在“打开方式”菜单中。Windows 不会自动更改默认应用，可在系统设置中确认。"
-
-LangString NOTADOWN_ASSOC_EXT_MD 1033 "Markdown files (.md)"
-LangString NOTADOWN_ASSOC_EXT_MD 2052 "Markdown 文件（.md）"
-
-LangString NOTADOWN_ASSOC_EXT_MARKDOWN 1033 "Markdown files (.markdown)"
-LangString NOTADOWN_ASSOC_EXT_MARKDOWN 2052 "Markdown 文件（.markdown）"
-
-LangString NOTADOWN_ASSOC_EXT_MDOWN 1033 "Markdown files (.mdown)"
-LangString NOTADOWN_ASSOC_EXT_MDOWN 2052 "Markdown 文件（.mdown）"
-
-LangString NOTADOWN_ASSOC_EXT_MKD 1033 "Markdown files (.mkd)"
-LangString NOTADOWN_ASSOC_EXT_MKD 2052 "Markdown 文件（.mkd）"
 
 !ifndef BUILD_UNINSTALLER
 Var AssocMd
@@ -35,6 +15,13 @@ Var AssocMdCheck
 Var AssocMarkdownCheck
 Var AssocMdownCheck
 Var AssocMkdCheck
+Var AssocTitle
+Var AssocSubtitle
+Var AssocHint
+Var AssocMdLabel
+Var AssocMarkdownLabel
+Var AssocMdownLabel
+Var AssocMkdLabel
 !endif
 Var AssocBackupHas
 Var AssocBackupValue
@@ -93,7 +80,23 @@ Var AssocBackupValue
   Page custom NotaDownAssocPageCreate NotaDownAssocPageLeave
 
   Function NotaDownAssocPageCreate
-    !insertmacro MUI_HEADER_TEXT "$(NOTADOWN_ASSOC_TITLE)" "$(NOTADOWN_ASSOC_SUBTITLE)"
+    ${If} $LANGUAGE == 2052
+      StrCpy $AssocTitle "文件关联"
+      StrCpy $AssocSubtitle "选择要与 NotaDown 关联的 Markdown 文件类型。"
+      StrCpy $AssocHint "勾选的文件类型会出现在“打开方式”菜单中。Windows 不会自动更改默认应用，可在系统设置中确认。"
+      StrCpy $AssocMdLabel "Markdown 文件（.md）"
+      StrCpy $AssocMarkdownLabel "Markdown 文件（.markdown）"
+      StrCpy $AssocMdownLabel "Markdown 文件（.mdown）"
+      StrCpy $AssocMkdLabel "Markdown 文件（.mkd）"
+    ${Else}
+      StrCpy $AssocTitle "File associations"
+      StrCpy $AssocSubtitle "Choose which Markdown file types should open with NotaDown."
+      StrCpy $AssocHint "The selected types are added to the Open with menu. Windows keeps your current default app until you change it in system settings."
+      StrCpy $AssocMdLabel "Markdown files (.md)"
+      StrCpy $AssocMarkdownLabel "Markdown files (.markdown)"
+      StrCpy $AssocMdownLabel "Markdown files (.mdown)"
+      StrCpy $AssocMkdLabel "Markdown files (.mkd)"
+    ${EndIf}
 
     nsDialogs::Create 1018
     Pop $AssocDialog
@@ -101,16 +104,21 @@ Var AssocBackupValue
       Abort
     ${EndIf}
 
-    ${NSD_CreateLabel} 0 0 100% 26u "$(NOTADOWN_ASSOC_HINT)"
+    GetDlgItem $0 $HWNDPARENT 1037
+    SendMessage $0 ${WM_SETTEXT} 0 "STR:$AssocTitle"
+    GetDlgItem $0 $HWNDPARENT 1038
+    SendMessage $0 ${WM_SETTEXT} 0 "STR:$AssocSubtitle"
+
+    ${NSD_CreateLabel} 0 0 100% 26u "$AssocHint"
     Pop $0
 
-    ${NSD_CreateCheckbox} 0 34u 100% 12u "$(NOTADOWN_ASSOC_EXT_MD)"
+    ${NSD_CreateCheckbox} 0 34u 100% 12u "$AssocMdLabel"
     Pop $AssocMdCheck
-    ${NSD_CreateCheckbox} 0 50u 100% 12u "$(NOTADOWN_ASSOC_EXT_MARKDOWN)"
+    ${NSD_CreateCheckbox} 0 50u 100% 12u "$AssocMarkdownLabel"
     Pop $AssocMarkdownCheck
-    ${NSD_CreateCheckbox} 0 66u 100% 12u "$(NOTADOWN_ASSOC_EXT_MDOWN)"
+    ${NSD_CreateCheckbox} 0 66u 100% 12u "$AssocMdownLabel"
     Pop $AssocMdownCheck
-    ${NSD_CreateCheckbox} 0 82u 100% 12u "$(NOTADOWN_ASSOC_EXT_MKD)"
+    ${NSD_CreateCheckbox} 0 82u 100% 12u "$AssocMkdLabel"
     Pop $AssocMkdCheck
 
     ${If} $AssocMd == 1
