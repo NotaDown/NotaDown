@@ -13,7 +13,10 @@ files:
   - package.json
 
 asar: true
-publish: null
+publish:
+  provider: github
+  owner: NotaDown
+  repo: NotaDown
 artifactName: ${productName}.${version}-${arch}.${ext}
 
 fileAssociations:

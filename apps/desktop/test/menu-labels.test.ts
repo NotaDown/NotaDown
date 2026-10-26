@@ -5,11 +5,13 @@ describe('menuLabels', () => {
   it('returns English labels', () => {
     expect(menuLabels('en-US').file).toBe('File')
     expect(menuLabels('en-US').openFile).toBe('Open File…')
+    expect(menuLabels('en-US').checkForUpdates).toBe('Check for Updates…')
   })
 
   it('returns Chinese labels', () => {
     expect(menuLabels('zh-CN').file).toBe('文件')
     expect(menuLabels('zh-CN').openFile).toBe('打开文件…')
+    expect(menuLabels('zh-CN').checkForUpdates).toBe('检查更新…')
   })
 })
 

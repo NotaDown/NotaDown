@@ -2,6 +2,7 @@ import {
   DESKTOP_ASSET_SCHEME,
   DESKTOP_OPEN_FILES_CHANNEL,
   DESKTOP_TITLE_BAR_ARG,
+  DESKTOP_UPDATE_EVENTS_CHANNEL,
 } from '@notadown/shared'
 import { app, BrowserWindow, nativeTheme, net, protocol, shell } from 'electron'
 import path from 'node:path'
@@ -13,6 +14,7 @@ import { installMenu } from './menu'
 import { resolveMenuLocale } from './menu-labels'
 import { queueOpenFiles } from './open-files'
 import { loadSettings } from './state'
+import { createDesktopUpdateService } from './updater'
 import { stopWatch } from './workspace'
 
 app.setName('NotaDown')
@@ -167,6 +169,13 @@ if (!hasLock) {
     const settings = await loadSettings()
     let menuLocale = resolveMenuLocale(settings?.locale, app.getLocale())
     installMenu(menuTarget, menuLocale)
+    const updateService = createDesktopUpdateService((snapshot) => {
+      for (const window of BrowserWindow.getAllWindows()) {
+        if (!window.isDestroyed()) {
+          window.webContents.send(DESKTOP_UPDATE_EVENTS_CHANNEL, snapshot)
+        }
+      }
+    })
     registerIpcHandlers(
       (next) => {
         const locale = resolveMenuLocale(next.locale, app.getLocale())
@@ -175,6 +184,7 @@ if (!hasLock) {
         installMenu(menuTarget, locale)
       },
       () => void recreateWindow(),
+      updateService,
     )
     createWindow()
 

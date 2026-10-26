@@ -49,11 +49,19 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   function flush(): void {
+    void flushAsync()
+  }
+
+  async function flushAsync(): Promise<void> {
     if (saveTimer) {
       window.clearTimeout(saveTimer)
       saveTimer = null
     }
-    void platform.saveSettings(snapshot()).catch(() => undefined)
+    try {
+      await platform.saveSettings(snapshot())
+    } catch {
+      // Persisting settings is best-effort; defaults apply on the next start.
+    }
   }
 
   function scheduleSave(): void {
@@ -99,6 +107,7 @@ export const useSettingsStore = defineStore('settings', () => {
     update,
     reset,
     flush,
+    flushAsync,
     snapshot,
   }
 })

@@ -2,6 +2,7 @@ import { onBeforeUnmount, onMounted, watch } from 'vue'
 import type { SessionState } from '@notadown/shared'
 import { platform } from '@/platform'
 import { flushAllEditors, refreshEditors } from '@/editor-registry'
+import { saveCurrentSession } from '@/services/session'
 import { useSettingsStore } from '@/stores/settings'
 import { useTabsStore } from '@/stores/tabs'
 import { useUiStore } from '@/stores/ui'
@@ -90,25 +91,13 @@ export function useAppLifecycle(commands: AppCommands): void {
     sessionTimer = window.setTimeout(persistSession, 450)
   }
 
-  function sessionState(): SessionState {
-    return {
-      workspace: workspace.info,
-      tabs: tabs.sessionTabs(),
-      activeTabKey: tabs.activeKey,
-      sidebarOpen: ui.sidebarOpen,
-      sidebarView: ui.sidebarView,
-    }
-  }
-
   function persistSession(): void {
     if (sessionTimer) {
       window.clearTimeout(sessionTimer)
       sessionTimer = null
     }
     settings.flush()
-    // Reactive proxies are not structured-cloneable for IndexedDB/IPC.
-    const session = JSON.parse(JSON.stringify(sessionState())) as SessionState
-    void platform.saveSession(session).catch(() => undefined)
+    void saveCurrentSession().catch(() => undefined)
   }
 
   function onBeforeUnload(event: BeforeUnloadEvent): void {

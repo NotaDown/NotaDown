@@ -5,6 +5,7 @@ import {
   DESKTOP_MENU_COMMAND_CHANNEL,
   DESKTOP_OPEN_FILES_CHANNEL,
   DESKTOP_TITLE_BAR_ARG,
+  DESKTOP_UPDATE_EVENTS_CHANNEL,
   DESKTOP_WORKSPACE_EVENTS_CHANNEL,
   type DesktopBridge,
   type DesktopInvokeArgs,
@@ -12,6 +13,7 @@ import {
   type DesktopInvokeResult,
   type DocumentChangeEvent,
   type TitleBarMode,
+  type UpdateSnapshot,
   type WorkspaceEvent,
 } from '@notadown/shared'
 import { contextBridge, ipcRenderer, webUtils } from 'electron'
@@ -64,6 +66,11 @@ const bridge: DesktopBridge = {
     const listener = () => callback()
     ipcRenderer.on(DESKTOP_OPEN_FILES_CHANNEL, listener)
     return () => ipcRenderer.removeListener(DESKTOP_OPEN_FILES_CHANNEL, listener)
+  },
+  onUpdateEvent(callback: (snapshot: UpdateSnapshot) => void): () => void {
+    const listener = (_event: unknown, snapshot: UpdateSnapshot) => callback(snapshot)
+    ipcRenderer.on(DESKTOP_UPDATE_EVENTS_CHANNEL, listener)
+    return () => ipcRenderer.removeListener(DESKTOP_UPDATE_EVENTS_CHANNEL, listener)
   },
   platform: process.platform,
   titleBarMode,

@@ -38,6 +38,7 @@ export interface MenuLabels {
   window: string
   help: string
   keyboardShortcuts: string
+  checkForUpdates: string
   about: string
 }
 
@@ -77,6 +78,7 @@ const EN: MenuLabels = {
   window: 'Window',
   help: 'Help',
   keyboardShortcuts: 'Keyboard Shortcuts',
+  checkForUpdates: 'Check for Updates…',
   about: 'About NotaDown',
 }
 
@@ -116,6 +118,7 @@ const ZH: MenuLabels = {
   window: '窗口',
   help: '帮助',
   keyboardShortcuts: '键盘快捷键',
+  checkForUpdates: '检查更新…',
   about: '关于 NotaDown',
 }
 

@@ -67,7 +67,7 @@ const menuItems = computed<MenuItem[]>(() => {
   separator()
   add('view.sourceMode', 'view.focusMode', 'view.typewriterMode', 'view.colorMode')
   separator()
-  add('settings.open', 'help.shortcuts', 'help.about')
+  add('settings.open', 'help.shortcuts', 'help.checkUpdates', 'help.about')
   return items
 })
 

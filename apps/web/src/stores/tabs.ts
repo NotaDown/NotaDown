@@ -507,6 +507,16 @@ export const useTabsStore = defineStore('tabs', () => {
     return saveAsTab(tab)
   }
 
+  async function saveDirtyForUpdate(): Promise<boolean> {
+    for (const tab of tabs.value) {
+      flushEditor(tab.key)
+      if (!isDirty(tab)) continue
+      if (tab.ref.origin === 'untitled' || tab.missing) return false
+      if (!(await saveTab(tab))) return false
+    }
+    return true
+  }
+
   async function requestClose(tab: EditorTab): Promise<boolean> {
     clearAutosave(tab.key)
     flushEditor(tab.key)
@@ -886,6 +896,7 @@ export const useTabsStore = defineStore('tabs', () => {
     saveAsTab,
     saveActive,
     saveActiveAs,
+    saveDirtyForUpdate,
     closeTab,
     closeOthers,
     closeLeft,

@@ -9,6 +9,7 @@ import { exportTabDocument } from '@/services/export'
 import { useSettingsStore } from '@/stores/settings'
 import { useTabsStore } from '@/stores/tabs'
 import { useUiStore } from '@/stores/ui'
+import { useUpdateStore } from '@/stores/update'
 import { useWorkspaceStore } from '@/stores/workspace'
 import { platform as appPlatform } from '@/platform'
 import { describeError } from '@/errors'
@@ -38,6 +39,7 @@ export function useAppCommands(): AppCommands {
   const settings = useSettingsStore()
   const tabs = useTabsStore()
   const ui = useUiStore()
+  const update = useUpdateStore()
   const workspace = useWorkspaceStore()
 
   const platform = shortcutPlatform()
@@ -212,6 +214,16 @@ export function useAppCommands(): AppCommands {
         ui.shortcutsOpen = true
       },
     },
+    ...(appPlatform.kind === 'desktop'
+      ? [
+          {
+            id: 'help.checkUpdates',
+            group: 'help' as const,
+            title: t('menu.checkForUpdates'),
+            run: () => update.check(),
+          },
+        ]
+      : []),
     {
       id: 'help.about',
       group: 'help',

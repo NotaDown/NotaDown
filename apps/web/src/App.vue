@@ -21,6 +21,7 @@ import ToastHost from '@/components/common/ToastHost.vue'
 import ConfirmDialog from '@/components/dialogs/ConfirmDialog.vue'
 import UnsavedDialog from '@/components/dialogs/UnsavedDialog.vue'
 import DefaultAppDialog from '@/components/dialogs/DefaultAppDialog.vue'
+import UpdateDialog from '@/components/dialogs/UpdateDialog.vue'
 import SettingsDialog from '@/components/dialogs/SettingsDialog.vue'
 import ShortcutsDialog from '@/components/dialogs/ShortcutsDialog.vue'
 import CommandPalette from '@/components/dialogs/CommandPalette.vue'
@@ -69,6 +70,7 @@ const { t } = useI18n()
     <ConfirmDialog />
     <UnsavedDialog />
     <DefaultAppDialog />
+    <UpdateDialog />
     <SettingsDialog />
     <ShortcutsDialog />
     <CommandPalette />

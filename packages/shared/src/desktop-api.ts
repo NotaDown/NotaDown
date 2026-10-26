@@ -17,6 +17,7 @@ import type {
   TitleBarMode,
   WorkspaceEvent,
 } from './types'
+import type { UpdateSnapshot } from './update'
 
 export interface DesktopInvokeMap {
   getVersion: { args: []; result: string }
@@ -99,6 +100,9 @@ export interface DesktopInvokeMap {
   openExternal: { args: [url: string]; result: void }
   openDefaultAppSettings: { args: []; result: void }
   takeOpenFiles: { args: []; result: string[] }
+  checkForUpdate: { args: []; result: UpdateSnapshot }
+  downloadUpdate: { args: []; result: void }
+  installUpdate: { args: []; result: void }
 }
 
 export type DesktopInvokeMethod = keyof DesktopInvokeMap
@@ -117,6 +121,7 @@ export interface DesktopBridge {
   onDocumentEvents(callback: (events: DocumentChangeEvent[]) => void): () => void
   onMenuCommand(callback: (command: string) => void): () => void
   onOpenFiles(callback: () => void): () => void
+  onUpdateEvent(callback: (snapshot: UpdateSnapshot) => void): () => void
   platform: string
   titleBarMode: TitleBarMode
 }
@@ -127,6 +132,7 @@ export const DESKTOP_WORKSPACE_EVENTS_CHANNEL = 'notadown:workspace-events'
 export const DESKTOP_DOCUMENT_EVENTS_CHANNEL = 'notadown:document-events'
 export const DESKTOP_MENU_COMMAND_CHANNEL = 'notadown:menu-command'
 export const DESKTOP_OPEN_FILES_CHANNEL = 'notadown:open-files'
+export const DESKTOP_UPDATE_EVENTS_CHANNEL = 'notadown:update-events'
 export const DESKTOP_ASSET_SCHEME = 'notadown-asset'
 
 declare global {

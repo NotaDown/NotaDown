@@ -22,6 +22,8 @@ import {
   type SearchOptions,
   type SearchResult,
   type SessionState,
+  UPDATE_RELEASES_URL,
+  type UpdateSnapshot,
   type WorkspaceInfo,
 } from '@notadown/shared'
 import type { AssetTarget, DocumentWriteResult, Platform } from '../types'
@@ -635,6 +637,35 @@ export class WebPlatform implements Platform {
   }
 
   onOpenFiles(): () => void {
+    return () => undefined
+  }
+
+  async checkForUpdate(): Promise<UpdateSnapshot> {
+    return {
+      status: 'unsupported',
+      currentVersion: this.version,
+      version: null,
+      releaseNotes: null,
+      releaseDate: null,
+      progress: null,
+      transferred: null,
+      total: null,
+      bytesPerSecond: null,
+      error: null,
+      reason: 'platform',
+      manualDownloadUrl: UPDATE_RELEASES_URL,
+    }
+  }
+
+  async downloadUpdate(): Promise<void> {
+    throw new Error('UNSUPPORTED')
+  }
+
+  async installUpdate(): Promise<void> {
+    throw new Error('UNSUPPORTED')
+  }
+
+  onUpdateEvent(): () => void {
     return () => undefined
   }
 

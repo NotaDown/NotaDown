@@ -18,6 +18,7 @@ import * as documentWatch from './document-watch'
 import * as history from './history'
 import { takeOpenFiles } from './open-files'
 import * as state from './state'
+import type { UpdateService } from './update-service'
 import * as workspace from './workspace'
 
 // Keep in sync with productName in electron-builder.yml — Settings resolves the
@@ -27,13 +28,21 @@ const DEFAULT_APP_SETTINGS_NAME = 'NotaDown'
 export function registerIpcHandlers(
   onSettingsSaved?: (settings: AppSettings) => void,
   onRecreateWindow?: () => void,
+  updateService?: UpdateService,
 ): void {
   ipcMain.handle(
     DESKTOP_INVOKE_CHANNEL,
     async (event, method: string, ...args: unknown[]): Promise<unknown> => {
       const window = BrowserWindow.fromWebContents(event.sender)
       try {
-        return await dispatch(method, window, args, onSettingsSaved, onRecreateWindow)
+        return await dispatch(
+          method,
+          window,
+          args,
+          onSettingsSaved,
+          onRecreateWindow,
+          updateService,
+        )
       } catch (error) {
         throw normalizeError(error)
       }
@@ -47,6 +56,7 @@ async function dispatch(
   args: unknown[],
   onSettingsSaved?: (settings: AppSettings) => void,
   onRecreateWindow?: () => void,
+  updateService?: UpdateService,
 ): Promise<unknown> {
   switch (method) {
     case 'getVersion':
@@ -222,6 +232,18 @@ async function dispatch(
 
     case 'takeOpenFiles':
       return takeOpenFiles()
+
+    case 'checkForUpdate':
+      if (!updateService) throw new Error('UNSUPPORTED')
+      return updateService.check()
+    case 'downloadUpdate':
+      if (!updateService) throw new Error('UNSUPPORTED')
+      await updateService.download()
+      return undefined
+    case 'installUpdate':
+      if (!updateService) throw new Error('UNSUPPORTED')
+      updateService.install()
+      return undefined
 
     default:
       throw new Error('UNSUPPORTED')

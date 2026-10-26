@@ -156,6 +156,8 @@ export function installMenu(
           accelerator: 'F1',
           click: () => send('help.shortcuts'),
         },
+        { label: labels.checkForUpdates, click: () => send('help.checkUpdates') },
+        { type: 'separator' },
         { label: labels.about, click: () => send('help.about') },
       ],
     },

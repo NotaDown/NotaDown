@@ -16,6 +16,7 @@ import type {
   SearchOptions,
   SearchResult,
   SessionState,
+  UpdateSnapshot,
   WorkspaceEvent,
   WorkspaceInfo,
 } from '@notadown/shared'
@@ -96,4 +97,8 @@ export interface Platform {
   getPathForFile(file: File): string | null
   onMenuCommand(callback: (command: string) => void): () => void
   onOpenFiles(callback: () => void): () => void
+  checkForUpdate(): Promise<UpdateSnapshot>
+  downloadUpdate(): Promise<void>
+  installUpdate(): Promise<void>
+  onUpdateEvent(callback: (snapshot: UpdateSnapshot) => void): () => void
 }

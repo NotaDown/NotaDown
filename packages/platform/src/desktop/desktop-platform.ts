@@ -20,6 +20,7 @@ import {
   type SearchOptions,
   type SearchResult,
   type SessionState,
+  type UpdateSnapshot,
   type WorkspaceEvent,
   type WorkspaceInfo,
 } from '@notadown/shared'
@@ -337,6 +338,22 @@ export class DesktopPlatform implements Platform {
 
   onOpenFiles(callback: () => void): () => void {
     return this.bridge.onOpenFiles(callback)
+  }
+
+  async checkForUpdate(): Promise<UpdateSnapshot> {
+    return this.bridge.invoke('checkForUpdate')
+  }
+
+  async downloadUpdate(): Promise<void> {
+    await this.bridge.invoke('downloadUpdate')
+  }
+
+  async installUpdate(): Promise<void> {
+    await this.bridge.invoke('installUpdate')
+  }
+
+  onUpdateEvent(callback: (snapshot: UpdateSnapshot) => void): () => void {
+    return this.bridge.onUpdateEvent(callback)
   }
 
   private requireWorkspacePath(ref: DocumentRef): string {

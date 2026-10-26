@@ -29,6 +29,7 @@ NotaDown is a Markdown editor where writing and rendering share one surface. For
 - Web and desktop editions from the same codebase.
 - A native system title bar or an integrated desktop header, configurable in settings.
 - Open Markdown files from the shell, or drop them onto the window, in the desktop edition. The Windows installer lets you choose which of `.md`, `.markdown`, `.mdown` and `.mkd` to associate; the Linux `.deb` package registers all four, and macOS declares the same types in the app bundle. If another editor already handles them, choose NotaDown as the default in system settings.
+- The desktop edition checks for updates from the Help menu, shows the changelog, and installs new versions in place on Windows and the Linux AppImage.
 - The web edition installs as a PWA and starts offline from its cached shell.
 
 ## Requirements

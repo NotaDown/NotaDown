@@ -98,6 +98,9 @@ describe('installMenu', () => {
 
     clickItem(template, 'Help', 'Keyboard Shortcuts')
     expect(send).toHaveBeenLastCalledWith(DESKTOP_MENU_COMMAND_CHANNEL, 'help.shortcuts')
+
+    clickItem(template, 'Help', 'Check for Updates…')
+    expect(send).toHaveBeenLastCalledWith(DESKTOP_MENU_COMMAND_CHANNEL, 'help.checkUpdates')
   })
 
   it('ignores clicks when there is no window', () => {
