@@ -24,6 +24,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # Release convention shared by the abrooka apps: the tag is `v` plus the root
+      # package.json version, so a pre-release carries the same suffix in both
+      # places (root `0.1.0-beta.1` with tag `v0.1.0-beta.1`).
       - name: Verify tag matches the root package version
         env:
           TAG: ${{ github.event.inputs.tag || github.ref_name }}
@@ -32,22 +35,12 @@ jobs:
             echo "Not a v* tag (${TAG}); skipping version verification."
             exit 0
           fi
-          node --input-type=module <<'EOF'
-          import { readFileSync } from 'node:fs'
-          const pkgVersion = JSON.parse(readFileSync('package.json', 'utf8')).version
-          const tag = process.env.TAG.slice(1)
-          const split = (v) => {
-            const i = v.indexOf('-')
-            return i === -1 ? { core: v, pre: '' } : { core: v.slice(0, i), pre: v.slice(i + 1) }
-          }
-          const t = split(tag)
-          const p = split(pkgVersion)
-          if (t.core !== p.core || t.pre !== p.pre) {
-            console.error(`Version mismatch: tag v${tag} does not match root package.json version ${pkgVersion}`)
-            process.exit(1)
-          }
-          console.log(`Verified tag v${tag} against root package.json version ${pkgVersion}.`)
-          EOF
+          version=$(node -p "require('./package.json').version")
+          if [ "${TAG#v}" != "$version" ]; then
+            echo "Tag ${TAG} is not version ${version}; bump the root package.json and re-tag." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "Verified ${TAG} against the root package.json version ${version}."
 
   web:
     needs: validate
@@ -145,4 +138,7 @@ jobs:
           name: NotaDown ${{ github.ref_name }}
           files: artifacts/**/*
           generate_release_notes: true
+          # Release convention shared by the abrooka apps: a tag with a hyphen
+          # after the version (v1.2.3-beta.1) publishes as a GitHub pre-release;
+          # a plain v1.2.3 tag publishes as the current stable release.
           prerelease: ${{ contains(github.ref_name, '-') }}
