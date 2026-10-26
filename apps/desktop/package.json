@@ -1,6 +1,7 @@
 {
   "name": "@notadown/desktop",
   "version": "0.1.0",
+  "desktopName": "notadown.desktop",
   "private": true,
   "description": "NotaDown desktop application",
   "author": "NotaDown contributors",

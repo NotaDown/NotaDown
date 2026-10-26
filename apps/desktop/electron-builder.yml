@@ -49,6 +49,8 @@ mac:
 
 linux:
   icon: assets/icon.png
+  executableName: notadown
+  syncDesktopName: true
   target:
     - AppImage
   category: Office
