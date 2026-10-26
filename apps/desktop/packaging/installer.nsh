@@ -1,15 +1,12 @@
-!include "LogicLib.nsh"
+﻿!include "LogicLib.nsh"
 !include "nsDialogs.nsh"
 !include "WinMessages.nsh"
 
 !define NOTADOWN_ASSOC_PROGID "Markdown Document"
 !define NOTADOWN_ASSOC_BACKUP "Software\NotaDown\AssociationBackup"
+!define NOTADOWN_CAPABILITIES "Software\NotaDown\Capabilities"
 
 !ifndef BUILD_UNINSTALLER
-Var AssocMd
-Var AssocMarkdown
-Var AssocMdown
-Var AssocMkd
 Var AssocDialog
 Var AssocMdCheck
 Var AssocMarkdownCheck
@@ -27,7 +24,7 @@ Var AssocBackupHas
 Var AssocBackupValue
 
 # Built-in registration runs before customInstall, so the previous defaults are
-# captured in customInit and restored when an extension is unchecked or removed.
+# captured in customInit and restored on uninstall.
 !macro NotaDownBackupAssociation EXT KEY
   ReadRegDWORD $AssocBackupHas SHELL_CONTEXT "${NOTADOWN_ASSOC_BACKUP}" "${KEY}Has"
   ${If} $AssocBackupHas == ""
@@ -57,19 +54,7 @@ Var AssocBackupValue
   DeleteRegValue SHELL_CONTEXT "Software\Classes\.${EXT}\OpenWithProgids" "${NOTADOWN_ASSOC_PROGID}"
 !macroend
 
-!macro NotaDownReadChoice KEY VAR
-  ReadRegDWORD ${VAR} SHELL_CONTEXT "${NOTADOWN_ASSOC_BACKUP}" "${KEY}Enabled"
-  ${If} ${VAR} == ""
-    StrCpy ${VAR} "1"
-  ${EndIf}
-!macroend
-
 !macro customInit
-  !insertmacro NotaDownReadChoice "Md" $AssocMd
-  !insertmacro NotaDownReadChoice "Markdown" $AssocMarkdown
-  !insertmacro NotaDownReadChoice "Mdown" $AssocMdown
-  !insertmacro NotaDownReadChoice "Mkd" $AssocMkd
-
   !insertmacro NotaDownBackupAssociation "md" "Md"
   !insertmacro NotaDownBackupAssociation "markdown" "Markdown"
   !insertmacro NotaDownBackupAssociation "mdown" "Mdown"
@@ -77,21 +62,19 @@ Var AssocBackupValue
 !macroend
 
 !macro customPageAfterChangeDir
-  Page custom NotaDownAssocPageCreate NotaDownAssocPageLeave
-
   Function NotaDownAssocPageCreate
     ${If} $LANGUAGE == 2052
       StrCpy $AssocTitle "文件关联"
-      StrCpy $AssocSubtitle "选择要与 NotaDown 关联的 Markdown 文件类型。"
-      StrCpy $AssocHint "勾选的文件类型会出现在“打开方式”菜单中。Windows 不会自动更改默认应用，可在系统设置中确认。"
+      StrCpy $AssocSubtitle "以下 Markdown 文件类型会加入右键“打开方式”菜单。"
+      StrCpy $AssocHint "双击文件使用的程序由系统决定，本次安装不会改动它。首次启动 NotaDown 时会引导你设置。"
       StrCpy $AssocMdLabel "Markdown 文件（.md）"
       StrCpy $AssocMarkdownLabel "Markdown 文件（.markdown）"
       StrCpy $AssocMdownLabel "Markdown 文件（.mdown）"
       StrCpy $AssocMkdLabel "Markdown 文件（.mkd）"
     ${Else}
       StrCpy $AssocTitle "File associations"
-      StrCpy $AssocSubtitle "Choose which Markdown file types should open with NotaDown."
-      StrCpy $AssocHint "The selected types are added to the Open with menu. Windows keeps your current default app until you change it in system settings."
+      StrCpy $AssocSubtitle "These Markdown file types are added to the “Open with” menu."
+      StrCpy $AssocHint "The program used for double-clicking is decided by Windows and is not changed here. NotaDown offers to set it on first launch."
       StrCpy $AssocMdLabel "Markdown files (.md)"
       StrCpy $AssocMarkdownLabel "Markdown files (.markdown)"
       StrCpy $AssocMdownLabel "Markdown files (.mdown)"
@@ -121,53 +104,42 @@ Var AssocBackupValue
     ${NSD_CreateCheckbox} 0 82u 100% 12u "$AssocMkdLabel"
     Pop $AssocMkdCheck
 
-    ${If} $AssocMd == 1
-      ${NSD_Check} $AssocMdCheck
-    ${EndIf}
-    ${If} $AssocMarkdown == 1
-      ${NSD_Check} $AssocMarkdownCheck
-    ${EndIf}
-    ${If} $AssocMdown == 1
-      ${NSD_Check} $AssocMdownCheck
-    ${EndIf}
-    ${If} $AssocMkd == 1
-      ${NSD_Check} $AssocMkdCheck
-    ${EndIf}
+    ${NSD_Check} $AssocMdCheck
+    ${NSD_Check} $AssocMarkdownCheck
+    ${NSD_Check} $AssocMdownCheck
+    ${NSD_Check} $AssocMkdCheck
+    EnableWindow $AssocMdCheck 0
+    EnableWindow $AssocMarkdownCheck 0
+    EnableWindow $AssocMdownCheck 0
+    EnableWindow $AssocMkdCheck 0
 
     nsDialogs::Show
   FunctionEnd
 
-  Function NotaDownAssocPageLeave
-    ${NSD_GetState} $AssocMdCheck $AssocMd
-    ${NSD_GetState} $AssocMarkdownCheck $AssocMarkdown
-    ${NSD_GetState} $AssocMdownCheck $AssocMdown
-    ${NSD_GetState} $AssocMkdCheck $AssocMkd
-  FunctionEnd
+  Page custom NotaDownAssocPageCreate
+!macroend
+
+# Listing the extensions here is what makes NotaDown appear in the Windows
+# "Default apps" page, which the first-launch guide deep-links to.
+!macro NotaDownCapabilityFileAssociation EXT
+  WriteRegStr SHELL_CONTEXT "${NOTADOWN_CAPABILITIES}\FileAssociations" ".${EXT}" "${NOTADOWN_ASSOC_PROGID}"
 !macroend
 
 !macro customInstall
-  ${If} $AssocMd != 1
-    !insertmacro NotaDownRestoreAssociation "md" "Md"
-  ${EndIf}
-  ${If} $AssocMarkdown != 1
-    !insertmacro NotaDownRestoreAssociation "markdown" "Markdown"
-  ${EndIf}
-  ${If} $AssocMdown != 1
-    !insertmacro NotaDownRestoreAssociation "mdown" "Mdown"
-  ${EndIf}
-  ${If} $AssocMkd != 1
-    !insertmacro NotaDownRestoreAssociation "mkd" "Mkd"
-  ${EndIf}
-
-  WriteRegDWORD SHELL_CONTEXT "${NOTADOWN_ASSOC_BACKUP}" "MdEnabled" $AssocMd
-  WriteRegDWORD SHELL_CONTEXT "${NOTADOWN_ASSOC_BACKUP}" "MarkdownEnabled" $AssocMarkdown
-  WriteRegDWORD SHELL_CONTEXT "${NOTADOWN_ASSOC_BACKUP}" "MdownEnabled" $AssocMdown
-  WriteRegDWORD SHELL_CONTEXT "${NOTADOWN_ASSOC_BACKUP}" "MkdEnabled" $AssocMkd
+  WriteRegStr SHELL_CONTEXT "${NOTADOWN_CAPABILITIES}" "ApplicationName" "${PRODUCT_NAME}"
+  WriteRegStr SHELL_CONTEXT "${NOTADOWN_CAPABILITIES}" "ApplicationDescription" "Markdown editor"
+  !insertmacro NotaDownCapabilityFileAssociation "md"
+  !insertmacro NotaDownCapabilityFileAssociation "markdown"
+  !insertmacro NotaDownCapabilityFileAssociation "mdown"
+  !insertmacro NotaDownCapabilityFileAssociation "mkd"
+  WriteRegStr SHELL_CONTEXT "Software\RegisteredApplications" "${PRODUCT_NAME}" "${NOTADOWN_CAPABILITIES}"
 
   !insertmacro UPDATEFILEASSOC
 !macroend
 
 !macro customUnInstall
+  DeleteRegValue SHELL_CONTEXT "Software\RegisteredApplications" "${PRODUCT_NAME}"
+  DeleteRegKey SHELL_CONTEXT "${NOTADOWN_CAPABILITIES}"
   !insertmacro NotaDownRestoreAssociation "md" "Md"
   !insertmacro NotaDownRestoreAssociation "markdown" "Markdown"
   !insertmacro NotaDownRestoreAssociation "mdown" "Mdown"
