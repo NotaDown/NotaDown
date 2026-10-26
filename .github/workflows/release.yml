@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to verify the root version against (leave empty for a branch build)
+        required: false
+        default: ''
 
 concurrency:
   group: release-${{ github.ref }}
@@ -14,7 +19,38 @@ permissions:
   contents: write
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Verify tag matches the root package version
+        env:
+          TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          if [ "${TAG#v}" = "$TAG" ]; then
+            echo "Not a v* tag (${TAG}); skipping version verification."
+            exit 0
+          fi
+          node --input-type=module <<'EOF'
+          import { readFileSync } from 'node:fs'
+          const pkgVersion = JSON.parse(readFileSync('package.json', 'utf8')).version
+          const tag = process.env.TAG.slice(1)
+          const split = (v) => {
+            const i = v.indexOf('-')
+            return i === -1 ? { core: v, pre: '' } : { core: v.slice(0, i), pre: v.slice(i + 1) }
+          }
+          const t = split(tag)
+          const p = split(pkgVersion)
+          if (t.core !== p.core || t.pre !== p.pre) {
+            console.error(`Version mismatch: tag v${tag} does not match root package.json version ${pkgVersion}`)
+            process.exit(1)
+          }
+          console.log(`Verified tag v${tag} against root package.json version ${pkgVersion}.`)
+          EOF
+
   web:
+    needs: validate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -48,6 +84,7 @@ jobs:
           if-no-files-found: error
 
   desktop:
+    needs: validate
     strategy:
       fail-fast: false
       matrix:
