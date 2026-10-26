@@ -163,6 +163,17 @@ export async function renameWorkspaceEntry(
   await fs.rename(source, target)
 }
 
+export async function copyWorkspaceEntry(
+  relativePath: string,
+  nextRelativePath: string,
+): Promise<void> {
+  const source = resolveWorkspacePath(relativePath)
+  const target = resolveWorkspacePath(nextRelativePath)
+  if (source === target) return
+  if (await pathExists(target)) throw new Error('ALREADY_EXISTS')
+  await fs.cp(source, target, { recursive: true, errorOnExist: true, force: false })
+}
+
 export async function moveWorkspaceEntry(
   relativePath: string,
   destinationDir: string,

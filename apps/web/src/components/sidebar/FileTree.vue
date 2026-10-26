@@ -88,18 +88,22 @@ const contextItems = computed<MenuItem[]>(() => {
   if (!hasTarget || isDirectory) {
     items.push({ id: 'new-file', label: t('sidebar.newFile') })
     items.push({ id: 'new-folder', label: t('sidebar.newFolder') })
+    items.push({ id: 'sep-1', separator: true })
   }
   if (hasTarget) {
-    items.push({ id: 'sep-1', separator: true })
-    items.push({ id: 'rename', label: t('sidebar.rename') })
+    items.push({
+      id: 'rename',
+      label: t('sidebar.rename'),
+      shortcut: commands.shortcut('workspace.renameEntry'),
+    })
+    items.push({ id: 'duplicate', label: t('sidebar.duplicate') })
     items.push({ id: 'delete', label: t('sidebar.delete'), danger: true })
     items.push({ id: 'sep-2', separator: true })
     if (platform.capabilities.revealInFolder) {
       items.push({ id: 'reveal', label: t('sidebar.reveal') })
     }
     items.push({ id: 'copy-path', label: t('tabs.copyPath') })
-  } else {
-    items.push({ id: 'sep-1', separator: true })
+    items.push({ id: 'sep-3', separator: true })
   }
   items.push({ id: 'refresh', label: t('sidebar.refresh') })
   return items
@@ -203,6 +207,21 @@ function startCreate(mode: 'file' | 'folder'): void {
   openDialog(mode, defaultParent())
 }
 
+function startRename(path: string, kind: 'file' | 'directory', name = basename(path)): void {
+  workspace.select(path)
+  openDialog('rename', dirname(path), path, kind, name)
+}
+
+function onRowKeydown(event: KeyboardEvent, node: WorkspaceNode): void {
+  if ((event.target as HTMLElement).closest('button') !== null) return
+  if (event.key === 'F2' || (commands.platform === 'mac' && event.key === 'Enter')) {
+    event.preventDefault()
+    startRename(node.path, node.kind, node.name)
+    return
+  }
+  if (event.key === 'Enter') handleRow(node)
+}
+
 async function submitDialog(): Promise<void> {
   const current = dialog.value
   if (!current || busy.value) return
@@ -276,9 +295,10 @@ function handleContextSelect(id: string): void {
       openDialog('folder', parent)
       break
     case 'rename':
-      if (target) {
-        openDialog('rename', dirname(target), target, contextKind.value ?? 'file', basename(target))
-      }
+      if (target) startRename(target, contextKind.value ?? 'file')
+      break
+    case 'duplicate':
+      if (target) void duplicateEntry(target)
       break
     case 'delete':
       if (target) void removeEntry(target, contextKind.value ?? 'file')
@@ -335,6 +355,15 @@ async function copyPath(path: string): Promise<void> {
     ui.toast('success', t('common.copied'))
   } catch {
     ui.toast('error', t('toasts.copyFailed'))
+  }
+}
+
+async function duplicateEntry(path: string): Promise<void> {
+  try {
+    const nextPath = await workspace.duplicateEntry(path, t('tree.duplicateSuffix'))
+    if (nextPath) ui.toast('success', t('tree.duplicated', { name: basename(nextPath) }))
+  } catch (error) {
+    ui.toast('error', t('tree.duplicateFailed'), describeError(error))
   }
 }
 
@@ -516,7 +545,7 @@ function closeDialog(): void {
         :aria-expanded="row.node.kind === 'directory' ? isOpen(row.node) : undefined"
         draggable="true"
         @click="handleRow(row.node)"
-        @keydown.enter="handleRow(row.node)"
+        @keydown="onRowKeydown($event, row.node)"
         @contextmenu.stop="onRowContext($event, row.node)"
         @dragstart="onDragStart($event, row.node)"
         @dragend="onDragEnd"

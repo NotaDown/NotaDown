@@ -175,7 +175,7 @@ export async function writeFileHandle(
   }
 }
 
-async function copyDirectory(
+export async function copyDirectory(
   source: FsDirectoryHandle,
   destination: FsDirectoryHandle,
 ): Promise<void> {

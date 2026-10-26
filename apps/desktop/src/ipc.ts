@@ -73,6 +73,12 @@ async function dispatch(
         String(args[1] ?? ''),
       )
       return undefined
+    case 'copyWorkspaceEntry':
+      await workspace.copyWorkspaceEntry(
+        String(args[0] ?? ''),
+        String(args[1] ?? ''),
+      )
+      return undefined
     case 'moveWorkspaceEntry':
       await workspace.moveWorkspaceEntry(String(args[0] ?? ''), String(args[1] ?? ''))
       return undefined

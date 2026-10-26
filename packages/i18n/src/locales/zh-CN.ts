@@ -113,6 +113,7 @@ export const zhCN = {
     newFile: '新建文件',
     newFolder: '新建文件夹',
     rename: '重命名',
+    duplicate: '创建副本',
     delete: '删除',
     reveal: '在文件管理器中显示',
     refresh: '刷新',
@@ -153,6 +154,9 @@ export const zhCN = {
     openExternally: '使用系统应用打开',
     created: '已创建 {name}',
     renamed: '已重命名为 {name}',
+    duplicateSuffix: '副本',
+    duplicated: '已创建副本 {name}',
+    duplicateFailed: '无法创建副本。',
     deleted: '已删除 {name}',
     moved: '已移动 {name}',
     moveFailed: '无法移动此项。',
@@ -426,6 +430,7 @@ export const zhCN = {
       workspace: {
         open: '打开文件夹',
         close: '关闭文件夹',
+        renameEntry: '重命名文件或文件夹',
       },
       tab: {
         next: '下一个标签页',

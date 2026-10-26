@@ -222,6 +222,27 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     return nextPath
   }
 
+  async function duplicateEntry(path: string, suffix: string): Promise<string | null> {
+    const clean = normalizeSlashes(path)
+    const entry = entries.value.find((item) => item.path === clean)
+    if (!entry) return null
+    const parent = dirname(clean)
+    const extension = entry.kind === 'file' ? extensionOf(entry.name) : ''
+    const stem = extension ? entry.name.slice(0, entry.name.length - extension.length - 1) : entry.name
+    const base = `${stem}-${suffix}`
+    const nameFor = (index: number): string => {
+      const name = index === 1 ? base : `${base}${index}`
+      return extension ? `${name}.${extension}` : name
+    }
+    let index = 1
+    while (hasEntry(joinPosix(parent, nameFor(index)))) index += 1
+    const nextPath = joinPosix(parent, nameFor(index))
+    await platform.copyWorkspaceEntry(clean, nextPath)
+    await refresh()
+    selectedPath.value = nextPath
+    return nextPath
+  }
+
   async function moveEntry(path: string, destinationDir: string): Promise<string | null> {
     const source = normalizeSlashes(path)
     const destination = normalizeSlashes(destinationDir)
@@ -319,6 +340,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     createFile,
     createDirectory,
     renameEntry,
+    duplicateEntry,
     moveEntry,
     deleteEntry,
     revealEntry,

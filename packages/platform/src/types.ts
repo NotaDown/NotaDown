@@ -44,6 +44,7 @@ export interface Platform {
   createWorkspaceFile(path: string, content: string): Promise<void>
   createWorkspaceDirectory(path: string): Promise<void>
   renameWorkspaceEntry(path: string, nextPath: string): Promise<void>
+  copyWorkspaceEntry(path: string, nextPath: string): Promise<void>
   moveWorkspaceEntry(path: string, destinationDir: string): Promise<void>
   deleteWorkspaceEntry(path: string, isDirectory: boolean): Promise<void>
   revealWorkspaceEntry(path: string): Promise<void>

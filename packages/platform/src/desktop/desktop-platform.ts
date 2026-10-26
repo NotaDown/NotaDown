@@ -108,6 +108,10 @@ export class DesktopPlatform implements Platform {
     await this.bridge.invoke('renameWorkspaceEntry', path, nextPath)
   }
 
+  async copyWorkspaceEntry(path: string, nextPath: string): Promise<void> {
+    await this.bridge.invoke('copyWorkspaceEntry', path, nextPath)
+  }
+
   async moveWorkspaceEntry(path: string, destinationDir: string): Promise<void> {
     await this.bridge.invoke('moveWorkspaceEntry', path, destinationDir)
   }

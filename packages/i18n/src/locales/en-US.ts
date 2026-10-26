@@ -113,6 +113,7 @@ export const enUS = {
     newFile: 'New file',
     newFolder: 'New folder',
     rename: 'Rename',
+    duplicate: 'Duplicate',
     delete: 'Delete',
     reveal: 'Show in file manager',
     refresh: 'Refresh',
@@ -153,6 +154,9 @@ export const enUS = {
     openExternally: 'Open with the system app',
     created: 'Created {name}',
     renamed: 'Renamed to {name}',
+    duplicateSuffix: 'copy',
+    duplicated: 'Created copy {name}',
+    duplicateFailed: 'Could not create a copy.',
     deleted: 'Deleted {name}',
     moved: 'Moved {name}',
     moveFailed: 'Could not move this item.',
@@ -426,6 +430,7 @@ export const enUS = {
       workspace: {
         open: 'Open folder',
         close: 'Close folder',
+        renameEntry: 'Rename file or folder',
       },
       tab: {
         next: 'Next tab',

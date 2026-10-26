@@ -31,6 +31,7 @@ import {
   entryExists,
   fsaWindow,
   getParentDirectory,
+  copyDirectory,
   moveHandle,
   pathSegments,
   printHtml,
@@ -182,6 +183,23 @@ export class WebPlatform implements Platform {
     const sourceHandle = await this.resolveEntry(sourceParent, sourceName)
     const { parent: destinationParent, name: nextName } = await getParentDirectory(root, nextPath)
     await moveHandle(sourceHandle, sourceParent, sourceName, destinationParent, nextName)
+  }
+
+  async copyWorkspaceEntry(path: string, nextPath: string): Promise<void> {
+    const root = this.requireRoot()
+    if (path === nextPath) return
+    if (await entryExists(root, nextPath)) throw new Error('ALREADY_EXISTS')
+    const { parent: sourceParent, name: sourceName } = await getParentDirectory(root, path)
+    const sourceHandle = await this.resolveEntry(sourceParent, sourceName)
+    const { parent: destinationParent, name: nextName } = await getParentDirectory(root, nextPath)
+    if (sourceHandle.kind === 'file') {
+      const file = await (sourceHandle as FsFileHandle).getFile()
+      const target = await destinationParent.getFileHandle(nextName, { create: true })
+      await writeFileHandle(target, await file.arrayBuffer())
+      return
+    }
+    const targetDir = await destinationParent.getDirectoryHandle(nextName, { create: true })
+    await copyDirectory(sourceHandle as FsDirectoryHandle, targetDir)
   }
 
   async moveWorkspaceEntry(path: string, destinationDir: string): Promise<void> {

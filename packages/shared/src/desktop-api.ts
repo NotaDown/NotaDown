@@ -42,6 +42,10 @@ export interface DesktopInvokeMap {
     args: [relativePath: string, nextRelativePath: string]
     result: void
   }
+  copyWorkspaceEntry: {
+    args: [relativePath: string, nextRelativePath: string]
+    result: void
+  }
   moveWorkspaceEntry: {
     args: [relativePath: string, destinationDir: string]
     result: void

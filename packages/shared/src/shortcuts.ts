@@ -15,6 +15,7 @@ export const SHORTCUTS: ShortcutDefinition[] = [
   { id: 'file.save', category: 'file', keys: 'Mod+S' },
   { id: 'file.saveAs', category: 'file', keys: 'Mod+Shift+S' },
   { id: 'file.closeTab', category: 'file', keys: 'Mod+W' },
+  { id: 'workspace.renameEntry', category: 'file', keys: 'F2', macKeys: 'Enter' },
   { id: 'tab.next', category: 'file', keys: 'Ctrl+Tab' },
   { id: 'tab.previous', category: 'file', keys: 'Ctrl+Shift+Tab' },
   { id: 'edit.undo', category: 'edit', keys: 'Mod+Z' },
