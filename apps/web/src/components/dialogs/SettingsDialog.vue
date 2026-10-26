@@ -6,6 +6,7 @@ import {
   Info,
   Keyboard,
   Palette,
+  RefreshCw,
   RotateCcw,
   RotateCw,
   SlidersHorizontal,
@@ -30,6 +31,7 @@ import { LOCALE_NAMES, SUPPORTED_LOCALES } from '@notadown/i18n'
 import { platform } from '@/platform'
 import { useSettingsStore } from '@/stores/settings'
 import { useTabsStore } from '@/stores/tabs'
+import { useUpdateStore } from '@/stores/update'
 import { useUiStore, type SettingsSection } from '@/stores/ui'
 import { appliedTitleBarMode } from '@/window-chrome'
 import ShortcutsList from '../common/ShortcutsList.vue'
@@ -38,6 +40,7 @@ import BrandMark from '../common/BrandMark.vue'
 const { t } = useI18n()
 const settings = useSettingsStore()
 const tabs = useTabsStore()
+const update = useUpdateStore()
 const ui = useUiStore()
 const isDesktop = platform.kind === 'desktop'
 const canDefaultAppSettings = platform.capabilities.defaultAppSettings
@@ -905,6 +908,12 @@ async function clearHistory(): Promise<void> {
                     <dd>Milkdown · Vue · Electron</dd>
                   </div>
                 </dl>
+                <div v-if="isDesktop" class="settings-about__actions">
+                  <button type="button" class="nd-btn nd-btn--sm" @click="update.check()">
+                    <RefreshCw :size="13" />
+                    {{ t('menu.checkForUpdates') }}
+                  </button>
+                </div>
               </section>
             </div>
           </div>
@@ -1253,6 +1262,12 @@ async function clearHistory(): Promise<void> {
   margin: 0;
   color: var(--nd-text);
   text-align: right;
+}
+
+.settings-about__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
 }
 
 .settings-dialog__footer {
