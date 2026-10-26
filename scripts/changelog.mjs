@@ -52,7 +52,9 @@ const markdown = (await generateMarkDown(commits, config)).trim()
 const defaultHeader = '# Changelog\n\nEnglish is canonical; entries are generated from conventional commits by `pnpm changelog`.'
 const firstEntry = changelog.match(/^#{2,3}\s+.*$/m)
 const prefix = firstEntry ? changelog.slice(0, firstEntry.index) : changelog
-const updated = `${(prefix.trim() || defaultHeader)}\n\n${markdown}\n`
+// Earlier sections stay in the file: CHANGELOG.md is the whole release history, not just the newest entry.
+const earlier = firstEntry ? `\n\n${changelog.slice(firstEntry.index).trimEnd()}\n` : ''
+const updated = `${(prefix.trim() || defaultHeader)}\n\n${markdown}\n${earlier}`
 
 writeFileSync(changelogPath, updated)
 console.log(`Wrote section v${version} (${config.from}...${config.to}, ${commits.length} commits)`)
