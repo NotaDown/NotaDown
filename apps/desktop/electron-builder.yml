@@ -18,26 +18,31 @@ artifactName: ${productName} ${version}-${arch}.${ext}
 
 fileAssociations:
   # One entry per extension: Linux targets reject an array for ext.
+  # icon resolves to notadown-file.ico on Windows and notadown-file.icns on macOS.
   - ext: md
     name: Markdown Document
     description: Markdown document
     role: Editor
     mimeType: text/markdown
+    icon: assets/notadown-file.ico
   - ext: markdown
     name: Markdown Document
     description: Markdown document
     role: Editor
     mimeType: text/markdown
+    icon: assets/notadown-file.ico
   - ext: mdown
     name: Markdown Document
     description: Markdown document
     role: Editor
     mimeType: text/markdown
+    icon: assets/notadown-file.ico
   - ext: mkd
     name: Markdown Document
     description: Markdown document
     role: Editor
     mimeType: text/markdown
+    icon: assets/notadown-file.ico
 
 win:
   icon: assets/icon.ico
