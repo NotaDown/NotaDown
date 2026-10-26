@@ -442,6 +442,10 @@ export class WebPlatform implements Platform {
     return () => undefined
   }
 
+  watchDocument(): () => void {
+    return () => undefined
+  }
+
   async saveHistory(
     input: HistorySnapshotInput,
     options: HistoryOptions,

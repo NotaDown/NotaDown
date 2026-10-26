@@ -1,5 +1,6 @@
 import {
   DESKTOP_ASSET_SCHEME,
+  DESKTOP_DOCUMENT_EVENTS_CHANNEL,
   DESKTOP_INVOKE_CHANNEL,
   DESKTOP_MENU_COMMAND_CHANNEL,
   DESKTOP_OPEN_FILES_CHANNEL,
@@ -9,6 +10,7 @@ import {
   type DesktopInvokeArgs,
   type DesktopInvokeMethod,
   type DesktopInvokeResult,
+  type DocumentChangeEvent,
   type TitleBarMode,
   type WorkspaceEvent,
 } from '@notadown/shared'
@@ -45,6 +47,13 @@ const bridge: DesktopBridge = {
     const listener = (_event: unknown, events: WorkspaceEvent[]) => callback(events)
     ipcRenderer.on(DESKTOP_WORKSPACE_EVENTS_CHANNEL, listener)
     return () => ipcRenderer.removeListener(DESKTOP_WORKSPACE_EVENTS_CHANNEL, listener)
+  },
+  onDocumentEvents(
+    callback: (events: DocumentChangeEvent[]) => void,
+  ): () => void {
+    const listener = (_event: unknown, events: DocumentChangeEvent[]) => callback(events)
+    ipcRenderer.on(DESKTOP_DOCUMENT_EVENTS_CHANNEL, listener)
+    return () => ipcRenderer.removeListener(DESKTOP_DOCUMENT_EVENTS_CHANNEL, listener)
   },
   onMenuCommand(callback: (command: string) => void): () => void {
     const listener = (_event: unknown, command: string) => callback(command)

@@ -88,6 +88,11 @@ export interface WorkspaceEvent {
   mtime?: number
 }
 
+export interface DocumentChangeEvent {
+  type: 'add' | 'change' | 'unlink'
+  path: string
+}
+
 export interface OutlineItem {
   level: number
   text: string

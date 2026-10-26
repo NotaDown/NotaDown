@@ -1,6 +1,7 @@
 import type { AppSettings } from './settings'
 import type {
   AssetReadResult,
+  DocumentChangeEvent,
   DocumentRef,
   DocumentStat,
   FileEntry,
@@ -71,6 +72,8 @@ export interface DesktopInvokeMap {
     result: SearchResult[]
   }
   startWatch: { args: []; result: void }
+  startFileWatch: { args: [absolutePath: string]; result: void }
+  stopFileWatch: { args: [absolutePath: string]; result: void }
   historySnapshot: {
     args: [input: HistorySnapshotInput, options: HistoryOptions]
     result: HistoryRecord
@@ -103,6 +106,7 @@ export interface DesktopBridge {
   assetUrl(absolutePath: string): string
   getPathForFile(file: File): string | null
   onWorkspaceEvents(callback: (events: WorkspaceEvent[]) => void): () => void
+  onDocumentEvents(callback: (events: DocumentChangeEvent[]) => void): () => void
   onMenuCommand(callback: (command: string) => void): () => void
   onOpenFiles(callback: () => void): () => void
   platform: string
@@ -112,6 +116,7 @@ export interface DesktopBridge {
 export const DESKTOP_TITLE_BAR_ARG = '--notadown-title-bar='
 export const DESKTOP_INVOKE_CHANNEL = 'notadown:invoke'
 export const DESKTOP_WORKSPACE_EVENTS_CHANNEL = 'notadown:workspace-events'
+export const DESKTOP_DOCUMENT_EVENTS_CHANNEL = 'notadown:document-events'
 export const DESKTOP_MENU_COMMAND_CHANNEL = 'notadown:menu-command'
 export const DESKTOP_OPEN_FILES_CHANNEL = 'notadown:open-files'
 export const DESKTOP_ASSET_SCHEME = 'notadown-asset'

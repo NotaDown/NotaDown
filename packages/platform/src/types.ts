@@ -1,6 +1,7 @@
 import type {
   AppSettings,
   AssetReadResult,
+  DocumentChangeEvent,
   DocumentRef,
   DocumentStat,
   FileEntry,
@@ -67,6 +68,10 @@ export interface Platform {
 
   search(query: string, options?: SearchOptions): Promise<SearchResult[]>
   watchWorkspace(onEvents: (events: WorkspaceEvent[]) => void): () => void
+  watchDocument(
+    path: string,
+    onEvent: (event: DocumentChangeEvent) => void,
+  ): () => void
 
   saveHistory(input: HistorySnapshotInput, options: HistoryOptions): Promise<HistoryRecord>
   listHistory(documentKey?: string): Promise<HistoryRecord[]>

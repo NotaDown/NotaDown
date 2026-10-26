@@ -14,6 +14,7 @@ import {
 } from './chrome'
 import { exportHtml, exportPdf } from './export'
 import { normalizeError } from './errors'
+import * as documentWatch from './document-watch'
 import * as history from './history'
 import { takeOpenFiles } from './open-files'
 import * as state from './state'
@@ -115,6 +116,13 @@ async function dispatch(
     case 'startWatch':
       if (!window) throw new Error('NO_WINDOW')
       workspace.startWatch(window)
+      return undefined
+    case 'startFileWatch':
+      if (!window) throw new Error('NO_WINDOW')
+      documentWatch.startFileWatch(String(args[0] ?? ''), window)
+      return undefined
+    case 'stopFileWatch':
+      documentWatch.stopFileWatch(String(args[0] ?? ''))
       return undefined
 
     case 'historySnapshot':

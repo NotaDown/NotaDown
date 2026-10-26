@@ -6,6 +6,7 @@ import {
   type AppSettings,
   type AssetReadResult,
   type DesktopBridge,
+  type DocumentChangeEvent,
   type DocumentRef,
   type DocumentStat,
   type FileEntry,
@@ -216,6 +217,28 @@ export class DesktopPlatform implements Platform {
     const unsubscribe = this.bridge.onWorkspaceEvents(onEvents)
     void this.bridge.invoke('startWatch').catch(() => undefined)
     return unsubscribe
+  }
+
+  watchDocument(
+    path: string,
+    onEvent: (event: DocumentChangeEvent) => void,
+  ): () => void {
+    const target = normalizeSlashes(path)
+    const caseInsensitive = this.bridge.platform === 'win32'
+    const unsubscribe = this.bridge.onDocumentEvents((events) => {
+      for (const event of events) {
+        const candidate = normalizeSlashes(event.path)
+        const matches = caseInsensitive
+          ? candidate.toLowerCase() === target.toLowerCase()
+          : candidate === target
+        if (matches) onEvent(event)
+      }
+    })
+    void this.bridge.invoke('startFileWatch', path).catch(() => undefined)
+    return () => {
+      unsubscribe()
+      void this.bridge.invoke('stopFileWatch', path).catch(() => undefined)
+    }
   }
 
   async saveHistory(

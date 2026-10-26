@@ -55,6 +55,7 @@ export const useTabsStore = defineStore('tabs', () => {
   const activeKey = ref<string | null>(null)
 
   const autosaveTimers = new Map<string, number>()
+  const documentWatchers = new Map<string, () => void>()
   const snapshotting = new Set<string>()
 
   const activeTab = computed(() => tabs.value.find((tab) => tab.key === activeKey.value) ?? null)
@@ -133,6 +134,7 @@ export const useTabsStore = defineStore('tabs', () => {
     }
     tabs.value.push(tab)
     activeKey.value = tab.key
+    watchDocumentTab(tab)
     if (ref.origin !== 'untitled') recent.record(ref)
     if (largeDocument) {
       ui.toast('info', t('editor.largeDocument'), tab.name, 5000)
@@ -287,6 +289,64 @@ export const useTabsStore = defineStore('tabs', () => {
     autosaveTimers.delete(tabKey)
   }
 
+  function watchDocumentTab(tab: EditorTab): void {
+    unwatchDocumentTab(tab.key)
+    if (!platform.capabilities.fileSystemWatching) return
+    if (tab.ref.origin !== 'file' || !tab.ref.path) return
+    const path = normalizeSlashes(tab.ref.path)
+    const stop = platform.watchDocument(tab.ref.path, () => {
+      const target = tabs.value.find((item) => item.key === tab.key)
+      if (!target || target.ref.origin !== 'file' || !target.ref.path) return
+      if (normalizeSlashes(target.ref.path) !== path) return
+      void checkDisk(target)
+    })
+    documentWatchers.set(tab.key, stop)
+  }
+
+  function unwatchDocumentTab(tabKey: string): void {
+    const stop = documentWatchers.get(tabKey)
+    if (!stop) return
+    documentWatchers.delete(tabKey)
+    stop()
+  }
+
+  async function hasExternalEdit(tab: EditorTab): Promise<boolean> {
+    if (!platform.capabilities.fileSystemWatching) return false
+    if (tab.ref.origin !== 'file' || !tab.ref.path || tab.downloadOnly) return false
+    if (tab.mtime === null) return false
+    try {
+      const stat = await platform.statDocument(tab.ref)
+      if (!stat.exists || stat.mtime === null || stat.mtime <= tab.mtime) return false
+      const opened = await platform.readDocument(tab.ref)
+      if (opened.content === tab.savedContent || opened.content === tab.content) {
+        tab.mtime = opened.mtime
+        return false
+      }
+      if (!isDirty(tab)) {
+        tab.content = opened.content
+        tab.savedContent = opened.content
+        tab.mtime = opened.mtime
+        tab.missing = false
+        tab.reloadToken += 1
+        if (tab.key === activeKey.value) {
+          ui.toast('info', t('toasts.externalChangeReloaded'), tab.name)
+        }
+        return true
+      }
+      tab.conflict = true
+      tab.pendingDiskContent = opened.content
+      tab.mtime = opened.mtime
+      tab.missing = false
+      clearAutosave(tab.key)
+      if (tab.key === activeKey.value) {
+        ui.toast('warning', t('dialogs.conflictTitle'), tab.name)
+      }
+      return true
+    } catch {
+      return false
+    }
+  }
+
   async function saveTab(target: string | EditorTab): Promise<boolean> {
     const tab = typeof target === 'string' ? findTab(target) : target
     if (!tab) return false
@@ -298,6 +358,7 @@ export const useTabsStore = defineStore('tabs', () => {
     const content = tab.content
     tab.saving = true
     try {
+      if (await hasExternalEdit(tab)) return false
       const result = await platform.writeDocument(tab.ref, content)
       tab.savedContent = content
       tab.mtime = result.mtime
@@ -338,6 +399,7 @@ export const useTabsStore = defineStore('tabs', () => {
       if (!ref) return false
       tab.ref = ref
       tab.name = ref.name
+      watchDocumentTab(tab)
       tab.savedContent = content
       tab.missing = false
       tab.conflict = false
@@ -392,6 +454,7 @@ export const useTabsStore = defineStore('tabs', () => {
 
   function removeTab(tab: EditorTab): void {
     clearAutosave(tab.key)
+    unwatchDocumentTab(tab.key)
     const index = tabs.value.findIndex((item) => item.key === tab.key)
     if (index === -1) return
     tabs.value.splice(index, 1)
@@ -705,6 +768,8 @@ export const useTabsStore = defineStore('tabs', () => {
   function dispose(): void {
     for (const timer of autosaveTimers.values()) window.clearTimeout(timer)
     autosaveTimers.clear()
+    for (const stop of documentWatchers.values()) stop()
+    documentWatchers.clear()
   }
 
   return {

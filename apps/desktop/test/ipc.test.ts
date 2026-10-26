@@ -31,6 +31,10 @@ const mocks = vi.hoisted(() => ({
     searchWorkspace: vi.fn(async () => []),
     startWatch: vi.fn(),
   },
+  documentWatch: {
+    startFileWatch: vi.fn(),
+    stopFileWatch: vi.fn(),
+  },
   history: {
     saveHistory: vi.fn(async () => null),
     listHistory: vi.fn(async () => []),
@@ -64,6 +68,7 @@ vi.mock('electron', () => ({
   shell: { openExternal: mocks.electron.openExternal },
 }))
 vi.mock('../src/workspace', () => mocks.workspace)
+vi.mock('../src/document-watch', () => mocks.documentWatch)
 vi.mock('../src/history', () => mocks.history)
 vi.mock('../src/state', () => mocks.state)
 vi.mock('../src/export', () => mocks.exporter)
@@ -111,6 +116,18 @@ describe('registerIpcHandlers', () => {
 
     await invoke('startWatch')
     expect(mocks.workspace.startWatch).toHaveBeenCalledWith(window)
+
+    await invoke('startFileWatch', 'C:/notes/a.md')
+    expect(mocks.documentWatch.startFileWatch).toHaveBeenCalledWith('C:/notes/a.md', window)
+
+    await invoke('stopFileWatch', 'C:/notes/a.md')
+    expect(mocks.documentWatch.stopFileWatch).toHaveBeenCalledWith('C:/notes/a.md')
+  })
+
+  it('rejects starting a file watcher without a window', async () => {
+    mocks.electron.fromWebContents.mockReturnValueOnce(null)
+    await expect(invoke('startFileWatch', 'C:/notes/a.md')).rejects.toThrow('NO_WINDOW')
+    expect(mocks.documentWatch.startFileWatch).not.toHaveBeenCalled()
   })
 
   it('coerces arguments for workspace writes', async () => {

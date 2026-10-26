@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import type { DesktopBridge, WorkspaceInfo } from '@notadown/shared'
+import { describe, expect, it, vi } from 'vitest'
+import type { DesktopBridge, DocumentChangeEvent, WorkspaceInfo } from '@notadown/shared'
 import { DesktopPlatform } from '../src/desktop/desktop-platform'
 
 interface BridgeOptions {
@@ -7,11 +7,13 @@ interface BridgeOptions {
   filePath?: string | null
   files?: Record<string, string>
   openFiles?: string[]
+  platform?: string
 }
 
 function createBridge(options: BridgeOptions = {}) {
   const calls: Array<{ method: string; args: unknown[] }> = []
   const openFileListeners = new Set<() => void>()
+  const documentListeners = new Set<(events: DocumentChangeEvent[]) => void>()
 
   const bridge = {
     invoke: async (method: string, ...args: unknown[]) => {
@@ -34,15 +36,19 @@ function createBridge(options: BridgeOptions = {}) {
     assetUrl: (absolutePath: string) => absolutePath,
     getPathForFile: () => options.filePath ?? null,
     onWorkspaceEvents: () => () => undefined,
+    onDocumentEvents: (callback: (events: DocumentChangeEvent[]) => void) => {
+      documentListeners.add(callback)
+      return () => documentListeners.delete(callback)
+    },
     onMenuCommand: () => () => undefined,
     onOpenFiles: (callback: () => void) => {
       openFileListeners.add(callback)
       return () => openFileListeners.delete(callback)
     },
-    platform: 'win32',
+    platform: options.platform ?? 'win32',
   } as unknown as DesktopBridge
 
-  return { bridge, calls, openFileListeners }
+  return { bridge, calls, openFileListeners, documentListeners }
 }
 
 async function createPlatform(options: BridgeOptions = {}) {
@@ -182,5 +188,55 @@ describe('DesktopPlatform pending open files', () => {
 
     dispose()
     expect(openFileListeners.has(listener)).toBe(false)
+  })
+})
+
+describe('DesktopPlatform.watchDocument', () => {
+  it('starts a single-file watch and forwards only matching paths', async () => {
+    const { platform, calls, documentListeners } = await createPlatform()
+    const onEvent = vi.fn()
+
+    const dispose = platform.watchDocument('C:\\Notes\\a.md', onEvent)
+
+    expect(calls).toContainEqual({
+      method: 'startFileWatch',
+      args: ['C:\\Notes\\a.md'],
+    })
+    expect(documentListeners.size).toBe(1)
+
+    for (const listener of documentListeners) {
+      listener([
+        { type: 'change', path: 'c:/notes/A.MD' },
+        { type: 'change', path: 'C:\\Notes\\b.md' },
+      ])
+    }
+    expect(onEvent).toHaveBeenCalledTimes(1)
+    expect(onEvent).toHaveBeenCalledWith({ type: 'change', path: 'c:/notes/A.MD' })
+
+    dispose()
+    expect(calls).toContainEqual({
+      method: 'stopFileWatch',
+      args: ['C:\\Notes\\a.md'],
+    })
+    expect(documentListeners.size).toBe(0)
+  })
+
+  it('keeps POSIX paths case-sensitive', async () => {
+    const { platform, documentListeners } = await createPlatform({ platform: 'linux' })
+    const onEvent = vi.fn()
+
+    platform.watchDocument('/home/me/notes/a.md', onEvent)
+    for (const listener of documentListeners) {
+      listener([
+        { type: 'change', path: '/home/me/Notes/a.md' },
+        { type: 'change', path: '/home/me/notes/a.md' },
+      ])
+    }
+
+    expect(onEvent).toHaveBeenCalledTimes(1)
+    expect(onEvent).toHaveBeenCalledWith({
+      type: 'change',
+      path: '/home/me/notes/a.md',
+    })
   })
 })

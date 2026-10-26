@@ -7,6 +7,7 @@ import { app, BrowserWindow, nativeTheme, net, protocol, shell } from 'electron'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { getWindowChrome, resolveWindowChrome, TITLE_BAR_OVERLAY_HEIGHT } from './chrome'
+import { stopAllFileWatches } from './document-watch'
 import { registerIpcHandlers } from './ipc'
 import { installMenu } from './menu'
 import { resolveMenuLocale } from './menu-labels'
@@ -172,7 +173,10 @@ if (!hasLock) {
     })
   })
 
-  app.on('before-quit', () => stopWatch())
+  app.on('before-quit', () => {
+    stopWatch()
+    stopAllFileWatches()
+  })
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit()
