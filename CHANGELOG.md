@@ -2,6 +2,19 @@
 
 English is canonical; entries are generated from conventional commits by `pnpm changelog`.
 
+## v0.1.1
+
+
+### 🚀 Features
+
+- **desktop:** Add update check button to the About settings tab (a9165a1)
+- **settings:** Add open-source repository link to the About tab (86fe6fd)
+
+### 🩹 Bug Fixes
+
+- Let Escape close modals when menus and editor are focused (ea48866)
+
+
 ## v0.1.0
 
 
