@@ -7,6 +7,7 @@ export interface MenuLabels {
   newFile: string
   openFile: string
   openFolder: string
+  closeFolder: string
   save: string
   saveAs: string
   exportHtml: string
@@ -45,6 +46,7 @@ const EN: MenuLabels = {
   newFile: 'New',
   openFile: 'Open File…',
   openFolder: 'Open Folder…',
+  closeFolder: 'Close Folder',
   save: 'Save',
   saveAs: 'Save As…',
   exportHtml: 'Export as HTML…',
@@ -83,6 +85,7 @@ const ZH: MenuLabels = {
   newFile: '新建',
   openFile: '打开文件…',
   openFolder: '打开文件夹…',
+  closeFolder: '关闭文件夹',
   save: '保存',
   saveAs: '另存为…',
   exportHtml: '导出为 HTML…',

@@ -87,6 +87,12 @@ describe('installMenu', () => {
     clickItem(template, 'File', 'New')
     expect(send).toHaveBeenCalledWith(DESKTOP_MENU_COMMAND_CHANNEL, 'file.new')
 
+    clickItem(template, 'File', 'Open Folder…')
+    expect(send).toHaveBeenLastCalledWith(DESKTOP_MENU_COMMAND_CHANNEL, 'file.openWorkspace')
+
+    clickItem(template, 'File', 'Close Folder')
+    expect(send).toHaveBeenLastCalledWith(DESKTOP_MENU_COMMAND_CHANNEL, 'file.closeWorkspace')
+
     clickItem(template, 'View', 'Command Palette…')
     expect(send).toHaveBeenLastCalledWith(DESKTOP_MENU_COMMAND_CHANNEL, 'navigation.palette')
 

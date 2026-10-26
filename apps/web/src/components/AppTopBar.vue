@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   Download,
+  FolderX,
   Menu,
   Moon,
   PanelLeft,
@@ -58,7 +59,7 @@ const menuItems = computed<MenuItem[]>(() => {
   }
   const separator = () => items.push({ id: `sep-${items.length}`, separator: true })
 
-  add('file.new', 'file.open', 'file.openWorkspace', 'file.save', 'file.saveAs', 'file.closeTab')
+  add('file.new', 'file.open', 'file.openWorkspace', 'file.closeWorkspace', 'file.save', 'file.saveAs', 'file.closeTab')
   separator()
   add('edit.find')
   separator()
@@ -113,6 +114,15 @@ function handleMenuSelect(id: string): void {
     >{{ workspace.info.name }}</span>
 
     <div class="topbar__actions">
+      <button
+        v-if="workspace.isOpen"
+        type="button"
+        class="nd-icon-btn"
+        :title="t('menu.closeFolder')"
+        @click="commands.run('file.closeWorkspace')"
+      >
+        <FolderX :size="16" />
+      </button>
       <button
         type="button"
         class="nd-icon-btn"

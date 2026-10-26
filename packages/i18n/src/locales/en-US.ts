@@ -40,6 +40,7 @@ export const enUS = {
     newDocument: 'New document',
     openFile: 'Open file…',
     openFolder: 'Open folder…',
+    closeFolder: 'Close folder',
     save: 'Save',
     saveAs: 'Save as…',
     exportHtml: 'Export as HTML…',
@@ -418,6 +419,7 @@ export const enUS = {
       },
       workspace: {
         open: 'Open folder',
+        close: 'Close folder',
       },
       tab: {
         next: 'Next tab',
@@ -499,6 +501,7 @@ export const enUS = {
   },
   toasts: {
     workspaceOpened: 'Opened {name}',
+    workspaceClosed: 'Closed {name}',
     fileSaved: 'Saved {name}',
     fileSavedAs: 'Saved as {name}',
     exportSuccess: 'Exported {name}',

@@ -40,6 +40,7 @@ export const zhCN = {
     newDocument: '新建文档',
     openFile: '打开文件…',
     openFolder: '打开文件夹…',
+    closeFolder: '关闭文件夹',
     save: '保存',
     saveAs: '另存为…',
     exportHtml: '导出为 HTML…',
@@ -418,6 +419,7 @@ export const zhCN = {
       },
       workspace: {
         open: '打开文件夹',
+        close: '关闭文件夹',
       },
       tab: {
         next: '下一个标签页',
@@ -499,6 +501,7 @@ export const zhCN = {
   },
   toasts: {
     workspaceOpened: '已打开 {name}',
+    workspaceClosed: '已关闭 {name}',
     fileSaved: '已保存 {name}',
     fileSavedAs: '已另存为 {name}',
     exportSuccess: '已导出 {name}',

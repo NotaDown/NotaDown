@@ -67,6 +67,13 @@ export function useAppCommands(): AppCommands {
       run: openWorkspaceFolder,
     },
     {
+      id: 'file.closeWorkspace',
+      group: 'file',
+      title: t('menu.closeFolder'),
+      shortcut: 'workspace.close',
+      run: closeWorkspaceFolder,
+    },
+    {
       id: 'file.save',
       group: 'file',
       title: t('menu.save'),
@@ -230,6 +237,17 @@ export function useAppCommands(): AppCommands {
     } catch (error) {
       ui.toast('error', t('toasts.openFailed'), describeError(error))
     }
+  }
+
+  async function closeWorkspaceFolder(): Promise<void> {
+    if (!workspace.isOpen) return
+    const name = workspace.info?.name ?? ''
+    if (tabs.tabs.some((tab) => tab.ref.origin === 'workspace')) {
+      const closed = await tabs.closeWorkspaceTabs()
+      if (!closed) return
+    }
+    await workspace.close()
+    ui.toast('success', t('toasts.workspaceClosed', { name }))
   }
 
   async function exportActive(format: 'html' | 'pdf'): Promise<void> {

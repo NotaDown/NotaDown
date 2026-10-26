@@ -11,6 +11,7 @@ import {
   Folder,
   FolderOpen,
   FolderPlus,
+  FolderX,
   MoreHorizontal,
   RefreshCw,
 } from 'lucide-vue-next'
@@ -403,6 +404,10 @@ function openWorkspace(): void {
   void commands.run('file.openWorkspace')
 }
 
+function closeWorkspace(): void {
+  void commands.run('file.closeWorkspace')
+}
+
 function closeDialog(): void {
   if (busy.value) return
   dialog.value = null
@@ -448,6 +453,15 @@ function closeDialog(): void {
         @click="workspace.isOpen && workspace.select(null)"
       >
         {{ workspace.info.name }}
+      </button>
+      <button
+        v-if="workspace.isOpen"
+        type="button"
+        class="nd-icon-btn"
+        :title="t('menu.closeFolder')"
+        @click="closeWorkspace"
+      >
+        <FolderX :size="14" />
       </button>
     </div>
 

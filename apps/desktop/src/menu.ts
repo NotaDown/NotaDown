@@ -37,6 +37,11 @@ export function installMenu(
           accelerator: 'CmdOrCtrl+Shift+O',
           click: () => send('file.openWorkspace'),
         },
+        {
+          label: labels.closeFolder,
+          accelerator: 'CmdOrCtrl+Shift+W',
+          click: () => send('file.closeWorkspace'),
+        },
         { type: 'separator' },
         { label: labels.save, accelerator: 'CmdOrCtrl+S', click: () => send('file.save') },
         {

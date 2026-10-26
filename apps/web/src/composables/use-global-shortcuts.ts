@@ -13,6 +13,7 @@ const COMMAND_BINDINGS: Array<[shortcutId: string, commandId: string]> = [
   ['file.new', 'file.new'],
   ['file.open', 'file.open'],
   ['workspace.open', 'file.openWorkspace'],
+  ['workspace.close', 'file.closeWorkspace'],
   ['file.save', 'file.save'],
   ['file.saveAs', 'file.saveAs'],
   ['file.closeTab', 'file.closeTab'],
