@@ -51,6 +51,7 @@ export interface Platform {
 
   openFileDialog(): Promise<OpenedDocument | null>
   openDroppedFile(file: File): Promise<OpenedDocument | null>
+  openDroppedFolder(file: File): Promise<OpenWorkspaceResult | null>
   documentRefForPath(absolutePath: string): DocumentRef
   takeOpenFiles(): Promise<string[]>
   readDocument(ref: DocumentRef): Promise<OpenedDocument>

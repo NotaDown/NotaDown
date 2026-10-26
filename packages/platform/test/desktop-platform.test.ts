@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { DesktopBridge, DocumentChangeEvent, WorkspaceInfo } from '@notadown/shared'
+import {
+  basename,
+  type DesktopBridge,
+  type DocumentChangeEvent,
+  type WorkspaceInfo,
+} from '@notadown/shared'
 import { DesktopPlatform } from '../src/desktop/desktop-platform'
 
 interface BridgeOptions {
@@ -8,6 +13,7 @@ interface BridgeOptions {
   files?: Record<string, string>
   openFiles?: string[]
   platform?: string
+  attachAnyRoot?: boolean
 }
 
 function createBridge(options: BridgeOptions = {}) {
@@ -21,6 +27,13 @@ function createBridge(options: BridgeOptions = {}) {
       switch (method) {
         case 'openWorkspace':
         case 'restoreWorkspace':
+          if (options.attachAnyRoot) {
+            const rootPath = String(args[0] ?? '')
+            return {
+              workspace: { id: `desktop:${rootPath}`, name: basename(rootPath), rootPath },
+              entries: [],
+            }
+          }
           if (!options.workspace) return null
           return { workspace: options.workspace, entries: [] }
         case 'readWorkspaceFile':
@@ -169,6 +182,32 @@ describe('DesktopPlatform.openDroppedFile', () => {
 
     expect(await platform.openDroppedFile(new File(['x'], 'note.md'))).toBeNull()
     expect(calls.map((call) => call.method)).not.toContain('readFile')
+  })
+})
+
+describe('DesktopPlatform.openDroppedFolder', () => {
+  it('attaches a dropped folder as the workspace root', async () => {
+    const { platform, calls } = await createPlatform({
+      attachAnyRoot: true,
+      filePath: 'C:\\Docs\\Vault',
+    })
+
+    const result = await platform.openDroppedFolder(new File(['ignored'], 'Vault'))
+
+    expect(result?.workspace).toEqual({
+      id: 'desktop:C:\\Docs\\Vault',
+      name: 'Vault',
+      rootPath: 'C:\\Docs\\Vault',
+    })
+    expect(calls).toContainEqual({ method: 'restoreWorkspace', args: ['C:\\Docs\\Vault'] })
+    expect(platform.getWorkspace()?.rootPath).toBe('C:\\Docs\\Vault')
+  })
+
+  it('returns null without calling the bridge when the path is unresolvable', async () => {
+    const { platform, calls } = await createPlatform({ filePath: null })
+
+    expect(await platform.openDroppedFolder(new File(['ignored'], 'Vault'))).toBeNull()
+    expect(calls.map((call) => call.method)).not.toContain('restoreWorkspace')
   })
 })
 

@@ -306,6 +306,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     entryPaths,
     open,
     restore,
+    applyWorkspace,
     close,
     refresh,
     subscribeEvents,

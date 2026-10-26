@@ -275,6 +275,10 @@ export class WebPlatform implements Platform {
     }
   }
 
+  async openDroppedFolder(): Promise<OpenWorkspaceResult | null> {
+    return null
+  }
+
   documentRefForPath(): DocumentRef {
     throw new Error('UNSUPPORTED')
   }

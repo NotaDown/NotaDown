@@ -24,6 +24,11 @@ import { useWorkspaceStore } from './workspace'
 
 export type TabViewMode = 'rich' | 'source'
 
+export interface DroppedItem {
+  file: File
+  isDirectory: boolean
+}
+
 export interface EditorTab {
   key: string
   ref: DocumentRef
@@ -211,15 +216,36 @@ export const useTabsStore = defineStore('tabs', () => {
     }
   }
 
-  async function openDroppedFiles(files: File[]): Promise<void> {
-    for (const file of files) {
-      if (!isOpenableTextFile(file.name)) continue
+  async function openDroppedItems(items: DroppedItem[]): Promise<void> {
+    const folder = items.find((item) => item.isDirectory)
+    if (folder) await openWorkspaceFromDroppedFolder(folder.file)
+    for (const item of items) {
+      if (item.isDirectory || !isOpenableTextFile(item.file.name)) continue
       try {
-        const opened = await platform.openDroppedFile(file)
+        const opened = await platform.openDroppedFile(item.file)
         if (opened) addOpenedDocument(opened)
       } catch (error) {
         ui.toast('error', t('toasts.openFailed'), describeError(error))
       }
+    }
+  }
+
+  async function openWorkspaceFromDroppedFolder(file: File): Promise<boolean> {
+    const workspace = useWorkspaceStore()
+    if (tabs.value.some((tab) => tab.ref.origin === 'workspace')) {
+      const closed = await closeWorkspaceTabs()
+      if (!closed) return false
+    }
+    try {
+      const result = await platform.openDroppedFolder(file)
+      if (!result) return false
+      workspace.applyWorkspace(result.workspace, result.entries)
+      ui.toast('success', t('toasts.workspaceOpened', { name: result.workspace.name }))
+      ui.setSidebarView('files')
+      return true
+    } catch (error) {
+      ui.toast('error', t('toasts.openFailed'), describeError(error))
+      return false
     }
   }
 
@@ -796,7 +822,7 @@ export const useTabsStore = defineStore('tabs', () => {
     openWorkspaceFile,
     openFileDialog,
     openAbsolutePaths,
-    openDroppedFiles,
+    openDroppedItems,
     openRecent,
     updateContent,
     setViewMode,

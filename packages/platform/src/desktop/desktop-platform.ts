@@ -56,8 +56,16 @@ export class DesktopPlatform implements Platform {
   }
 
   async restoreWorkspace(info: WorkspaceInfo): Promise<OpenWorkspaceResult | null> {
-    if (!info.rootPath) return null
-    const result = await this.bridge.invoke('restoreWorkspace', info.rootPath)
+    return this.attachWorkspace(info.rootPath)
+  }
+
+  async openDroppedFolder(file: File): Promise<OpenWorkspaceResult | null> {
+    return this.attachWorkspace(this.bridge.getPathForFile(file))
+  }
+
+  private async attachWorkspace(directory: string | null): Promise<OpenWorkspaceResult | null> {
+    if (!directory) return null
+    const result = await this.bridge.invoke('restoreWorkspace', directory)
     if (result) this.workspace = result.workspace
     return result
   }
