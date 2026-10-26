@@ -72,15 +72,15 @@ pnpm package:desktop
 
 ## 项目结构
 
-| 包 | 用途 |
-| --- | --- |
-| `apps/web` | Vue 3 应用外壳与编辑工作区 |
-| `apps/desktop` | Electron 主进程、预加载桥接与打包 |
-| `packages/shared` | 共享类型、设置、快捷键与工具函数 |
-| `packages/editor` | Milkdown 编辑器、命令、公式、Mermaid 与样式 |
-| `packages/platform` | 网页与桌面平台的抽象层 |
-| `packages/exporter` | 独立 HTML 与 PDF 文档渲染 |
-| `packages/i18n` | 多语言定义与语言检测 |
+| 包                   | 用途                             |
+| ------------------- | ------------------------------ |
+| `apps/web`          | Vue 3 应用外壳与编辑工作区               |
+| `apps/desktop`      | Electron 主进程、预加载桥接与打包          |
+| `packages/shared`   | 共享类型、设置、快捷键与工具函数               |
+| `packages/editor`   | Milkdown 编辑器、命令、公式、Mermaid 与样式 |
+| `packages/platform` | 网页与桌面平台的抽象层                    |
+| `packages/exporter` | 独立 HTML 与 PDF 文档渲染             |
+| `packages/i18n`     | 多语言定义与语言检测                     |
 
 ## 浏览器支持
 

@@ -72,15 +72,15 @@ pnpm package:desktop
 
 ## Project structure
 
-| Package | Purpose |
-| --- | --- |
-| `apps/web` | Vue 3 application shell and editor workspace |
-| `apps/desktop` | Electron main process, preload bridge and packaging |
-| `packages/shared` | Shared types, settings, shortcuts and utilities |
-| `packages/editor` | Milkdown editor, commands, math, Mermaid and styles |
-| `packages/platform` | Platform abstraction for web and desktop |
-| `packages/exporter` | Standalone HTML and PDF document rendering |
-| `packages/i18n` | Locale definitions and language detection |
+| Package             | Purpose                                             |
+| ------------------- | --------------------------------------------------- |
+| `apps/web`          | Vue 3 application shell and editor workspace        |
+| `apps/desktop`      | Electron main process, preload bridge and packaging |
+| `packages/shared`   | Shared types, settings, shortcuts and utilities     |
+| `packages/editor`   | Milkdown editor, commands, math, Mermaid and styles |
+| `packages/platform` | Platform abstraction for web and desktop            |
+| `packages/exporter` | Standalone HTML and PDF document rendering          |
+| `packages/i18n`     | Locale definitions and language detection           |
 
 ## Browser support
 
