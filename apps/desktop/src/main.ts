@@ -38,6 +38,13 @@ const WINDOW_ICON = path.join(
   process.platform === 'win32' ? 'icon.ico' : 'icon.png',
 )
 
+async function recreateWindow(): Promise<void> {
+  await resolveWindowChrome()
+  const previous = BrowserWindow.getAllWindows()[0] ?? null
+  createWindow()
+  previous?.close()
+}
+
 function createWindow(): BrowserWindow {
   const isMac = process.platform === 'darwin'
   const chrome = getWindowChrome()
@@ -160,12 +167,15 @@ if (!hasLock) {
     const settings = await loadSettings()
     let menuLocale = resolveMenuLocale(settings?.locale, app.getLocale())
     installMenu(menuTarget, menuLocale)
-    registerIpcHandlers((next) => {
-      const locale = resolveMenuLocale(next.locale, app.getLocale())
-      if (locale === menuLocale) return
-      menuLocale = locale
-      installMenu(menuTarget, locale)
-    })
+    registerIpcHandlers(
+      (next) => {
+        const locale = resolveMenuLocale(next.locale, app.getLocale())
+        if (locale === menuLocale) return
+        menuLocale = locale
+        installMenu(menuTarget, locale)
+      },
+      () => void recreateWindow(),
+    )
     createWindow()
 
     app.on('activate', () => {

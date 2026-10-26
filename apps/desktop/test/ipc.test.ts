@@ -165,6 +165,15 @@ describe('registerIpcHandlers', () => {
     expect(onSaved).toHaveBeenCalledWith(settings)
   })
 
+  it('recreates the window when requested', async () => {
+    const recreate = vi.fn()
+    registerIpcHandlers(undefined, recreate)
+    handler = mocks.electron.handle.mock.calls.at(-1)?.[1] as Handler
+
+    await expect(invoke('recreateWindow')).resolves.toBeUndefined()
+    expect(recreate).toHaveBeenCalledOnce()
+  })
+
   it('normalizes filesystem errors', async () => {
     const error = Object.assign(new Error('missing'), { code: 'ENOENT' })
     mocks.workspace.readWorkspaceFile.mockRejectedValueOnce(error)

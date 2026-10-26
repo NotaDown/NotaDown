@@ -45,9 +45,9 @@ const canDefaultAppSettings = platform.capabilities.defaultAppSettings
 const draft = reactive<AppSettings>({ ...settings.settings })
 const section = ref<SettingsSection>(ui.settingsSection)
 const cssInput = ref<HTMLInputElement | null>(null)
-const restarting = ref(false)
+const recreating = ref(false)
 
-const titleBarRestartPending = computed(
+const titleBarRecreatePending = computed(
   () => isDesktop && draft.titleBarMode !== appliedTitleBarMode.value,
 )
 
@@ -207,21 +207,21 @@ async function resetSettings(): Promise<void> {
   Object.assign(draft, settings.settings)
 }
 
-async function restartApp(): Promise<void> {
+async function recreateWindow(): Promise<void> {
   const bridge = window.notadown
-  if (!bridge || restarting.value) return
+  if (!bridge || recreating.value) return
   if (tabs.hasDirty) {
-    ui.toast('warning', t('settings.generalSection.restartUnsaved'))
+    ui.toast('warning', t('settings.generalSection.recreateUnsaved'))
     return
   }
-  restarting.value = true
+  recreating.value = true
   try {
     await platform.saveSettings(settings.snapshot())
-    await bridge.invoke('restartApp')
+    await bridge.invoke('recreateWindow')
   } catch {
     ui.toast('error', t('errors.generic'))
   } finally {
-    restarting.value = false
+    recreating.value = false
   }
 }
 
@@ -344,18 +344,18 @@ async function clearHistory(): Promise<void> {
                     </option>
                   </select>
                   <p class="nd-field-hint">{{ t('settings.generalSection.titleBarHint') }}</p>
-                  <div v-if="titleBarRestartPending" class="settings-restart">
-                    <span class="settings-restart__notice">
-                      {{ t('settings.generalSection.titleBarRestartNotice') }}
+                  <div v-if="titleBarRecreatePending" class="settings-recreate">
+                    <span class="settings-recreate__notice">
+                      {{ t('settings.generalSection.titleBarRecreateNotice') }}
                     </span>
                     <button
                       type="button"
                       class="nd-btn nd-btn--primary nd-btn--sm"
-                      :disabled="restarting"
-                      @click="restartApp"
+                      :disabled="recreating"
+                      @click="recreateWindow"
                     >
                       <RotateCw :size="13" />
-                      {{ t('settings.generalSection.restartApp') }}
+                      {{ t('settings.generalSection.recreateWindow') }}
                     </button>
                   </div>
                 </div>
@@ -1117,7 +1117,7 @@ async function clearHistory(): Promise<void> {
   display: none;
 }
 
-.settings-restart {
+.settings-recreate {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1129,7 +1129,7 @@ async function clearHistory(): Promise<void> {
   background: var(--nd-surface);
 }
 
-.settings-restart__notice {
+.settings-recreate__notice {
   color: var(--nd-text-secondary);
   font-size: 11.5px;
   line-height: 1.5;

@@ -331,9 +331,9 @@ export const enUS = {
       titleBarNative: 'Use the system title bar',
       titleBarHint:
         'Integrated mode merges the window controls with the app header; system title bar mode hides the header and moves its actions into the system menu bar. Restart NotaDown to apply changes.',
-      titleBarRestartNotice: 'Title bar mode changed. Restart the app to apply it.',
-      restartApp: 'Restart app',
-      restartUnsaved: 'Save or close your unsaved changes before restarting.',
+      titleBarRecreateNotice: 'Title bar mode changed. Restart the app to apply it.',
+      recreateWindow: 'Restart app',
+      recreateUnsaved: 'Save or close your unsaved changes before restarting.',
       defaultMarkdownApp: 'Default Markdown program',
       defaultMarkdownAppHint: 'Double-clicking a Markdown file opens it with the program set in system settings.',
     },

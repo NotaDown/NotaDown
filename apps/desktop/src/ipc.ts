@@ -26,13 +26,14 @@ const DEFAULT_APP_SETTINGS_NAME = 'NotaDown'
 
 export function registerIpcHandlers(
   onSettingsSaved?: (settings: AppSettings) => void,
+  onRecreateWindow?: () => void,
 ): void {
   ipcMain.handle(
     DESKTOP_INVOKE_CHANNEL,
     async (event, method: string, ...args: unknown[]): Promise<unknown> => {
       const window = BrowserWindow.fromWebContents(event.sender)
       try {
-        return await dispatch(method, window, args, onSettingsSaved)
+        return await dispatch(method, window, args, onSettingsSaved, onRecreateWindow)
       } catch (error) {
         throw normalizeError(error)
       }
@@ -45,6 +46,7 @@ async function dispatch(
   window: BrowserWindow | null,
   args: unknown[],
   onSettingsSaved?: (settings: AppSettings) => void,
+  onRecreateWindow?: () => void,
 ): Promise<unknown> {
   switch (method) {
     case 'getVersion':
@@ -164,9 +166,8 @@ async function dispatch(
     case 'saveSession':
       await state.saveSession(args[0] as SessionState)
       return undefined
-    case 'restartApp':
-      app.relaunch()
-      app.quit()
+    case 'recreateWindow':
+      onRecreateWindow?.()
       return undefined
 
     case 'exportHtml':

@@ -331,9 +331,9 @@ export const zhCN = {
       titleBarNative: '使用系统标题栏',
       titleBarHint:
         '一体化模式会将窗口控制按钮与顶部栏合并；系统标题栏模式会隐藏顶部栏，操作改由系统菜单栏提供。修改后需重启 NotaDown 生效。',
-      titleBarRestartNotice: '标题栏模式已更改，重启应用后生效。',
-      restartApp: '重启应用',
-      restartUnsaved: '请先保存或关闭未保存的更改，再重启应用。',
+      titleBarRecreateNotice: '标题栏模式已更改，重启应用后生效。',
+      recreateWindow: '重启应用',
+      recreateUnsaved: '请先保存或关闭未保存的更改，再重启应用。',
       defaultMarkdownApp: 'Markdown 默认程序',
       defaultMarkdownAppHint: '双击 Markdown 文件时，使用系统设置中指定的程序打开。',
     },
