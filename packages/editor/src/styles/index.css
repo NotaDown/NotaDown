@@ -327,6 +327,22 @@
   cursor: pointer;
 }
 
+.nd-block-menu__icon {
+  display: inline-flex;
+  margin-right: 8px;
+  color: var(--nd-text-muted);
+}
+
+.nd-block-menu__item:hover .nd-block-menu__icon {
+  color: var(--nd-text);
+}
+
+.nd-block-menu__separator {
+  height: 1px;
+  margin: 5px 4px;
+  background: var(--nd-border);
+}
+
 .nd-block-menu__item:hover {
   background: var(--nd-surface);
 }

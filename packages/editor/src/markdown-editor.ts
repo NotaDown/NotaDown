@@ -235,7 +235,12 @@ export async function createMarkdownEditor(
 
   const view = crepe.editor.action((ctx) => ctx.get(editorViewCtx))
   view.dom.spellcheck = options.spellcheck ?? true
-  const detachBlockMenu = attachBlockMenu({ view, host, labels: labels.blockMenu })
+  const detachBlockMenu = attachBlockMenu({
+    view,
+    host,
+    labels: labels.blockMenu,
+    editHtmlLabel: labels.html.edit,
+  })
 
   let serializeTimer: number | null = null
   const serializeDelay = options.largeDocument ? 700 : 180

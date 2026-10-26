@@ -1,10 +1,11 @@
 import type { Node as ProseNode } from '@milkdown/kit/prose/model'
 import { NodeSelection, TextSelection, type Transaction } from '@milkdown/kit/prose/state'
 import type { EditorView } from '@milkdown/kit/prose/view'
+import { PENCIL_ICON } from './icons'
 import type { EditorLabels } from './types'
 
 type BlockMenuLabels = EditorLabels['blockMenu']
-type BlockMenuAction = 'duplicate' | 'moveUp' | 'moveDown' | 'delete'
+type BlockMenuAction = 'editHtml' | 'duplicate' | 'moveUp' | 'moveDown' | 'delete'
 
 interface ActiveBlock {
   from: number
@@ -16,16 +17,23 @@ interface BlockMenuOptions {
   view: EditorView
   host: HTMLElement
   labels: BlockMenuLabels
+  editHtmlLabel: string
 }
 
 interface MenuAction {
   id: BlockMenuAction
   label: string
+  icon?: string
   disabled?: boolean
   danger?: boolean
 }
 
-export function attachBlockMenu({ view, host, labels }: BlockMenuOptions): () => void {
+export function attachBlockMenu({
+  view,
+  host,
+  labels,
+  editHtmlLabel,
+}: BlockMenuOptions): () => void {
   let menu: HTMLElement | null = null
   let detachMenu: (() => void) | null = null
 
@@ -42,7 +50,12 @@ export function attachBlockMenu({ view, host, labels }: BlockMenuOptions): () =>
     const active = activeBlock(handle, view)
     if (!active) return
 
-    const actions: MenuAction[] = [
+    const canEditHtml = active.node.type.name === 'html_block'
+    const actions: MenuAction[] = []
+    if (canEditHtml) {
+      actions.push({ id: 'editHtml', label: editHtmlLabel, icon: PENCIL_ICON })
+    }
+    actions.push(
       { id: 'duplicate', label: labels.duplicate },
       { id: 'moveUp', label: labels.moveUp, disabled: active.index === 0 },
       {
@@ -51,20 +64,35 @@ export function attachBlockMenu({ view, host, labels }: BlockMenuOptions): () =>
         disabled: active.index === view.state.doc.childCount - 1,
       },
       { id: 'delete', label: labels.delete, danger: true },
-    ]
+    )
 
     const element = document.createElement('div')
     element.className = 'nd-block-menu'
     element.setAttribute('role', 'menu')
 
-    for (const action of actions) {
+    for (const [index, action] of actions.entries()) {
+      if (canEditHtml && index === 1) {
+        const separator = document.createElement('div')
+        separator.className = 'nd-block-menu__separator'
+        element.append(separator)
+      }
+
       const button = document.createElement('button')
       button.type = 'button'
       button.className = 'nd-block-menu__item'
       button.setAttribute('role', 'menuitem')
-      button.textContent = action.label
       button.disabled = action.disabled ?? false
       button.classList.toggle('is-danger', action.danger ?? false)
+      if (action.icon) {
+        const icon = document.createElement('span')
+        icon.className = 'nd-block-menu__icon'
+        icon.innerHTML = action.icon
+        const label = document.createElement('span')
+        label.textContent = action.label
+        button.append(icon, label)
+      } else {
+        button.textContent = action.label
+      }
       button.addEventListener('click', () => {
         runAction(action.id, active)
         closeMenu()
@@ -110,6 +138,12 @@ export function attachBlockMenu({ view, host, labels }: BlockMenuOptions): () =>
     const tr = view.state.tr
 
     switch (action) {
+      case 'editHtml': {
+        const dom = view.nodeDOM(from)
+        if (!(dom instanceof HTMLElement)) return
+        dom.querySelector<HTMLButtonElement>('.nd-html-block__edit')?.click()
+        return
+      }
       case 'duplicate': {
         const pos = from + node.nodeSize
         tr.insert(pos, node.copy(node.content))
@@ -162,25 +196,35 @@ export function attachBlockMenu({ view, host, labels }: BlockMenuOptions): () =>
 }
 
 function activeBlock(handle: HTMLElement, view: EditorView): ActiveBlock | null {
-  const handleRect = handle.getBoundingClientRect()
-  const editorRect = view.dom.getBoundingClientRect()
-  const paddingLeft = Number.parseFloat(getComputedStyle(view.dom).paddingLeft) || 0
-  const contentLeft = editorRect.left + paddingLeft + 4
-  const left = Math.min(Math.max(handleRect.right + 8, contentLeft), editorRect.right - 4)
-  const top = Math.min(
-    Math.max(handleRect.top + handleRect.height / 2, editorRect.top + 2),
-    editorRect.bottom - 2,
-  )
-  const hit = view.posAtCoords({ left, top })
-  if (!hit) return null
+  const element = blockElementAt(handle, view)
+  if (!element) return null
 
-  const $pos = view.state.doc.resolve(hit.pos)
-  if ($pos.depth < 1) return null
-  const index = $pos.index(0)
-  const from = $pos.before(1)
-  const node = view.state.doc.nodeAt(from)
-  if (!node) return null
-  return { from, index, node }
+  let pos: number
+  try {
+    pos = view.posAtDOM(element, 0)
+  } catch {
+    return null
+  }
+
+  const doc = view.state.doc
+  const index = doc.resolve(pos).index(0)
+  if (index < 0 || index >= doc.childCount) return null
+  let from = 0
+  for (let i = 0; i < index; i += 1) from += doc.child(i).nodeSize
+  return { from, index, node: doc.child(index) }
+}
+
+function blockElementAt(handle: HTMLElement, view: EditorView): HTMLElement | null {
+  const rect = view.dom.getBoundingClientRect()
+  const anchor = handle.getBoundingClientRect()
+  let element = view.root.elementFromPoint(
+    rect.left + rect.width / 2,
+    anchor.top + anchor.height / 2,
+  )
+  while (element && element !== view.dom && element.parentElement !== view.dom) {
+    element = element.parentElement
+  }
+  return element instanceof HTMLElement && element !== view.dom ? element : null
 }
 
 function selectBlock(tr: Transaction, pos: number, node: ProseNode): void {
