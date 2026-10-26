@@ -5,6 +5,8 @@ import { promises as fs } from 'node:fs'
 import type { Dirent, Stats } from 'node:fs'
 import path from 'node:path'
 import {
+  fuzzyFilter,
+  isIndexExcludedPath,
   isOpenableTextFile,
   mimeFromFileName,
   normalizeSlashes,
@@ -21,6 +23,7 @@ import {
 } from '@notadown/shared'
 
 const MAX_SEARCH_FILE_SIZE = 2 * 1024 * 1024
+const FILE_INDEX_TTL = 5_000
 const MARKDOWN_FILTERS = [
   {
     name: 'Markdown and text',
@@ -31,8 +34,11 @@ const MARKDOWN_FILTERS = [
 let rootPath: string | null = null
 let watcher: FSWatcher | null = null
 let watcherWindow: BrowserWindow | null = null
+let watchedDirectories = new Set<string>()
 let pendingEvents: WorkspaceEvent[] = []
 let flushTimer: NodeJS.Timeout | null = null
+let fileIndex: { builtAt: number; files: FileEntry[] } | null = null
+let fileIndexTask: Promise<FileEntry[]> | null = null
 
 export function currentRoot(): string | null {
   return rootPath
@@ -76,29 +82,67 @@ async function attachRoot(directory: string): Promise<OpenWorkspaceResult | null
 
   stopWatch()
   rootPath = resolved
+  fileIndex = null
   return {
     workspace: {
       id: `desktop:${resolved}`,
       name: path.basename(resolved) || resolved,
       rootPath: resolved,
     },
-    entries: await listWorkspace(),
+    entries: await listWorkspaceDirectory(''),
   }
 }
 
 export function closeWorkspace(): void {
   stopWatch()
   rootPath = null
+  fileIndex = null
 }
 
-export async function listWorkspace(): Promise<FileEntry[]> {
-  requireRoot()
+export async function listWorkspaceDirectory(relativeDir: string): Promise<FileEntry[]> {
+  const directory = relativeDir ? resolveWorkspacePath(relativeDir) : requireRoot()
+  const dirents = await fs.readdir(directory, { withFileTypes: true })
+  const prefix = normalizeSlashes(relativeDir).replace(/^\/+|\/+$/g, '')
   const entries: FileEntry[] = []
-  await walkDirectory('', entries)
-  return entries
+
+  for (const dirent of dirents) {
+    if (dirent.name.startsWith('.')) continue
+    const relative = prefix ? `${prefix}/${dirent.name}` : dirent.name
+    if (dirent.isDirectory()) {
+      entries.push({ path: relative, name: dirent.name, kind: 'directory' })
+    } else if (dirent.isFile()) {
+      entries.push({ path: relative, name: dirent.name, kind: 'file' })
+    }
+  }
+
+  return sortEntries(entries)
 }
 
-async function walkDirectory(relativeDir: string, entries: FileEntry[]): Promise<void> {
+export async function findWorkspaceFiles(
+  query: string,
+  limit = 80,
+): Promise<FileEntry[]> {
+  const files = await workspaceFileIndex()
+  return fuzzyFilter(query.trim(), files, (entry) => entry.path).slice(0, limit)
+}
+
+async function workspaceFileIndex(): Promise<FileEntry[]> {
+  if (fileIndex && Date.now() - fileIndex.builtAt < FILE_INDEX_TTL) {
+    return fileIndex.files
+  }
+  if (fileIndexTask) return fileIndexTask
+  fileIndexTask = (async () => {
+    const files: FileEntry[] = []
+    await collectFiles('', files)
+    fileIndex = { builtAt: Date.now(), files }
+    return files
+  })().finally(() => {
+    fileIndexTask = null
+  })
+  return fileIndexTask
+}
+
+async function collectFiles(relativeDir: string, files: FileEntry[]): Promise<void> {
   const absoluteDir = relativeDir
     ? path.join(requireRoot(), ...relativeDir.split('/'))
     : requireRoot()
@@ -114,19 +158,22 @@ async function walkDirectory(relativeDir: string, entries: FileEntry[]): Promise
     if (dirent.name.startsWith('.')) continue
     const relative = relativeDir ? `${relativeDir}/${dirent.name}` : dirent.name
     if (dirent.isDirectory()) {
-      entries.push({ path: relative, name: dirent.name, kind: 'directory' })
-      await walkDirectory(relative, entries)
+      if (isIndexExcludedPath(relative)) continue
+      await collectFiles(relative, files)
     } else if (dirent.isFile()) {
-      const stats = await statSafe(path.join(absoluteDir, dirent.name))
-      entries.push({
-        path: relative,
-        name: dirent.name,
-        kind: 'file',
-        size: stats?.size,
-        modifiedAt: stats?.mtimeMs,
-      })
+      files.push({ path: relative, name: dirent.name, kind: 'file' })
     }
   }
+}
+
+function sortEntries(entries: FileEntry[]): FileEntry[] {
+  return entries.sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
+  )
+}
+
+function invalidateFileIndex(): void {
+  fileIndex = null
 }
 
 export async function readWorkspaceFile(
@@ -145,11 +192,13 @@ export async function writeWorkspaceFile(
 export async function createWorkspaceFile(relativePath: string, content: string): Promise<void> {
   const target = resolveWorkspacePath(relativePath)
   await fs.writeFile(target, content, { encoding: 'utf8', flag: 'wx' })
+  invalidateFileIndex()
 }
 
 export async function createWorkspaceDirectory(relativePath: string): Promise<void> {
   const target = resolveWorkspacePath(relativePath)
   await fs.mkdir(target)
+  invalidateFileIndex()
 }
 
 export async function renameWorkspaceEntry(
@@ -161,6 +210,7 @@ export async function renameWorkspaceEntry(
   if (source === target) return
   if (await pathExists(target)) throw new Error('ALREADY_EXISTS')
   await fs.rename(source, target)
+  invalidateFileIndex()
 }
 
 export async function copyWorkspaceEntry(
@@ -172,6 +222,7 @@ export async function copyWorkspaceEntry(
   if (source === target) return
   if (await pathExists(target)) throw new Error('ALREADY_EXISTS')
   await fs.cp(source, target, { recursive: true, errorOnExist: true, force: false })
+  invalidateFileIndex()
 }
 
 export async function moveWorkspaceEntry(
@@ -184,11 +235,13 @@ export async function moveWorkspaceEntry(
   const target = path.join(destination, path.basename(source))
   if (await pathExists(target)) throw new Error('ALREADY_EXISTS')
   await fs.rename(source, target)
+  invalidateFileIndex()
 }
 
 export async function deleteWorkspaceEntry(relativePath: string): Promise<void> {
   const target = resolveWorkspacePath(relativePath)
   await fs.rm(target, { recursive: true })
+  invalidateFileIndex()
 }
 
 export async function revealWorkspaceEntry(relativePath: string): Promise<void> {
@@ -303,12 +356,13 @@ export async function searchWorkspace(
 
   const limit = options?.limit ?? 200
   const results: SearchResult[] = []
-  const entries = await listWorkspace()
+  const entries = await workspaceFileIndex()
 
   for (const entry of entries) {
     if (results.length >= limit) break
-    if (entry.kind !== 'file' || !isOpenableTextFile(entry.name)) continue
-    if ((entry.size ?? 0) > MAX_SEARCH_FILE_SIZE) continue
+    if (!isOpenableTextFile(entry.name)) continue
+    const stats = await statSafe(resolveWorkspacePath(entry.path))
+    if (!stats || stats.size > MAX_SEARCH_FILE_SIZE) continue
     let content: string
     try {
       content = await fs.readFile(resolveWorkspacePath(entry.path), 'utf8')
@@ -330,24 +384,60 @@ export function startWatch(window: BrowserWindow): void {
 
   const active = watch(root, {
     ignoreInitial: true,
+    depth: 0,
     awaitWriteFinish: { stabilityThreshold: 150, pollInterval: 50 },
     ignored: (candidate) => isIgnoredPath(root, candidate),
   })
   watcher = active
+  watchedDirectories = new Set([''])
 
   active.on('all', (eventName, changedPath) => {
-    if (eventName === 'ready' || eventName === 'raw' || eventName === 'error') return
+    // Content changes belong to the per-document watches, not the tree watchers.
+    if (
+      eventName !== 'add' &&
+      eventName !== 'unlink' &&
+      eventName !== 'addDir' &&
+      eventName !== 'unlinkDir'
+    ) {
+      return
+    }
     const relative = relativeFromRoot(root, changedPath)
     if (!relative) return
-    const type = eventName as WorkspaceEvent['type']
-    const event: WorkspaceEvent = {
-      type,
+    queueEvent({
+      type: eventName,
       path: relative,
-      isDirectory: type === 'addDir' || type === 'unlinkDir',
-    }
-    void queueEvent(event, changedPath)
+      isDirectory: eventName === 'addDir' || eventName === 'unlinkDir',
+    })
   })
   active.on('error', () => undefined)
+}
+
+export function setWatchDirectories(relativeDirs: string[]): void {
+  const active = watcher
+  const root = rootPath
+  if (!active || !root) return
+
+  const next = new Set<string>([''])
+  for (const dir of relativeDirs) {
+    const clean = normalizeSlashes(dir).replace(/^\/+|\/+$/g, '')
+    if (!clean) continue
+    try {
+      resolveWorkspacePath(clean)
+    } catch {
+      continue
+    }
+    next.add(clean)
+  }
+
+  for (const dir of watchedDirectories) {
+    if (next.has(dir)) continue
+    void active.unwatch(absoluteDirectory(root, dir))
+  }
+  for (const dir of next) {
+    if (watchedDirectories.has(dir)) continue
+    active.add(absoluteDirectory(root, dir))
+  }
+  watchedDirectories = next
 }
 
 export function stopWatch(): void {
@@ -357,16 +447,14 @@ export function stopWatch(): void {
   }
   pendingEvents = []
   watcherWindow = null
+  watchedDirectories = new Set()
   const active = watcher
   watcher = null
   if (active) void active.close()
 }
 
-async function queueEvent(event: WorkspaceEvent, absolutePath: string): Promise<void> {
-  if (event.type === 'change') {
-    const stats = await statSafe(absolutePath)
-    if (stats) event.mtime = stats.mtimeMs
-  }
+function queueEvent(event: WorkspaceEvent): void {
+  invalidateFileIndex()
   pendingEvents.push(event)
   if (flushTimer) return
   flushTimer = setTimeout(flushEvents, 120)
@@ -388,6 +476,10 @@ function isIgnoredPath(root: string, candidate: string): boolean {
   return normalizeSlashes(relative)
     .split('/')
     .some((segment) => segment.startsWith('.'))
+}
+
+function absoluteDirectory(root: string, relativeDir: string): string {
+  return relativeDir ? path.join(root, ...relativeDir.split('/')) : root
 }
 
 function relativeFromRoot(root: string, candidate: string): string | null {

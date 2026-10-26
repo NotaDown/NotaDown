@@ -40,7 +40,8 @@ export interface Platform {
   restoreWorkspace(info: WorkspaceInfo): Promise<OpenWorkspaceResult | null>
   closeWorkspace(): Promise<void>
   getWorkspace(): WorkspaceInfo | null
-  listWorkspace(): Promise<FileEntry[]>
+  listWorkspaceDirectory(path: string): Promise<FileEntry[]>
+  findWorkspaceFiles(query: string, limit?: number): Promise<FileEntry[]>
   createWorkspaceFile(path: string, content: string): Promise<void>
   createWorkspaceDirectory(path: string): Promise<void>
   renameWorkspaceEntry(path: string, nextPath: string): Promise<void>
@@ -49,6 +50,7 @@ export interface Platform {
   deleteWorkspaceEntry(path: string, isDirectory: boolean): Promise<void>
   revealWorkspaceEntry(path: string): Promise<void>
   workspaceDocumentRef(path: string): DocumentRef
+  workspaceAbsolutePath(path: string): string | null
 
   openFileDialog(): Promise<OpenedDocument | null>
   openDroppedFile(file: File): Promise<OpenedDocument | null>
@@ -70,6 +72,7 @@ export interface Platform {
 
   search(query: string, options?: SearchOptions): Promise<SearchResult[]>
   watchWorkspace(onEvents: (events: WorkspaceEvent[]) => void): () => void
+  setWorkspaceWatchDirectories(paths: string[]): void
   watchDocument(
     path: string,
     onEvent: (event: DocumentChangeEvent) => void,

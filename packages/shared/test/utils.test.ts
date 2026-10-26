@@ -5,6 +5,7 @@ import {
   fileDocumentRef,
   fuzzyMatch,
   isAbsoluteFilePath,
+  isIndexExcludedPath,
   joinFrontmatter,
   joinPosix,
   openableFileArgs,
@@ -77,6 +78,14 @@ describe('path helpers', () => {
     expect(isAbsoluteFilePath('C:\\docs\\a.md')).toBe(true)
     expect(isAbsoluteFilePath('/home/me/a.md')).toBe(true)
     expect(isAbsoluteFilePath('notes/a.md')).toBe(false)
+  })
+
+  it('excludes dependency and build directories from indexing', () => {
+    expect(isIndexExcludedPath('node_modules')).toBe(true)
+    expect(isIndexExcludedPath('app/Node_Modules/react/index.js')).toBe(true)
+    expect(isIndexExcludedPath('app/dist/bundle.js')).toBe(true)
+    expect(isIndexExcludedPath('app/distribution/a.md')).toBe(false)
+    expect(isIndexExcludedPath('notes/a.md')).toBe(false)
   })
 
   it('sanitizes file names', () => {

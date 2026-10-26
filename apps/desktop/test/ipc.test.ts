@@ -12,7 +12,9 @@ const mocks = vi.hoisted(() => ({
     openWorkspace: vi.fn(async () => null),
     restoreWorkspace: vi.fn(async () => null),
     closeWorkspace: vi.fn(),
-    listWorkspace: vi.fn(async () => []),
+    listWorkspaceDirectory: vi.fn(async () => []),
+    findWorkspaceFiles: vi.fn(async () => []),
+    setWatchDirectories: vi.fn(),
     readWorkspaceFile: vi.fn(async () => ({ content: '', mtime: 1 })),
     writeWorkspaceFile: vi.fn(async () => ({ mtime: 1 })),
     createWorkspaceFile: vi.fn(async () => undefined),
@@ -127,6 +129,9 @@ describe('registerIpcHandlers', () => {
     await invoke('startWatch')
     expect(mocks.workspace.startWatch).toHaveBeenCalledWith(window)
 
+    await invoke('setWatchDirectories', ['', 'notes'])
+    expect(mocks.workspace.setWatchDirectories).toHaveBeenCalledWith(['', 'notes'])
+
     await invoke('startFileWatch', 'C:/notes/a.md')
     expect(mocks.documentWatch.startFileWatch).toHaveBeenCalledWith('C:/notes/a.md', window)
 
@@ -146,6 +151,14 @@ describe('registerIpcHandlers', () => {
 
     await invoke('renameWorkspaceEntry', 'a.md', 'b.md')
     expect(mocks.workspace.renameWorkspaceEntry).toHaveBeenCalledWith('a.md', 'b.md')
+  })
+
+  it('routes directory listing and file lookup', async () => {
+    await invoke('listWorkspaceDirectory', 'notes')
+    expect(mocks.workspace.listWorkspaceDirectory).toHaveBeenCalledWith('notes')
+
+    await invoke('findWorkspaceFiles', 'note', 20)
+    expect(mocks.workspace.findWorkspaceFiles).toHaveBeenCalledWith('note', 20)
   })
 
   it('rejects starting a watcher without a window', async () => {

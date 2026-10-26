@@ -169,7 +169,7 @@ function isTabDirty(node: WorkspaceNode): boolean {
 function handleRow(node: WorkspaceNode): void {
   workspace.select(node.path)
   if (node.kind === 'directory') {
-    workspace.toggleDir(node.path)
+    void workspace.toggleDir(node.path)
     return
   }
   if (isOpenableTextFile(node.name)) {

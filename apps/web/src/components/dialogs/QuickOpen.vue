@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { FileText, FolderOpen, Search } from 'lucide-vue-next'
-import { dirname, fuzzyFilter } from '@notadown/shared'
+import { dirname, type FileEntry } from '@notadown/shared'
+import { platform } from '@/platform'
 import { useUiStore } from '@/stores/ui'
 import { useTabsStore } from '@/stores/tabs'
 import { useWorkspaceStore } from '@/stores/workspace'
@@ -18,15 +19,37 @@ const query = ref('')
 const activeIndex = ref(0)
 const inputRef = ref<HTMLInputElement | null>(null)
 const listRef = ref<HTMLElement | null>(null)
+const results = ref<FileEntry[]>([])
+const searching = ref(false)
 
-const results = computed(() => {
-  const files = fuzzyFilter(
-    query.value.trim(),
-    workspace.fileEntries,
-    (entry) => entry.path,
-  )
-  return files.slice(0, 80)
-})
+let searchToken = 0
+let searchTimer: number | null = null
+
+function scheduleSearch(): void {
+  if (searchTimer) window.clearTimeout(searchTimer)
+  searchTimer = null
+  const token = ++searchToken
+  if (!workspace.isOpen) {
+    searching.value = false
+    results.value = []
+    return
+  }
+  searching.value = true
+  searchTimer = window.setTimeout(() => {
+    searchTimer = null
+    void platform
+      .findWorkspaceFiles(query.value.trim(), 80)
+      .then((files) => {
+        if (token === searchToken) results.value = files
+      })
+      .catch(() => {
+        if (token === searchToken) results.value = []
+      })
+      .finally(() => {
+        if (token === searchToken) searching.value = false
+      })
+  }, 120)
+}
 
 watch(
   () => ui.quickOpenOpen,
@@ -37,11 +60,13 @@ watch(
     await nextTick()
     inputRef.value?.focus()
     if (workspace.isOpen) void workspace.refresh()
+    scheduleSearch()
   },
 )
 
 watch(query, () => {
   activeIndex.value = 0
+  scheduleSearch()
 })
 
 watch(activeIndex, async () => {
@@ -116,6 +141,10 @@ function onKeydown(event: KeyboardEvent): void {
             <button type="button" class="nd-btn nd-btn--sm" @click="openFolder">
               {{ t('sidebar.openFolder') }}
             </button>
+          </div>
+
+          <div v-else-if="searching && results.length === 0" class="nd-empty quick-open__empty">
+            <p class="nd-empty-text">{{ t('sidebar.searchInProgress') }}</p>
           </div>
 
           <div v-else-if="results.length === 0" class="nd-empty quick-open__empty">

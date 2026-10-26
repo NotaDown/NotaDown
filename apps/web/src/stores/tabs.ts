@@ -92,7 +92,7 @@ export const useTabsStore = defineStore('tabs', () => {
     if (tab?.ref.origin === 'workspace' && tab.ref.path) {
       const workspace = useWorkspaceStore()
       workspace.select(tab.ref.path)
-      workspace.expandPath(tab.ref.path)
+      void workspace.expandPath(tab.ref.path)
     }
     window.requestAnimationFrame(() => focusEditor(key))
   }
@@ -179,7 +179,7 @@ export const useTabsStore = defineStore('tabs', () => {
       if (ref.origin === 'workspace' && ref.path) {
         const workspace = useWorkspaceStore()
         workspace.select(ref.path)
-        workspace.expandPath(ref.path)
+        await workspace.expandPath(ref.path)
       }
       return tab
     } catch (error) {
@@ -344,13 +344,21 @@ export const useTabsStore = defineStore('tabs', () => {
   function watchDocumentTab(tab: EditorTab): void {
     unwatchDocumentTab(tab.key)
     if (!platform.capabilities.fileSystemWatching) return
-    if (tab.ref.origin !== 'file' || !tab.ref.path) return
-    const path = normalizeSlashes(tab.ref.path)
-    const stop = platform.watchDocument(tab.ref.path, () => {
-      const target = tabs.value.find((item) => item.key === tab.key)
-      if (!target || target.ref.origin !== 'file' || !target.ref.path) return
-      if (normalizeSlashes(target.ref.path) !== path) return
-      void checkDisk(target)
+    if (!tab.ref.path) return
+    const origin = tab.ref.origin
+    const relative = normalizeSlashes(tab.ref.path)
+    const target =
+      origin === 'workspace'
+        ? platform.workspaceAbsolutePath(tab.ref.path)
+        : origin === 'file'
+          ? tab.ref.path
+          : null
+    if (!target) return
+    const stop = platform.watchDocument(target, () => {
+      const current = tabs.value.find((item) => item.key === tab.key)
+      if (!current || current.ref.origin !== origin || !current.ref.path) return
+      if (normalizeSlashes(current.ref.path) !== relative) return
+      void checkDisk(current)
     })
     documentWatchers.set(tab.key, stop)
   }
@@ -600,6 +608,7 @@ export const useTabsStore = defineStore('tabs', () => {
       try {
         tab.ref = platform.workspaceDocumentRef(relative)
         tab.name = tab.ref.name
+        watchDocumentTab(tab)
       } catch {
         tab.missing = true
       }
@@ -623,7 +632,7 @@ export const useTabsStore = defineStore('tabs', () => {
         markDeleted(path, false)
         continue
       }
-      if (event.type === 'change' || event.type === 'add') {
+      if (event.type === 'add') {
         for (const tab of affected) await checkDisk(tab)
       }
     }
@@ -793,6 +802,9 @@ export const useTabsStore = defineStore('tabs', () => {
         }
       }
 
+      if (tab.ref.origin === 'workspace' && tab.ref.path) {
+        void useWorkspaceStore().expandPath(tab.ref.path)
+      }
       await snapshot(tab, 'restore')
       tab.content = detail.content
       tab.reloadToken += 1

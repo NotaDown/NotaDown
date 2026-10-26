@@ -230,6 +230,43 @@ describe('DesktopPlatform pending open files', () => {
   })
 })
 
+describe('DesktopPlatform workspace directories', () => {
+  it('lists one directory at a time and scopes watches to requested folders', async () => {
+    const { platform, calls } = await createPlatform({
+      workspace: { id: 'ws-1', name: 'Vault', rootPath: 'C:\\Docs\\Vault' },
+    })
+
+    await platform.listWorkspaceDirectory('notes')
+    await platform.findWorkspaceFiles('note', 20)
+    platform.setWorkspaceWatchDirectories(['', 'notes'])
+
+    expect(calls).toContainEqual({
+      method: 'listWorkspaceDirectory',
+      args: ['notes'],
+    })
+    expect(calls).toContainEqual({
+      method: 'findWorkspaceFiles',
+      args: ['note', 20],
+    })
+    expect(calls).toContainEqual({
+      method: 'setWatchDirectories',
+      args: [['', 'notes']],
+    })
+  })
+
+  it('maps workspace paths back to absolute paths for file watches', async () => {
+    const { platform } = await createPlatform({
+      workspace: { id: 'ws-1', name: 'Vault', rootPath: 'C:\\Docs\\Vault' },
+    })
+    expect(platform.workspaceAbsolutePath('notes/a.md')).toBe('C:\\Docs\\Vault\\notes\\a.md')
+  })
+
+  it('has no absolute path mapping without an open workspace', async () => {
+    const { platform } = await createPlatform()
+    expect(platform.workspaceAbsolutePath('notes/a.md')).toBeNull()
+  })
+})
+
 describe('DesktopPlatform.watchDocument', () => {
   it('starts a single-file watch and forwards only matching paths', async () => {
     const { platform, calls, documentListeners } = await createPlatform()

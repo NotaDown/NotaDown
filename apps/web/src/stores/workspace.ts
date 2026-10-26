@@ -26,7 +26,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
   const settings = useSettingsStore()
 
   const info = ref<WorkspaceInfo | null>(null)
-  const entries = ref<FileEntry[]>([])
+  const directories = ref<Record<string, FileEntry[]>>({})
   const loading = ref(false)
   const searching = ref(false)
   const searchResults = ref<SearchResult[]>([])
@@ -36,12 +36,15 @@ export const useWorkspaceStore = defineStore('workspace', () => {
 
   let watchStop: (() => void) | null = null
   let refreshTimer: number | null = null
+  let watchSyncTimer: number | null = null
   let searchToken = 0
   let searchTimer: number | null = null
   const externalHandlers = new Set<ExternalHandler>()
+  const directoryLoads = new Map<string, Promise<void>>()
+  const pendingRefreshDirs = new Set<string>()
 
   const isOpen = computed(() => info.value !== null)
-  const fileEntries = computed(() => entries.value.filter((entry) => entry.kind === 'file'))
+  const entries = computed(() => Object.values(directories.value).flat())
   const tree = computed(() => buildTree(entries.value))
   const entryPaths = computed(() => new Set(entries.value.map((entry) => entry.path)))
 
@@ -74,7 +77,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
   function applyWorkspace(workspaceInfo: WorkspaceInfo, nextEntries: FileEntry[]): void {
     stopWatch()
     info.value = workspaceInfo
-    entries.value = nextEntries
+    directories.value = { '': nextEntries }
     expandedDirs.value = new Set([''])
     selectedPath.value = null
     searchResults.value = []
@@ -86,7 +89,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
   async function close(): Promise<void> {
     stopWatch()
     info.value = null
-    entries.value = []
+    directories.value = {}
     searchResults.value = []
     searchQuery.value = ''
     selectedPath.value = null
@@ -98,41 +101,89 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     }
   }
 
+  function directoryLoaded(path: string): boolean {
+    return Object.hasOwn(directories.value, normalizeDirectoryPath(path))
+  }
+
+  async function loadDirectory(path: string, force = false): Promise<void> {
+    if (!info.value) return
+    const dir = normalizeDirectoryPath(path)
+    if (!force && directoryLoaded(dir)) return
+    const pending = directoryLoads.get(dir)
+    if (pending) return pending
+    const task = (async () => {
+      try {
+        const list = await platform.listWorkspaceDirectory(dir)
+        directories.value = { ...directories.value, [dir]: list }
+      } catch {
+        if (dir) dropDirectory(dir)
+      } finally {
+        directoryLoads.delete(dir)
+        scheduleWatchSync()
+      }
+    })()
+    directoryLoads.set(dir, task)
+    return task
+  }
+
   async function refresh(): Promise<void> {
     if (!info.value) return
-    try {
-      entries.value = await platform.listWorkspace()
-      if (selectedPath.value && !entryPaths.value.has(selectedPath.value)) {
-        selectedPath.value = null
-      }
-    } catch {
-      // The directory can disappear or lose permission while open.
+    const dirs = Object.keys(directories.value)
+    await Promise.all(dirs.map((dir) => loadDirectory(dir, true)))
+    if (selectedPath.value && !entryPaths.value.has(selectedPath.value)) {
+      selectedPath.value = null
     }
   }
 
-  function scheduleRefresh(): void {
+  function scheduleRefreshOf(dirs: Iterable<string>): void {
+    for (const dir of dirs) pendingRefreshDirs.add(dir)
     if (refreshTimer) window.clearTimeout(refreshTimer)
     refreshTimer = window.setTimeout(() => {
       refreshTimer = null
-      void refresh()
-    }, 250)
+      const targets = [...pendingRefreshDirs]
+      pendingRefreshDirs.clear()
+      for (const dir of targets) {
+        if (directoryLoaded(dir)) void loadDirectory(dir, true)
+      }
+    }, 150)
+  }
+
+  function dropDirectory(path: string): void {
+    const clean = normalizeDirectoryPath(path)
+    if (!clean) return
+    const next = { ...directories.value }
+    let changed = false
+    for (const key of Object.keys(next)) {
+      if (key === clean || key.startsWith(`${clean}/`)) {
+        delete next[key]
+        changed = true
+      }
+    }
+    if (!changed) return
+    directories.value = next
+    const expanded = new Set(expandedDirs.value)
+    for (const key of expanded) {
+      if (key === clean || key.startsWith(`${clean}/`)) expanded.delete(key)
+    }
+    expandedDirs.value = expanded
+    if (selectedPath.value === clean || selectedPath.value?.startsWith(`${clean}/`)) {
+      selectedPath.value = null
+    }
+    scheduleWatchSync()
   }
 
   function startWatch(): void {
     if (!platform.capabilities.fileSystemWatching || !info.value) return
     watchStop = platform.watchWorkspace((events) => {
-      let structural = false
+      const touched = new Set<string>()
       for (const event of events) {
-        if (event.type === 'add' || event.type === 'addDir' || event.type === 'unlink' || event.type === 'unlinkDir') {
-          structural = true
-        } else if (event.type === 'change' && typeof event.mtime === 'number') {
-          const entry = entries.value.find((item) => item.path === event.path)
-          if (entry) entry.modifiedAt = event.mtime
-        }
+        if (event.type === 'unlinkDir') dropDirectory(event.path)
+        touched.add(dirname(normalizeSlashes(event.path)))
       }
-      if (structural) scheduleRefresh()
+      if (touched.size) scheduleRefreshOf(touched)
       for (const handler of externalHandlers) handler(events)
     })
+    scheduleWatchSync()
   }
 
   function stopWatch(): void {
@@ -140,8 +191,43 @@ export const useWorkspaceStore = defineStore('workspace', () => {
       window.clearTimeout(refreshTimer)
       refreshTimer = null
     }
+    if (watchSyncTimer) {
+      window.clearTimeout(watchSyncTimer)
+      watchSyncTimer = null
+    }
+    pendingRefreshDirs.clear()
+    directoryLoads.clear()
     watchStop?.()
     watchStop = null
+  }
+
+  function scheduleWatchSync(): void {
+    if (!info.value || !platform.capabilities.fileSystemWatching) return
+    if (watchSyncTimer) window.clearTimeout(watchSyncTimer)
+    watchSyncTimer = window.setTimeout(() => {
+      watchSyncTimer = null
+      if (!info.value) return
+      platform.setWorkspaceWatchDirectories(visibleExpandedDirs())
+    }, 50)
+  }
+
+  function visibleExpandedDirs(): string[] {
+    const expanded = expandedDirs.value
+    const dirs = new Set<string>([''])
+    for (const dir of expanded) {
+      if (!dir) continue
+      let visible = true
+      let parent = dirname(dir)
+      while (parent) {
+        if (!expanded.has(parent)) {
+          visible = false
+          break
+        }
+        parent = dirname(parent)
+      }
+      if (visible) dirs.add(dir)
+    }
+    return [...dirs]
   }
 
   function subscribeEvents(handler: ExternalHandler): () => void {
@@ -149,24 +235,55 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     return () => externalHandlers.delete(handler)
   }
 
-  function toggleDir(path: string): void {
+  async function toggleDir(path: string): Promise<void> {
+    const clean = normalizeDirectoryPath(path)
     const next = new Set(expandedDirs.value)
-    if (next.has(path)) next.delete(path)
-    else next.add(path)
+    if (next.has(clean)) {
+      next.delete(clean)
+      expandedDirs.value = next
+      scheduleWatchSync()
+      return
+    }
+    next.add(clean)
     expandedDirs.value = next
+    scheduleWatchSync()
+    await loadExpandedSubtree(clean)
   }
 
-  function expandPath(path: string): void {
+  async function expandPath(path: string): Promise<void> {
     const segments = normalizeSlashes(path).split('/')
     segments.pop()
-    let current = ''
-    const next = new Set(expandedDirs.value)
+    const wasExpanded = new Set(expandedDirs.value)
+    const next = new Set(wasExpanded)
     next.add('')
+    const ancestors: string[] = []
+    let current = ''
     for (const segment of segments) {
       current = current ? `${current}/${segment}` : segment
       next.add(current)
+      ancestors.push(current)
     }
     expandedDirs.value = next
+
+    const topmostNew = ancestors.find((dir) => !wasExpanded.has(dir))
+    if (topmostNew) {
+      // Folders that were hidden are not watched, so their cache may be stale.
+      scheduleWatchSync()
+      await loadExpandedSubtree(topmostNew)
+      return
+    }
+    for (const dir of ancestors) await loadDirectory(dir)
+  }
+
+  async function loadExpandedSubtree(dir: string): Promise<void> {
+    const prefix = dir ? `${dir}/` : ''
+    const targets = [dir]
+    for (const child of expandedDirs.value) {
+      if (!child || child === dir) continue
+      if (dir && !child.startsWith(prefix)) continue
+      targets.push(child)
+    }
+    await Promise.all(targets.map((target) => loadDirectory(target, true)))
   }
 
   function select(path: string | null): void {
@@ -183,8 +300,8 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     const path = joinPosix(parentDir, name)
     if (hasEntry(path)) throw new Error('ALREADY_EXISTS')
     await platform.createWorkspaceFile(path, '')
-    await refresh()
-    expandPath(path)
+    await loadDirectory(parentDir, true)
+    await expandPath(path)
     selectedPath.value = path
     return path
   }
@@ -195,11 +312,12 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     const path = joinPosix(parentDir, name)
     if (hasEntry(path)) throw new Error('ALREADY_EXISTS')
     await platform.createWorkspaceDirectory(path)
-    await refresh()
+    await loadDirectory(parentDir, true)
     const next = new Set(expandedDirs.value)
     next.add(parentDir)
     next.add(path)
     expandedDirs.value = next
+    await loadDirectory(path)
     selectedPath.value = path
     return path
   }
@@ -217,7 +335,11 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     if (nextPath === clean) return clean
     if (hasEntry(nextPath)) throw new Error('ALREADY_EXISTS')
     await platform.renameWorkspaceEntry(clean, nextPath)
-    await refresh()
+    if (!isFile) dropDirectory(clean)
+    await Promise.all([
+      loadDirectory(dirname(clean), true),
+      loadDirectory(dirname(nextPath), true),
+    ])
     selectedPath.value = nextPath
     return nextPath
   }
@@ -238,7 +360,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     while (hasEntry(joinPosix(parent, nameFor(index)))) index += 1
     const nextPath = joinPosix(parent, nameFor(index))
     await platform.copyWorkspaceEntry(clean, nextPath)
-    await refresh()
+    await loadDirectory(parent, true)
     selectedPath.value = nextPath
     return nextPath
   }
@@ -252,18 +374,27 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     }
     const nextPath = joinPosix(destination, basename(source))
     if (hasEntry(nextPath)) throw new Error('ALREADY_EXISTS')
+    const isDirectory = entries.value.find((entry) => entry.path === source)?.kind === 'directory'
     await platform.moveWorkspaceEntry(source, destination)
-    await refresh()
-    expandPath(nextPath)
+    if (isDirectory) dropDirectory(source)
+    await Promise.all([
+      loadDirectory(dirname(source), true),
+      loadDirectory(destination, true),
+    ])
+    await expandPath(nextPath)
     selectedPath.value = nextPath
     return nextPath
   }
 
   async function deleteEntry(path: string): Promise<void> {
-    const isDirectory = entries.value.find((entry) => entry.path === path)?.kind === 'directory'
-    await platform.deleteWorkspaceEntry(path, isDirectory ?? false)
-    if (selectedPath.value?.startsWith(normalizeSlashes(path))) selectedPath.value = null
-    await refresh()
+    const clean = normalizeSlashes(path)
+    const isDirectory = entries.value.find((entry) => entry.path === clean)?.kind === 'directory'
+    await platform.deleteWorkspaceEntry(clean, isDirectory ?? false)
+    if (isDirectory) dropDirectory(clean)
+    if (selectedPath.value === clean || selectedPath.value?.startsWith(`${clean}/`)) {
+      selectedPath.value = null
+    }
+    await loadDirectory(dirname(clean), true)
   }
 
   async function revealEntry(path: string): Promise<void> {
@@ -324,7 +455,6 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     expandedDirs,
     selectedPath,
     isOpen,
-    fileEntries,
     tree,
     entryPaths,
     open,
@@ -332,6 +462,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     applyWorkspace,
     close,
     refresh,
+    directoryLoaded,
     subscribeEvents,
     toggleDir,
     expandPath,
@@ -349,6 +480,10 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     clearSearch,
   }
 })
+
+function normalizeDirectoryPath(path: string): string {
+  return normalizeSlashes(path).replace(/^\/+|\/+$/g, '')
+}
 
 function normalizeFileName(rawName: string, extension: string): string {
   const clean = sanitizeFileName(rawName)

@@ -2,6 +2,7 @@ import {
   basename,
   createId,
   ensureMarkdownExtension,
+  fuzzyFilter,
   isOpenableTextFile,
   mimeFromFileName,
   normalizeSlashes,
@@ -32,6 +33,7 @@ import {
   fsaWindow,
   getParentDirectory,
   copyDirectory,
+  listDirectory,
   moveHandle,
   pathSegments,
   printHtml,
@@ -54,6 +56,7 @@ interface StoredWorkspace {
 const LEGACY_WORKSPACE_KEY = 'workspace'
 const WORKSPACES_KEY = 'workspaces'
 const MAX_STORED_WORKSPACES = 12
+const FILE_INDEX_TTL = 5_000
 
 interface MemoryFile {
   name: string
@@ -81,6 +84,8 @@ export class WebPlatform implements Platform {
   private readonly fileHandles = new Map<string, FsFileHandle>()
   private readonly memoryFiles = new Map<string, MemoryFile>()
   private readonly assetUrls = new Map<string, string>()
+  private fileIndex: { builtAt: number; files: FileEntry[] } | null = null
+  private fileIndexTask: Promise<FileEntry[]> | null = null
 
   constructor(version: string) {
     this.version = version
@@ -114,8 +119,9 @@ export class WebPlatform implements Platform {
     }
     this.workspace = info
     this.rootHandle = handle
+    this.fileIndex = null
     await this.persistWorkspace({ info, handle }, stored)
-    return { workspace: info, entries: await this.listWorkspace() }
+    return { workspace: info, entries: await this.listWorkspaceDirectory('') }
   }
 
   async restoreWorkspace(info: WorkspaceInfo): Promise<OpenWorkspaceResult | null> {
@@ -126,8 +132,9 @@ export class WebPlatform implements Platform {
     if (!granted) return null
     this.workspace = match.info
     this.rootHandle = match.handle
+    this.fileIndex = null
     await this.persistWorkspace(match, stored)
-    return { workspace: match.info, entries: await this.listWorkspace() }
+    return { workspace: match.info, entries: await this.listWorkspaceDirectory('') }
   }
 
   async closeWorkspace(): Promise<void> {
@@ -135,19 +142,47 @@ export class WebPlatform implements Platform {
     this.assetUrls.clear()
     this.workspace = null
     this.rootHandle = null
+    this.fileIndex = null
   }
 
   getWorkspace(): WorkspaceInfo | null {
     return this.workspace
   }
 
-  async listWorkspace(): Promise<FileEntry[]> {
+  async listWorkspaceDirectory(path: string): Promise<FileEntry[]> {
     const root = this.requireRoot()
-    const entries: FileEntry[] = []
-    for await (const entry of walkDirectory(root)) {
-      entries.push({ path: entry.path, name: entry.name, kind: entry.kind })
+    const clean = normalizeSlashes(path).replace(/^\/+|\/+$/g, '')
+    const directory = clean ? await resolveDirectory(root, pathSegments(clean)) : root
+    return (await listDirectory(directory, clean)).map(({ path, name, kind }) => ({
+      path,
+      name,
+      kind,
+    }))
+  }
+
+  async findWorkspaceFiles(query: string, limit = 80): Promise<FileEntry[]> {
+    const files = await this.workspaceFileIndex()
+    return fuzzyFilter(query.trim(), files, (entry) => entry.path).slice(0, limit)
+  }
+
+  private async workspaceFileIndex(): Promise<FileEntry[]> {
+    if (this.fileIndex && Date.now() - this.fileIndex.builtAt < FILE_INDEX_TTL) {
+      return this.fileIndex.files
     }
-    return entries
+    if (this.fileIndexTask) return this.fileIndexTask
+    this.fileIndexTask = (async () => {
+      const files: FileEntry[] = []
+      for await (const entry of walkDirectory(this.requireRoot())) {
+        if (entry.kind === 'file') {
+          files.push({ path: entry.path, name: entry.name, kind: 'file' })
+        }
+      }
+      this.fileIndex = { builtAt: Date.now(), files }
+      return files
+    })().finally(() => {
+      this.fileIndexTask = null
+    })
+    return this.fileIndexTask
   }
 
   workspaceDocumentRef(path: string): DocumentRef {
@@ -162,11 +197,16 @@ export class WebPlatform implements Platform {
     }
   }
 
+  workspaceAbsolutePath(): string | null {
+    return null
+  }
+
   async createWorkspaceFile(path: string, content: string): Promise<void> {
     const root = this.requireRoot()
     if (await entryExists(root, path)) throw new Error('ALREADY_EXISTS')
     const handle = await resolveFile(root, path, true)
     await writeFileHandle(handle, content)
+    this.invalidateFileIndex()
   }
 
   async createWorkspaceDirectory(path: string): Promise<void> {
@@ -174,6 +214,7 @@ export class WebPlatform implements Platform {
     if (await entryExists(root, path)) throw new Error('ALREADY_EXISTS')
     const segments = pathSegments(path)
     await resolveDirectory(root, segments, true)
+    this.invalidateFileIndex()
   }
 
   async renameWorkspaceEntry(path: string, nextPath: string): Promise<void> {
@@ -184,6 +225,7 @@ export class WebPlatform implements Platform {
     const sourceHandle = await this.resolveEntry(sourceParent, sourceName)
     const { parent: destinationParent, name: nextName } = await getParentDirectory(root, nextPath)
     await moveHandle(sourceHandle, sourceParent, sourceName, destinationParent, nextName)
+    this.invalidateFileIndex()
   }
 
   async copyWorkspaceEntry(path: string, nextPath: string): Promise<void> {
@@ -201,6 +243,7 @@ export class WebPlatform implements Platform {
     }
     const targetDir = await destinationParent.getDirectoryHandle(nextName, { create: true })
     await copyDirectory(sourceHandle as FsDirectoryHandle, targetDir)
+    this.invalidateFileIndex()
   }
 
   async moveWorkspaceEntry(path: string, destinationDir: string): Promise<void> {
@@ -218,12 +261,14 @@ export class WebPlatform implements Platform {
     if (await entryExists(root, nextPath)) throw new Error('ALREADY_EXISTS')
     const sourceHandle = await this.resolveEntry(sourceParent, sourceName)
     await moveHandle(sourceHandle, sourceParent, sourceName, destinationParent, sourceName)
+    this.invalidateFileIndex()
   }
 
   async deleteWorkspaceEntry(path: string): Promise<void> {
     const root = this.requireRoot()
     const { parent, name } = await getParentDirectory(root, path)
     await parent.removeEntry(name, { recursive: true })
+    this.invalidateFileIndex()
   }
 
   async revealWorkspaceEntry(): Promise<void> {
@@ -470,6 +515,12 @@ export class WebPlatform implements Platform {
 
   watchWorkspace(): () => void {
     return () => undefined
+  }
+
+  setWorkspaceWatchDirectories(): void {}
+
+  private invalidateFileIndex(): void {
+    this.fileIndex = null
   }
 
   watchDocument(): () => void {

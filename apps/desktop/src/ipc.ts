@@ -61,8 +61,13 @@ async function dispatch(
     case 'closeWorkspace':
       workspace.closeWorkspace()
       return undefined
-    case 'listWorkspace':
-      return workspace.listWorkspace()
+    case 'listWorkspaceDirectory':
+      return workspace.listWorkspaceDirectory(String(args[0] ?? ''))
+    case 'findWorkspaceFiles':
+      return workspace.findWorkspaceFiles(
+        String(args[0] ?? ''),
+        typeof args[1] === 'number' ? args[1] : undefined,
+      )
     case 'readWorkspaceFile':
       return workspace.readWorkspaceFile(String(args[0] ?? ''))
     case 'writeWorkspaceFile':
@@ -128,6 +133,9 @@ async function dispatch(
     case 'startWatch':
       if (!window) throw new Error('NO_WINDOW')
       workspace.startWatch(window)
+      return undefined
+    case 'setWatchDirectories':
+      workspace.setWatchDirectories(Array.isArray(args[0]) ? (args[0] as string[]) : [])
       return undefined
     case 'startFileWatch':
       if (!window) throw new Error('NO_WINDOW')

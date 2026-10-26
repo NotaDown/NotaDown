@@ -83,10 +83,9 @@ export interface SearchResult {
 }
 
 export interface WorkspaceEvent {
-  type: 'add' | 'change' | 'unlink' | 'addDir' | 'unlinkDir'
+  type: 'add' | 'unlink' | 'addDir' | 'unlinkDir'
   path: string
   isDirectory: boolean
-  mtime?: number
 }
 
 export interface DocumentChangeEvent {

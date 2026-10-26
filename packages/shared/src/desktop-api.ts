@@ -24,7 +24,9 @@ export interface DesktopInvokeMap {
   openWorkspace: { args: []; result: OpenWorkspaceResult | null }
   restoreWorkspace: { args: [rootPath: string]; result: OpenWorkspaceResult | null }
   closeWorkspace: { args: []; result: void }
-  listWorkspace: { args: []; result: FileEntry[] }
+  listWorkspaceDirectory: { args: [relativePath: string]; result: FileEntry[] }
+  findWorkspaceFiles: { args: [query: string, limit: number]; result: FileEntry[] }
+  setWatchDirectories: { args: [relativePaths: string[]]; result: void }
   readWorkspaceFile: {
     args: [relativePath: string]
     result: { content: string; mtime: number }

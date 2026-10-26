@@ -1,4 +1,4 @@
-import { isHiddenPath, normalizeSlashes } from '@notadown/shared'
+import { isHiddenPath, isIndexExcludedPath, normalizeSlashes } from '@notadown/shared'
 
 export interface FsWritable {
   write(data: BufferSource | Blob | string): Promise<void>
@@ -138,25 +138,42 @@ export interface WalkedEntry {
   handle: FsHandle
 }
 
-export async function* walkDirectory(
+export async function listDirectory(
   directory: FsDirectoryHandle,
   prefix = '',
-): AsyncGenerator<WalkedEntry> {
+): Promise<WalkedEntry[]> {
   const entries: Array<[string, FsHandle]> = []
   for await (const entry of directory.entries()) {
     entries.push(entry)
   }
   entries.sort((a, b) => a[0].localeCompare(b[0], undefined, { sensitivity: 'base' }))
 
+  const result: WalkedEntry[] = []
   for (const [name, handle] of entries) {
     if (name.startsWith('.')) continue
     const path = prefix ? `${prefix}/${name}` : name
-    if (isHiddenPath(path)) continue
-    if (handle.kind === 'directory') {
-      yield { path, name, kind: 'directory', handle: handle as FsDirectoryHandle }
-      yield* walkDirectory(handle as FsDirectoryHandle, path)
+    result.push({
+      path,
+      name,
+      kind: handle.kind,
+      handle: handle as FsDirectoryHandle | FsFileHandle,
+    })
+  }
+  return result
+}
+
+export async function* walkDirectory(
+  directory: FsDirectoryHandle,
+  prefix = '',
+): AsyncGenerator<WalkedEntry> {
+  for (const entry of await listDirectory(directory, prefix)) {
+    if (isHiddenPath(entry.path)) continue
+    if (entry.kind === 'directory') {
+      if (isIndexExcludedPath(entry.path)) continue
+      yield entry
+      yield* walkDirectory(entry.handle as FsDirectoryHandle, entry.path)
     } else {
-      yield { path, name, kind: 'file', handle: handle as FsFileHandle }
+      yield entry
     }
   }
 }

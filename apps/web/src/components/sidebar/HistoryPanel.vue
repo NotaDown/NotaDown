@@ -10,7 +10,7 @@ import {
   TriangleAlert,
 } from 'lucide-vue-next'
 import { formatDateTime, formatRelativeTime } from '@notadown/i18n'
-import type { HistoryRecord } from '@notadown/shared'
+import { dirname, type HistoryRecord } from '@notadown/shared'
 import { platform } from '@/platform'
 import { useSettingsStore } from '@/stores/settings'
 import { useTabsStore } from '@/stores/tabs'
@@ -47,6 +47,8 @@ function sourceLabel(source: HistoryRecord['source']): string {
 function isDeleted(record: HistoryRecord): boolean {
   if (!workspace.isOpen) return false
   if (!record.documentKey.startsWith('workspace:')) return false
+  // Unloaded folders are unknown territory: only report deletion for folders we actually listed.
+  if (!workspace.directoryLoaded(dirname(record.filePath))) return false
   return !workspace.entryPaths.has(record.filePath)
 }
 

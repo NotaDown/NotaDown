@@ -2,6 +2,23 @@ import type { DocumentRef } from '../types'
 
 const MARKDOWN_EXTENSIONS = new Set(['md', 'markdown', 'mdown', 'mkd', 'txt'])
 
+// Workspace indexing (quick open and content search) skips these directories:
+// their contents are generated or third-party and would make a full scan unusable.
+const INDEX_EXCLUDED_DIRECTORIES = new Set([
+  'node_modules',
+  'bower_components',
+  'vendor',
+  'dist',
+  'build',
+  'out',
+  'target',
+  'coverage',
+  '__pycache__',
+  'venv',
+  'pods',
+  'deriveddata',
+])
+
 export function normalizeSlashes(value: string): string {
   return value.replace(/\\/g, '/')
 }
@@ -180,4 +197,10 @@ export function isHiddenPath(path: string): boolean {
   return normalizeSlashes(path)
     .split('/')
     .some((segment) => segment.startsWith('.') && segment !== '.' && segment !== '..')
+}
+
+export function isIndexExcludedPath(path: string): boolean {
+  return normalizeSlashes(path)
+    .split('/')
+    .some((segment) => INDEX_EXCLUDED_DIRECTORIES.has(segment.toLowerCase()))
 }

@@ -81,8 +81,12 @@ export class DesktopPlatform implements Platform {
     return this.workspace
   }
 
-  async listWorkspace(): Promise<FileEntry[]> {
-    return this.bridge.invoke('listWorkspace')
+  async listWorkspaceDirectory(path: string): Promise<FileEntry[]> {
+    return this.bridge.invoke('listWorkspaceDirectory', normalizeSlashes(path))
+  }
+
+  async findWorkspaceFiles(query: string, limit = 80): Promise<FileEntry[]> {
+    return this.bridge.invoke('findWorkspaceFiles', query, limit)
   }
 
   workspaceDocumentRef(path: string): DocumentRef {
@@ -96,6 +100,12 @@ export class DesktopPlatform implements Platform {
       path: relative,
       origin: 'workspace',
     }
+  }
+
+  workspaceAbsolutePath(path: string): string | null {
+    const root = this.workspace?.rootPath
+    if (!root) return null
+    return joinAbsolute(root, path)
   }
 
   async createWorkspaceFile(path: string, content: string): Promise<void> {
@@ -231,6 +241,12 @@ export class DesktopPlatform implements Platform {
     const unsubscribe = this.bridge.onWorkspaceEvents(onEvents)
     void this.bridge.invoke('startWatch').catch(() => undefined)
     return unsubscribe
+  }
+
+  setWorkspaceWatchDirectories(paths: string[]): void {
+    void this.bridge
+      .invoke('setWatchDirectories', paths.map((path) => normalizeSlashes(path)))
+      .catch(() => undefined)
   }
 
   watchDocument(
