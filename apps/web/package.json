@@ -1,12 +1,11 @@
 {
   "name": "@notadown/web",
-  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
-    "build:desktop": "vue-tsc --noEmit && vite build --outDir ../desktop/renderer",
+    "build:desktop": "vue-tsc --noEmit && vite build --outDir ../desktop/renderer --emptyOutDir",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit"
   },
