@@ -59,9 +59,20 @@ export function useGlobalShortcuts(commands: AppCommands): void {
   const ui = useUiStore()
   const platform = commands.platform
 
-  // ProseMirror consumes Ctrl+A before bubble-phase listeners reach the window.
-  function onSelectAllKeydown(event: KeyboardEvent): void {
-    if (event.isComposing || !ui.hasBlockingModal) return
+  // ProseMirror handles Ctrl+A and Escape before bubble-phase listeners reach the window.
+  function onCaptureKeydown(event: KeyboardEvent): void {
+    if (event.isComposing) return
+
+    if (event.key === 'Escape') {
+      if (!ui.hasBlockingModal || event.defaultPrevented) return
+      if (ui.closeTopLayer()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+      return
+    }
+
+    if (!ui.hasBlockingModal) return
     if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) return
     if (event.key.toLowerCase() !== 'a') return
     const target = event.target
@@ -128,12 +139,12 @@ export function useGlobalShortcuts(commands: AppCommands): void {
   }
 
   onMounted(() => {
-    window.addEventListener('keydown', onSelectAllKeydown, true)
+    window.addEventListener('keydown', onCaptureKeydown, true)
     window.addEventListener('keydown', onKeydown)
   })
 
   onBeforeUnmount(() => {
-    window.removeEventListener('keydown', onSelectAllKeydown, true)
+    window.removeEventListener('keydown', onCaptureKeydown, true)
     window.removeEventListener('keydown', onKeydown)
   })
 }

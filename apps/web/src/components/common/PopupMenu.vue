@@ -48,7 +48,7 @@ function select(item: MenuItem): void {
 }
 
 function onKeydown(event: KeyboardEvent): void {
-  if (event.key !== 'Escape') return
+  if (!props.open || event.key !== 'Escape') return
   event.preventDefault()
   close()
 }
