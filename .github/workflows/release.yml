@@ -146,6 +146,42 @@ jobs:
           path: artifacts
           merge-multiple: true
 
+      - name: Write download links
+        run: |
+          base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}"
+          mirror="https://v6.gh-proxy.org/${base}"
+          asset() { find artifacts -maxdepth 1 -type f -name "$1" -printf '%f\n' -quit; }
+          urlencode() { printf '%s' "${1// /%20}"; }
+          link() {
+            local file
+            file=$(urlencode "$2")
+            printf '[%s](%s/%s) ([国内镜像](%s/%s))' "$1" "$base" "$file" "$mirror" "$file"
+          }
+
+          win_exe=$(asset 'NotaDown*-x64.exe')
+          mac_x64=$(asset 'NotaDown*-x64.dmg')
+          mac_arm64=$(asset 'NotaDown*-arm64.dmg')
+          linux_appimage=$(asset 'NotaDown*-x64.AppImage')
+          linux_deb=$(asset 'NotaDown*-x64.deb')
+          web_zip=$(asset 'notadown-web.zip')
+
+          {
+            printf '\n### 下载 · Downloads\n\n'
+            printf -- '- **Windows (x64)**: '
+            link 'Installer' "$win_exe"
+            printf '\n- **macOS (Apple Silicon)**: '
+            link 'DMG' "$mac_arm64"
+            printf ' · **macOS (Intel)**: '
+            link 'DMG' "$mac_x64"
+            printf '\n- **Linux (x64)**: '
+            link 'AppImage' "$linux_appimage"
+            printf ' · '
+            link 'deb' "$linux_deb"
+            printf '\n- **Web**: '
+            link '离线包' "$web_zip"
+            printf '\n'
+          } >> release-body.md
+
       - uses: softprops/action-gh-release@v3
         with:
           name: NotaDown ${{ github.ref_name }}
