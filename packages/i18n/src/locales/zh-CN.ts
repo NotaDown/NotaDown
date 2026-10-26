@@ -88,6 +88,14 @@ export const zhCN = {
     webTitle: '网页版',
     webFolderNote: '文件夹工作区依赖 File System Access API，需使用 Chromium 内核的桌面浏览器。',
   },
+  defaultApp: {
+    title: '用 NotaDown 打开 Markdown 文件',
+    body: 'NotaDown 已经进入 Markdown 文件的右键“打开方式”菜单。双击文件时使用哪个程序，由系统的默认设置决定。',
+    steps: '在 Windows 设置里把 .md 指定为使用 NotaDown；或右键一个 Markdown 文件 → 打开方式 → 选择其他应用 → 始终。',
+    openSettings: '打开系统设置',
+    notNow: '暂不设置',
+    openFailed: '无法打开 Windows 设置。',
+  },
   tabs: {
     saved: '已保存',
     saving: '正在保存…',
@@ -326,6 +334,8 @@ export const zhCN = {
       titleBarRestartNotice: '标题栏模式已更改，重启应用后生效。',
       restartApp: '重启应用',
       restartUnsaved: '请先保存或关闭未保存的更改，再重启应用。',
+      defaultMarkdownApp: 'Markdown 默认程序',
+      defaultMarkdownAppHint: '双击 Markdown 文件时，使用系统设置中指定的程序打开。',
     },
     appearanceSection: {
       colorMode: '颜色模式',

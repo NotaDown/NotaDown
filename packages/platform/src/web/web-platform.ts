@@ -91,6 +91,7 @@ export class WebPlatform implements Platform {
       nativeDialogs: supportsFilePicker(),
       pdfExport: true,
       revealInFolder: false,
+      defaultAppSettings: false,
     }
   }
 
@@ -568,6 +569,10 @@ export class WebPlatform implements Platform {
   async openExternal(url: string): Promise<void> {
     if (!/^(https?:|mailto:)/i.test(url)) throw new Error('UNSUPPORTED')
     window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
+  async openDefaultAppSettings(): Promise<void> {
+    throw new Error('UNSUPPORTED')
   }
 
   getPathForFile(): string | null {

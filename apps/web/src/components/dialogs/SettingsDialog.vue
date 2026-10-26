@@ -12,6 +12,7 @@ import {
   Trash2,
   Type,
   History,
+  ExternalLink,
   X,
 } from 'lucide-vue-next'
 import {
@@ -39,6 +40,7 @@ const settings = useSettingsStore()
 const tabs = useTabsStore()
 const ui = useUiStore()
 const isDesktop = platform.kind === 'desktop'
+const canDefaultAppSettings = platform.capabilities.defaultAppSettings
 
 const draft = reactive<AppSettings>({ ...settings.settings })
 const section = ref<SettingsSection>(ui.settingsSection)
@@ -223,6 +225,14 @@ async function restartApp(): Promise<void> {
   }
 }
 
+async function openDefaultAppSettings(): Promise<void> {
+  try {
+    await platform.openDefaultAppSettings()
+  } catch {
+    ui.toast('error', t('defaultApp.openFailed'))
+  }
+}
+
 async function clearHistory(): Promise<void> {
   const confirmed = await ui.confirm({
     title: t('dialogs.deleteHistoryTitle'),
@@ -348,6 +358,23 @@ async function clearHistory(): Promise<void> {
                       {{ t('settings.generalSection.restartApp') }}
                     </button>
                   </div>
+                </div>
+
+                <div v-if="canDefaultAppSettings" class="nd-field">
+                  <span class="nd-field-label">
+                    {{ t('settings.generalSection.defaultMarkdownApp') }}
+                  </span>
+                  <p class="nd-field-hint">
+                    {{ t('settings.generalSection.defaultMarkdownAppHint') }}
+                  </p>
+                  <button
+                    type="button"
+                    class="nd-btn nd-btn--sm"
+                    @click="openDefaultAppSettings"
+                  >
+                    <ExternalLink :size="13" />
+                    {{ t('defaultApp.openSettings') }}
+                  </button>
                 </div>
               </section>
 

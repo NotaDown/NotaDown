@@ -95,6 +95,7 @@ export interface DesktopInvokeMap {
   exportPdf: { args: [html: string, suggestedName: string]; result: boolean }
   setTitleBarOverlay: { args: [color: string, symbolColor: string]; result: void }
   openExternal: { args: [url: string]; result: void }
+  openDefaultAppSettings: { args: []; result: void }
   takeOpenFiles: { args: []; result: string[] }
 }
 

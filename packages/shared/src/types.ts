@@ -27,6 +27,7 @@ export interface PlatformCapabilities {
   nativeDialogs: boolean
   pdfExport: boolean
   revealInFolder: boolean
+  defaultAppSettings: boolean
 }
 
 export interface WorkspaceInfo {

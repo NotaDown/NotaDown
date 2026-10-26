@@ -27,14 +27,7 @@ import type { AssetTarget, DocumentWriteResult, Platform } from '../types'
 
 export class DesktopPlatform implements Platform {
   readonly kind = 'desktop' as const
-  readonly capabilities: PlatformCapabilities = {
-    folderWorkspace: true,
-    fileSystemWatching: true,
-    localHistory: true,
-    nativeDialogs: true,
-    pdfExport: true,
-    revealInFolder: true,
-  }
+  readonly capabilities: PlatformCapabilities
   readonly version: string
 
   private readonly bridge: DesktopBridge
@@ -43,6 +36,15 @@ export class DesktopPlatform implements Platform {
   constructor(bridge: DesktopBridge, version: string) {
     this.bridge = bridge
     this.version = version
+    this.capabilities = {
+      folderWorkspace: true,
+      fileSystemWatching: true,
+      localHistory: true,
+      nativeDialogs: true,
+      pdfExport: true,
+      revealInFolder: true,
+      defaultAppSettings: bridge.platform === 'win32',
+    }
   }
 
   async getVersion(): Promise<string> {
@@ -303,6 +305,10 @@ export class DesktopPlatform implements Platform {
   async openExternal(url: string): Promise<void> {
     if (!/^(https?:|mailto:)/i.test(url)) throw new Error('UNSUPPORTED')
     await this.bridge.invoke('openExternal', url)
+  }
+
+  async openDefaultAppSettings(): Promise<void> {
+    await this.bridge.invoke('openDefaultAppSettings')
   }
 
   getPathForFile(file: File): string | null {

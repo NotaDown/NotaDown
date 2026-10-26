@@ -88,6 +88,14 @@ export const enUS = {
     webTitle: 'Browser edition',
     webFolderNote: 'Folder workspaces use the File System Access API and are available in Chromium-based browsers.',
   },
+  defaultApp: {
+    title: 'Open Markdown files with NotaDown',
+    body: 'NotaDown is already in the “Open with” menu for Markdown files. Which program opens a file on double-click is decided by the system default.',
+    steps: 'In Windows settings, choose NotaDown for .md files, or right-click a Markdown file and use Open with → Choose another app → Always.',
+    openSettings: 'Open system settings',
+    notNow: 'Not now',
+    openFailed: 'Could not open Windows settings.',
+  },
   tabs: {
     saved: 'Saved',
     saving: 'Saving…',
@@ -326,6 +334,8 @@ export const enUS = {
       titleBarRestartNotice: 'Title bar mode changed. Restart the app to apply it.',
       restartApp: 'Restart app',
       restartUnsaved: 'Save or close your unsaved changes before restarting.',
+      defaultMarkdownApp: 'Default Markdown program',
+      defaultMarkdownAppHint: 'Double-clicking a Markdown file opens it with the program set in system settings.',
     },
     appearanceSection: {
       colorMode: 'Color mode',

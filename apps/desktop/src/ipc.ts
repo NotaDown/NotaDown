@@ -20,6 +20,10 @@ import { takeOpenFiles } from './open-files'
 import * as state from './state'
 import * as workspace from './workspace'
 
+// Keep in sync with productName in electron-builder.yml — Settings resolves the
+// RegisteredApplications value name written by the installer.
+const DEFAULT_APP_SETTINGS_NAME = 'NotaDown'
+
 export function registerIpcHandlers(
   onSettingsSaved?: (settings: AppSettings) => void,
 ): void {
@@ -196,6 +200,14 @@ async function dispatch(
       const url = String(args[0] ?? '')
       if (!/^(https?:|mailto:)/i.test(url)) throw new Error('UNSUPPORTED')
       await shell.openExternal(url)
+      return undefined
+    }
+
+    case 'openDefaultAppSettings': {
+      if (process.platform !== 'win32') throw new Error('UNSUPPORTED')
+      await shell.openExternal(
+        `ms-settings:defaultapps?registeredAppUser=${DEFAULT_APP_SETTINGS_NAME}`,
+      )
       return undefined
     }
 

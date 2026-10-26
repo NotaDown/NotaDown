@@ -48,6 +48,7 @@ export const useUiStore = defineStore('ui', () => {
   const shortcutsOpen = ref(false)
   const paletteOpen = ref(false)
   const quickOpenOpen = ref(false)
+  const defaultAppOpen = ref(false)
 
   const findOpen = ref(false)
   const findQuery = ref('')
@@ -68,6 +69,7 @@ export const useUiStore = defineStore('ui', () => {
       shortcutsOpen.value ||
       paletteOpen.value ||
       quickOpenOpen.value ||
+      defaultAppOpen.value ||
       confirmState.value !== null ||
       unsavedState.value !== null,
   )
@@ -176,6 +178,10 @@ export const useUiStore = defineStore('ui', () => {
       quickOpenOpen.value = false
       return true
     }
+    if (defaultAppOpen.value) {
+      defaultAppOpen.value = false
+      return true
+    }
     if (settingsOpen.value) {
       settingsOpen.value = false
       return true
@@ -200,6 +206,7 @@ export const useUiStore = defineStore('ui', () => {
     shortcutsOpen,
     paletteOpen,
     quickOpenOpen,
+    defaultAppOpen,
     findOpen,
     findQuery,
     findResult,

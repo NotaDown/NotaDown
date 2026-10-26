@@ -89,6 +89,7 @@ export interface Platform {
   exportHtml(html: string, fileName: string): Promise<boolean>
   exportPdf(html: string, fileName: string): Promise<boolean>
   openExternal(url: string): Promise<void>
+  openDefaultAppSettings(): Promise<void>
   getPathForFile(file: File): string | null
   onMenuCommand(callback: (command: string) => void): () => void
   onOpenFiles(callback: () => void): () => void

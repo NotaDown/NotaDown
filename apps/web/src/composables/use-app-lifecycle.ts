@@ -8,6 +8,7 @@ import { useUiStore } from '@/stores/ui'
 import { useWorkspaceStore } from '@/stores/workspace'
 import { usesNativeTitleBar } from '@/window-chrome'
 import type { AppCommands } from './use-app-commands'
+import { maybePromptDefaultApp } from './use-default-app-guide'
 
 export function useAppLifecycle(commands: AppCommands): void {
   const settings = useSettingsStore()
@@ -31,6 +32,7 @@ export function useAppLifecycle(commands: AppCommands): void {
 
     await restoreSession()
     await openPendingFiles()
+    maybePromptDefaultApp()
 
     historyTimer = window.setInterval(() => void tabs.tickHistory(), 20_000)
 

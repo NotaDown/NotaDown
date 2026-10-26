@@ -86,6 +86,16 @@ function invoke(method: string, ...args: unknown[]): Promise<unknown> {
   return handler({ sender: {} }, method, ...args)
 }
 
+async function withPlatform(platform: string, run: () => Promise<void>): Promise<void> {
+  const descriptor = Object.getOwnPropertyDescriptor(process, 'platform')
+  Object.defineProperty(process, 'platform', { value: platform, configurable: true })
+  try {
+    await run()
+  } finally {
+    if (descriptor) Object.defineProperty(process, 'platform', descriptor)
+  }
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
   mocks.electron.fromWebContents.mockReturnValue(window)
@@ -178,6 +188,22 @@ describe('registerIpcHandlers', () => {
       'UNSUPPORTED',
     )
     expect(mocks.electron.openExternal).toHaveBeenCalledTimes(1)
+  })
+
+  it('opens the Windows default apps page for this app', async () => {
+    await withPlatform('win32', async () => {
+      await expect(invoke('openDefaultAppSettings')).resolves.toBeUndefined()
+      expect(mocks.electron.openExternal).toHaveBeenCalledWith(
+        'ms-settings:defaultapps?registeredAppUser=NotaDown',
+      )
+    })
+  })
+
+  it('rejects default app settings on other platforms', async () => {
+    await withPlatform('darwin', async () => {
+      await expect(invoke('openDefaultAppSettings')).rejects.toThrow('UNSUPPORTED')
+      expect(mocks.electron.openExternal).not.toHaveBeenCalled()
+    })
   })
 
   it('returns queued files', async () => {
