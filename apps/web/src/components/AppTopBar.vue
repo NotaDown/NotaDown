@@ -3,7 +3,6 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   Download,
-  FolderOpen,
   Menu,
   Moon,
   PanelLeft,
@@ -81,10 +80,6 @@ function toggleMenu(event: MouseEvent): void {
 function handleMenuSelect(id: string): void {
   void commands.run(id)
 }
-
-function openWorkspace(): void {
-  void commands.run('file.openWorkspace')
-}
 </script>
 
 <template>
@@ -111,17 +106,11 @@ function openWorkspace(): void {
       <span class="topbar__name">NotaDown</span>
     </div>
 
-    <button
-      type="button"
-      class="workspace-chip"
-      :title="t('menu.openFolder')"
-      @click="openWorkspace"
-    >
-      <FolderOpen :size="14" />
-      <span class="workspace-chip__label">
-        {{ workspace.info?.name ?? t('menu.openFolder') }}
-      </span>
-    </button>
+    <span
+      v-if="workspace.info"
+      class="workspace-name"
+      :title="workspace.info.name"
+    >{{ workspace.info.name }}</span>
 
     <div class="topbar__actions">
       <button
@@ -229,33 +218,12 @@ function openWorkspace(): void {
   color: var(--nd-text);
 }
 
-.workspace-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.workspace-name {
   min-width: 0;
-  height: 26px;
-  padding: 0 9px;
-  border: 1px solid var(--nd-border);
-  border-radius: 99px;
-  background: transparent;
-  color: var(--nd-text-secondary);
-  font-size: 12px;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
-}
-
-.workspace-chip:hover {
-  background: var(--nd-surface);
-  border-color: var(--nd-border-strong);
-  color: var(--nd-text);
-}
-
-.workspace-chip__label {
-  overflow: hidden;
   max-width: 220px;
+  overflow: hidden;
+  color: var(--nd-text-muted);
+  font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -277,28 +245,14 @@ function openWorkspace(): void {
     display: inline-flex;
   }
 
-  .workspace-chip {
-    height: 28px;
-  }
-
-  .workspace-chip__label {
-    max-width: 120px;
+  .workspace-name {
+    max-width: 140px;
   }
 }
 
 @media (max-width: 640px) {
   .topbar__name,
   .topbar__settings {
-    display: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .workspace-chip {
-    padding: 0 8px;
-  }
-
-  .workspace-chip__label {
     display: none;
   }
 }
