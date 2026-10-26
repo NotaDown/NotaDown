@@ -13,6 +13,7 @@ import {
   type WorkspaceInfo,
 } from '@notadown/shared'
 import { platform } from '@/platform'
+import { useRecentStore } from './recent'
 import { useSettingsStore } from './settings'
 
 export interface WorkspaceNode extends FileEntry {
@@ -79,6 +80,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     searchResults.value = []
     searchQuery.value = ''
     startWatch()
+    useRecentStore().recordFolder(workspaceInfo)
   }
 
   async function close(): Promise<void> {

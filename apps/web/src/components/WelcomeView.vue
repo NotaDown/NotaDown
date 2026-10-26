@@ -1,16 +1,22 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   Clock,
   FilePlus,
   FileText,
+  Folder,
   FolderOpen,
   Info,
   X,
 } from 'lucide-vue-next'
 import { formatRelativeTime } from '@notadown/i18n'
 import { platform } from '@/platform'
-import { useRecentStore, type RecentDocument } from '@/stores/recent'
+import {
+  useRecentStore,
+  type RecentDocument,
+  type RecentFolder,
+} from '@/stores/recent'
 import { useSettingsStore } from '@/stores/settings'
 import { useTabsStore } from '@/stores/tabs'
 import { useInjectedCommands } from '@/composables/use-app-commands'
@@ -23,6 +29,9 @@ const tabs = useTabsStore()
 const commands = useInjectedCommands()
 
 const canOpenFolder = platform.capabilities.folderWorkspace
+const hasRecent = computed(
+  () => recent.documents.length > 0 || recent.folders.length > 0,
+)
 
 function run(id: string): void {
   void commands.run(id)
@@ -32,9 +41,18 @@ function openRecent(entry: RecentDocument): void {
   void tabs.openRecent(entry)
 }
 
+function openRecentFolder(entry: RecentFolder): void {
+  void tabs.openRecentFolder(entry)
+}
+
 function removeRecent(event: MouseEvent, entry: RecentDocument): void {
   event.stopPropagation()
   recent.remove(entry.key)
+}
+
+function removeRecentFolder(event: MouseEvent, entry: RecentFolder): void {
+  event.stopPropagation()
+  recent.removeFolder(entry.key)
 }
 </script>
 
@@ -92,33 +110,87 @@ function removeRecent(event: MouseEvent, entry: RecentDocument): void {
           <span>{{ t('welcome.recent') }}</span>
         </div>
 
-        <p v-if="recent.documents.length === 0" class="welcome__empty">
+        <p v-if="!hasRecent" class="welcome__empty">
           {{ t('welcome.noRecent') }}
         </p>
 
-        <ul v-else class="welcome__recent-list">
-          <li v-for="entry in recent.documents" :key="entry.key">
-            <button type="button" class="recent-row" @click="openRecent(entry)">
-              <FileText :size="14" class="recent-row__icon" />
-              <span class="recent-row__text">
-                <span class="recent-row__name">{{ entry.name }}</span>
-                <span class="recent-row__path">{{ entry.path }}</span>
-              </span>
-              <span class="recent-row__time">
-                {{ formatRelativeTime(entry.openedAt, settings.locale) }}
-              </span>
-              <span
-                class="recent-row__remove"
-                role="button"
-                tabindex="-1"
-                :title="t('common.delete')"
-                @click="removeRecent($event, entry)"
-              >
-                <X :size="12" />
-              </span>
-            </button>
-          </li>
-        </ul>
+        <div v-else class="welcome__recent-groups">
+          <section class="recent-group">
+            <div class="recent-group__head">
+              <Folder :size="12" />
+              <span>{{ t('welcome.recentFolders') }}</span>
+            </div>
+
+            <p
+              v-if="recent.folders.length === 0"
+              class="welcome__empty welcome__empty--inline"
+            >
+              {{ t('welcome.noRecentFolders') }}
+            </p>
+
+            <ul v-else class="welcome__recent-list">
+              <li v-for="entry in recent.folders" :key="entry.key">
+                <button type="button" class="recent-row" @click="openRecentFolder(entry)">
+                  <Folder :size="14" class="recent-row__icon" />
+                  <span class="recent-row__text">
+                    <span class="recent-row__name">{{ entry.name }}</span>
+                    <span v-if="entry.path" class="recent-row__path">{{ entry.path }}</span>
+                  </span>
+                  <span class="recent-row__time">
+                    {{ formatRelativeTime(entry.openedAt, settings.locale) }}
+                  </span>
+                  <span
+                    class="recent-row__remove"
+                    role="button"
+                    tabindex="-1"
+                    :title="t('common.delete')"
+                    @click="removeRecentFolder($event, entry)"
+                  >
+                    <X :size="12" />
+                  </span>
+                </button>
+              </li>
+            </ul>
+          </section>
+
+          <section class="recent-group">
+            <div class="recent-group__head">
+              <FileText :size="12" />
+              <span>{{ t('welcome.recentFiles') }}</span>
+            </div>
+
+            <p
+              v-if="recent.documents.length === 0"
+              class="welcome__empty welcome__empty--inline"
+            >
+              {{ t('welcome.noRecentFiles') }}
+            </p>
+
+            <ul v-else class="welcome__recent-list">
+              <li v-for="entry in recent.documents" :key="entry.key">
+                <button type="button" class="recent-row" @click="openRecent(entry)">
+                  <FileText :size="14" class="recent-row__icon" />
+                  <span class="recent-row__text">
+                    <span class="recent-row__name">{{ entry.name }}</span>
+                    <span class="recent-row__path">{{ entry.path }}</span>
+                  </span>
+                  <span class="recent-row__time">
+                    {{ formatRelativeTime(entry.openedAt, settings.locale) }}
+                  </span>
+                  <span
+                    class="recent-row__remove"
+                    role="button"
+                    tabindex="-1"
+                    :title="t('common.delete')"
+                    @click="removeRecent($event, entry)"
+                  >
+                    <X :size="12" />
+                  </span>
+                </button>
+              </li>
+            </ul>
+          </section>
+        </div>
       </section>
     </div>
   </div>
@@ -267,6 +339,28 @@ function removeRecent(event: MouseEvent, entry: RecentDocument): void {
   font-size: 12.5px;
 }
 
+.welcome__empty--inline {
+  padding: 9px 10px;
+  font-size: 12px;
+}
+
+.welcome__recent-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 8px 28px;
+}
+
+.recent-group__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  color: var(--nd-text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
 .welcome__recent-list {
   display: flex;
   flex-direction: column;
@@ -356,6 +450,11 @@ function removeRecent(event: MouseEvent, entry: RecentDocument): void {
 @media (max-width: 720px) {
   .welcome__actions {
     grid-template-columns: 1fr;
+  }
+
+  .welcome__recent-groups {
+    grid-template-columns: 1fr;
+    gap: 22px;
   }
 
   .welcome__inner {

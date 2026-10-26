@@ -19,7 +19,7 @@ import { describeError, errorCode } from '@/errors'
 import { flushEditor, focusEditor } from '@/editor-registry'
 import { useSettingsStore } from './settings'
 import { useUiStore } from './ui'
-import { useRecentStore, type RecentDocument } from './recent'
+import { useRecentStore, type RecentDocument, type RecentFolder } from './recent'
 import { useWorkspaceStore } from './workspace'
 
 export type TabViewMode = 'rich' | 'source'
@@ -274,6 +274,25 @@ export const useTabsStore = defineStore('tabs', () => {
       path: entry.path,
       origin: 'file',
     })
+  }
+
+  async function openRecentFolder(entry: RecentFolder): Promise<boolean> {
+    const workspace = useWorkspaceStore()
+    if (workspace.info?.id === entry.workspace.id) {
+      ui.setSidebarView('files')
+      return true
+    }
+    if (tabs.value.some((tab) => tab.ref.origin === 'workspace')) {
+      const closed = await closeWorkspaceTabs()
+      if (!closed) return false
+    }
+    if (!(await workspace.restore(entry.workspace))) {
+      ui.toast('warning', t('toasts.folderUnavailable'))
+      return false
+    }
+    ui.setSidebarView('files')
+    ui.toast('success', t('toasts.workspaceOpened', { name: workspace.info?.name ?? entry.name }))
+    return true
   }
 
   function updateContent(tabKey: string, content: string): void {
@@ -824,6 +843,7 @@ export const useTabsStore = defineStore('tabs', () => {
     openAbsolutePaths,
     openDroppedItems,
     openRecent,
+    openRecentFolder,
     updateContent,
     setViewMode,
     toggleViewMode,

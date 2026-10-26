@@ -50,6 +50,10 @@ interface StoredWorkspace {
   handle: FsDirectoryHandle
 }
 
+const LEGACY_WORKSPACE_KEY = 'workspace'
+const WORKSPACES_KEY = 'workspaces'
+const MAX_STORED_WORKSPACES = 12
+
 interface MemoryFile {
   name: string
   content: string
@@ -99,26 +103,29 @@ export class WebPlatform implements Platform {
     const handle = await picker({ id: 'notadown-workspace', mode: 'readwrite' })
     if (!(await ensurePermission(handle))) throw new Error('PERMISSION_DENIED')
 
-    const info: WorkspaceInfo = {
+    const stored = await this.storedWorkspaces()
+    const existing = await this.findStoredWorkspace(handle, stored)
+    const info: WorkspaceInfo = existing?.info ?? {
       id: createId('webws'),
       name: handle.name,
       rootPath: null,
     }
     this.workspace = info
     this.rootHandle = handle
-    await kvSet('workspace', { info, handle } satisfies StoredWorkspace)
+    await this.persistWorkspace({ info, handle }, stored)
     return { workspace: info, entries: await this.listWorkspace() }
   }
 
   async restoreWorkspace(info: WorkspaceInfo): Promise<OpenWorkspaceResult | null> {
-    const stored = await kvGet<StoredWorkspace>('workspace')
-    if (!stored) return null
-    if (stored.info.name !== info.name) return null
-    const granted = await ensurePermission(stored.handle)
+    const stored = await this.storedWorkspaces()
+    const match = stored.find((item) => item.info.id === info.id)
+    if (!match) return null
+    const granted = await ensurePermission(match.handle)
     if (!granted) return null
-    this.workspace = stored.info
-    this.rootHandle = stored.handle
-    return { workspace: stored.info, entries: await this.listWorkspace() }
+    this.workspace = match.info
+    this.rootHandle = match.handle
+    await this.persistWorkspace(match, stored)
+    return { workspace: match.info, entries: await this.listWorkspace() }
   }
 
   async closeWorkspace(): Promise<void> {
@@ -555,6 +562,41 @@ export class WebPlatform implements Platform {
 
   onOpenFiles(): () => void {
     return () => undefined
+  }
+
+  private async storedWorkspaces(): Promise<StoredWorkspace[]> {
+    const list = await kvGet<StoredWorkspace[]>(WORKSPACES_KEY)
+    if (Array.isArray(list)) return list
+    const legacy = await kvGet<StoredWorkspace>(LEGACY_WORKSPACE_KEY)
+    return legacy ? [legacy] : []
+  }
+
+  private async findStoredWorkspace(
+    handle: FsDirectoryHandle,
+    list: StoredWorkspace[],
+  ): Promise<StoredWorkspace | null> {
+    for (const item of list) {
+      if (item.handle === handle) return item
+      if (!handle.isSameEntry) continue
+      try {
+        if (await handle.isSameEntry(item.handle)) return item
+      } catch {
+        // Stale persisted handles can reject comparison; keep scanning.
+      }
+    }
+    return null
+  }
+
+  private async persistWorkspace(
+    entry: StoredWorkspace,
+    stored: StoredWorkspace[],
+  ): Promise<void> {
+    const next = [
+      entry,
+      ...stored.filter((item) => item.info.id !== entry.info.id),
+    ].slice(0, MAX_STORED_WORKSPACES)
+    await kvSet(WORKSPACES_KEY, next)
+    await kvSet(LEGACY_WORKSPACE_KEY, entry)
   }
 
   private requireRoot(): FsDirectoryHandle {
