@@ -9,17 +9,31 @@ directories:
 files:
   - dist/**/*
   - renderer/**/*
+  - '!renderer/**/*.map'
   - package.json
 
 asar: true
 publish: null
+artifactName: ${productName} ${version}-${arch}.${ext}
 
 fileAssociations:
-  - ext:
-      - md
-      - markdown
-      - mdown
-      - mkd
+  # One entry per extension: Linux targets reject an array for ext.
+  - ext: md
+    name: Markdown Document
+    description: Markdown document
+    role: Editor
+    mimeType: text/markdown
+  - ext: markdown
+    name: Markdown Document
+    description: Markdown document
+    role: Editor
+    mimeType: text/markdown
+  - ext: mdown
+    name: Markdown Document
+    description: Markdown document
+    role: Editor
+    mimeType: text/markdown
+  - ext: mkd
     name: Markdown Document
     description: Markdown document
     role: Editor
@@ -37,6 +51,10 @@ nsis:
   perMachine: false
   allowToChangeInstallationDirectory: true
   deleteAppDataOnUninstall: false
+  include: packaging/installer.nsh
+  # installer.nsh defines its custom LangStrings only for en/zh-CN; the
+  # per-language 6040 fallback warnings are expected, not failures.
+  warningsAsErrors: false
 
 mac:
   icon: assets/icon.png
@@ -53,5 +71,6 @@ linux:
   syncDesktopName: true
   target:
     - AppImage
+    - deb
   category: Office
   maintainer: NotaDown contributors

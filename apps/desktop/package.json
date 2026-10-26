@@ -5,6 +5,7 @@
   "private": true,
   "description": "NotaDown desktop application",
   "author": "NotaDown contributors",
+  "homepage": "https://github.com/NotaDown/NotaDown",
   "license": "MIT",
   "main": "dist/main.cjs",
   "scripts": {
