@@ -102,6 +102,17 @@ describe('path helpers', () => {
       openableFileArgs(['--inspect', '.', 'notes.md', 'C:\\docs\\A.MARKDOWN', 'image.png']),
     ).toEqual(['notes.md', 'C:\\docs\\A.MARKDOWN'])
   })
+
+  it('converts file URLs from desktop launchers into local paths', () => {
+    expect(
+      openableFileArgs([
+        'file:///home/user/My%20Note.md',
+        'file:///C:/docs/Note.MARKDOWN',
+        'file://server/share/note.mdown',
+        'file:///home/user/image.png',
+      ]),
+    ).toEqual(['/home/user/My Note.md', 'C:/docs/Note.MARKDOWN', '//server/share/note.mdown'])
+  })
 })
 
 describe('image file names', () => {

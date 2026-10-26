@@ -22,7 +22,33 @@ export function isOpenableTextFile(fileName: string): boolean {
 }
 
 export function openableFileArgs(args: string[]): string[] {
-  return args.filter((arg) => !arg.startsWith('-') && isOpenableTextFile(arg))
+  const paths: string[] = []
+  for (const arg of args) {
+    if (!arg || arg.startsWith('-')) continue
+    const filePath = fileUrlToLocalPath(arg) ?? arg
+    if (isOpenableTextFile(filePath)) paths.push(filePath)
+  }
+  return paths
+}
+
+function fileUrlToLocalPath(value: string): string | null {
+  if (!/^file:\/\//i.test(value)) return null
+  let url: URL
+  try {
+    url = new URL(value)
+  } catch {
+    return null
+  }
+  if (url.protocol !== 'file:') return null
+  let filePath: string
+  try {
+    filePath = decodeURIComponent(url.pathname)
+  } catch {
+    return null
+  }
+  if (/^\/[a-zA-Z]:[\\/]/.test(filePath)) filePath = filePath.slice(1)
+  if (url.host && url.host !== 'localhost') return `//${url.host}${filePath}`
+  return filePath
 }
 
 export function basename(path: string): string {

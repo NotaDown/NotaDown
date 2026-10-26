@@ -1,6 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { queueOpenFiles, takeOpenFiles } from '../src/open-files'
 
@@ -10,6 +11,7 @@ beforeEach(() => {
   takeOpenFiles()
   baseDir = mkdtempSync(path.join(tmpdir(), 'notadown-open-'))
   writeFileSync(path.join(baseDir, 'note.md'), '# Note')
+  writeFileSync(path.join(baseDir, 'my note.md'), '# Spaced')
   writeFileSync(path.join(baseDir, 'image.png'), 'png')
   mkdirSync(path.join(baseDir, 'sub'))
   writeFileSync(path.join(baseDir, 'sub', 'other.markdown'), '# Other')
@@ -42,6 +44,13 @@ describe('queueOpenFiles', () => {
     queueOpenFiles([absolute], baseDir)
 
     expect(takeOpenFiles()).toEqual([absolute])
+  })
+
+  it('opens file URLs passed by Linux desktop launchers', () => {
+    const spaced = path.join(baseDir, 'my note.md')
+    queueOpenFiles([pathToFileURL(spaced).href], baseDir)
+
+    expect(takeOpenFiles()).toEqual([spaced])
   })
 
   it('queues each file once', () => {
