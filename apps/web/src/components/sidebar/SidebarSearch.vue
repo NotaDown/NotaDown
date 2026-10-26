@@ -2,7 +2,7 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { CaseSensitive, FileText, Search, X } from 'lucide-vue-next'
-import { dirname, isOpenableTextFile, type SearchResult } from '@notadown/shared'
+import { dirname, type SearchResult } from '@notadown/shared'
 import { platform } from '@/platform'
 import { useUiStore } from '@/stores/ui'
 import { useWorkspaceStore } from '@/stores/workspace'
@@ -51,12 +51,8 @@ function clear(): void {
 }
 
 async function openResult(result: SearchResult): Promise<void> {
-  if (!isOpenableTextFile(result.name)) {
-    ui.toast('warning', t('tree.unsupportedFile'), result.name)
-    return
-  }
-  await tabs.openWorkspaceFile(result.path)
-  if (window.matchMedia('(max-width: 720px)').matches) ui.toggleSidebar(false)
+  const tab = await tabs.openWorkspaceFile(result.path)
+  if (tab && window.matchMedia('(max-width: 720px)').matches) ui.toggleSidebar(false)
 }
 
 function focusInput(): void {

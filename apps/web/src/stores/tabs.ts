@@ -168,6 +168,10 @@ export const useTabsStore = defineStore('tabs', () => {
       activate(existing.key)
       return existing
     }
+    if (!isOpenableTextFile(ref.name)) {
+      if (!options.silent) ui.toast('warning', t('tree.unsupportedFile'), ref.name)
+      return null
+    }
     try {
       const opened = await platform.readDocument(ref)
       const concurrent = findByRef(ref)

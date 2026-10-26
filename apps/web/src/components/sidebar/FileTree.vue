@@ -172,12 +172,8 @@ function handleRow(node: WorkspaceNode): void {
     void workspace.toggleDir(node.path)
     return
   }
-  if (isOpenableTextFile(node.name)) {
-    void tabs.openWorkspaceFile(node.path)
-    closeSidebarOnMobile()
-  } else {
-    ui.toast('warning', t('tree.unsupportedFile'), node.name)
-  }
+  if (isOpenableTextFile(node.name)) closeSidebarOnMobile()
+  void tabs.openWorkspaceFile(node.path)
 }
 
 function closeSidebarOnMobile(): void {

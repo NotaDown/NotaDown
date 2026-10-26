@@ -256,8 +256,8 @@ async function openLocalDocument(target: string): Promise<boolean> {
 
 function documentCandidates(path: string): string[] {
   if (isOpenableTextFile(path)) return [path]
-  if (extensionOf(path)) return []
-  return [`${path}.md`, `${path}.markdown`]
+  if (extensionOf(path)) return [path]
+  return [`${path}.md`, `${path}.markdown`, path]
 }
 
 function keepDisk(): void {
