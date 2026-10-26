@@ -470,6 +470,7 @@ async function clearHistory(): Promise<void> {
                       :aria-label="t('settings.appearanceSection.lineHeight')"
                       @change="commitNumber('lineHeight', $event)"
                     />
+                    <span class="settings-slider__unit" aria-hidden="true" />
                   </div>
                 </div>
 
@@ -953,6 +954,7 @@ async function clearHistory(): Promise<void> {
 
 .segmented {
   display: inline-flex;
+  align-self: flex-start;
   padding: 2px;
   border: 1px solid var(--nd-border);
   border-radius: var(--nd-radius-md);
@@ -1031,7 +1033,11 @@ async function clearHistory(): Promise<void> {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-width: 190px;
+  width: 280px;
+}
+
+.nd-field-row .nd-switch.nd-field-control {
+  justify-content: flex-end;
 }
 
 .settings-slider input[type='range'] {
