@@ -11,6 +11,10 @@
 <p align="center"><em>An offline-first Markdown editor inspired by distraction-free writing.</em></p>
 
 <p align="center">
+  <a href="https://notadown.brookzhang.com">Use the web edition</a> · <a href="https://github.com/NotaDown/NotaDown/releases/latest">Download the desktop app</a>
+</p>
+
+<p align="center">
   <img src="docs/image/screenshot.png" alt="NotaDown editor showing a folder workspace, open tabs and a document with rendered Markdown, inline code and math">
 </p>
 

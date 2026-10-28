@@ -45,6 +45,9 @@ jobs:
   web:
     needs: validate
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
     steps:
       - uses: actions/checkout@v7
 
@@ -64,6 +67,14 @@ jobs:
 
       - name: Build web edition
         run: pnpm --filter @notadown/web build
+
+      # The live site mirrors stable releases only, so a pre-release leaves the
+      # artifact out and the pages job below is skipped too.
+      - name: Upload Pages artifact
+        if: startsWith(github.ref, 'refs/tags/') && !contains(github.ref_name, '-')
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: apps/web/dist
 
       - name: Package web edition
         run: |
@@ -194,6 +205,28 @@ jobs:
           # after the version (v1.2.3-beta.1) publishes as a GitHub pre-release;
           # a plain v1.2.3 tag publishes as the current stable release.
           prerelease: ${{ contains(github.ref_name, '-') }}
+
+  # Publishes the web build of this release to GitHub Pages. Kept separate from
+  # publish so a failed deployment is retried on its own; the build itself comes
+  # from the web job's Pages artifact. Requires the one-time Pages setup in
+  # docs/release-process.md.
+  pages:
+    needs: publish
+    # Stable releases only: the live site always mirrors the newest stable version.
+    if: startsWith(github.ref, 'refs/tags/') && !contains(github.ref_name, '-')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v6
+
+      - id: deployment
+        uses: actions/deploy-pages@v5
 
   # Separate job so a failed upload can be retried on its own ("Re-run failed
   # jobs") without rebuilding the release. See docs/release-process.md.
