@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch, type ComponentPublicInstance } from 'vue'
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+  type ComponentPublicInstance,
+} from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   FolderOpen,
@@ -53,7 +61,11 @@ const contextItems = computed<MenuItem[]>(() => {
   ]
   if (inWorkspace) {
     items.push({ id: 'sep-1', separator: true })
-    items.push({ id: 'rename', label: t('sidebar.rename') })
+    items.push({
+      id: 'rename',
+      label: t('sidebar.rename'),
+      shortcut: commands.shortcut('workspace.renameEntry'),
+    })
   }
   items.push({ id: inWorkspace ? 'sep-2' : 'sep-1', separator: true })
   if (path && inWorkspace && platform.capabilities.revealInFolder) {
@@ -194,6 +206,23 @@ function closeRenameDialog(): void {
   if (renameBusy.value) return
   renameDialog.value = null
 }
+
+// F2 renames the document being written in, matching the tree's F2 hint.
+function onWindowKeydown(event: KeyboardEvent): void {
+  if (event.key !== 'F2' || event.defaultPrevented || renameDialog.value) return
+  const target = event.target
+  if (!(target instanceof Element)) return
+  const tab = menuOpen.value ? contextTab.value : tabs.activeTab
+  if (tab?.ref.origin !== 'workspace' || !tab.ref.path) return
+  if (menuOpen.value) menuOpen.value = false
+  else if (target.closest('.nd-editor, .nd-source-editor') === null) return
+  event.preventDefault()
+  openRenameDialog(tab)
+}
+
+onMounted(() => window.addEventListener('keydown', onWindowKeydown))
+
+onBeforeUnmount(() => window.removeEventListener('keydown', onWindowKeydown))
 
 async function submitRename(): Promise<void> {
   const current = renameDialog.value

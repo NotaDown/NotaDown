@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   ChevronRight,
@@ -52,6 +52,8 @@ const tabs = useTabsStore()
 const ui = useUiStore()
 const settings = useSettingsStore()
 const commands = useInjectedCommands()
+
+const treeRoot = ref<HTMLElement | null>(null)
 
 const dialog = ref<TreeDialog | null>(null)
 const dialogInput = ref<HTMLInputElement | null>(null)
@@ -207,6 +209,7 @@ function startCreate(mode: 'file' | 'folder'): void {
 }
 
 function startRename(path: string, kind: 'file' | 'directory', name = basename(path)): void {
+  contextOpen.value = false
   workspace.select(path)
   openDialog('rename', dirname(path), path, kind, name)
 }
@@ -220,6 +223,24 @@ function onRowKeydown(event: KeyboardEvent, node: WorkspaceNode): void {
   }
   if (event.key === 'Enter') handleRow(node)
 }
+
+// The row handler only sees the key when a row holds DOM focus, which clicking
+// away from the tree loses. Catch F2 for the rest of the panel too.
+function onWindowKeydown(event: KeyboardEvent): void {
+  if (event.key !== 'F2' || event.defaultPrevented || dialog.value) return
+  const target = event.target
+  if (!(target instanceof Element)) return
+  if (target.closest('input, textarea, [contenteditable]:not([contenteditable="false"])')) return
+  if (!treeRoot.value?.contains(target)) return
+  const selected = workspace.selectedPath
+  if (!selected) return
+  event.preventDefault()
+  startRename(selected, findEntry(selected)?.kind ?? 'file')
+}
+
+onMounted(() => window.addEventListener('keydown', onWindowKeydown))
+
+onBeforeUnmount(() => window.removeEventListener('keydown', onWindowKeydown))
 
 async function submitDialog(): Promise<void> {
   const current = dialog.value
@@ -446,7 +467,7 @@ function closeDialog(): void {
 </script>
 
 <template>
-  <div class="file-tree">
+  <div ref="treeRoot" class="file-tree">
     <div class="tree-toolbar">
       <button
         type="button"
