@@ -234,6 +234,14 @@
   font-family: var(--crepe-font-default);
 }
 
+.nd-editor .milkdown .milkdown-code-block .language-button {
+  opacity: 0.45;
+}
+
+.nd-editor .milkdown .milkdown-code-block:hover .language-button {
+  opacity: 1;
+}
+
 .nd-editor .milkdown .ProseMirror img {
   max-width: 100%;
   height: auto;
