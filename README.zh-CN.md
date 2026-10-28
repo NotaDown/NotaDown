@@ -11,7 +11,7 @@
 <p align="center"><em>一款离线优先、专注于无干扰写作的 Markdown 编辑器。</em></p>
 
 <p align="center">
-  <a href="https://notadown.brookzhang.com">使用在线网页版</a> · <a href="https://github.com/NotaDown/NotaDown/releases/latest">下载桌面应用</a>
+  <a href="https://notadown.brookzhang.com">在线版</a> · <a href="https://github.com/NotaDown/NotaDown/releases/latest">下载</a>
 </p>
 
 <p align="center">

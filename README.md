@@ -11,7 +11,7 @@
 <p align="center"><em>An offline-first Markdown editor inspired by distraction-free writing.</em></p>
 
 <p align="center">
-  <a href="https://notadown.brookzhang.com">Use the web edition</a> · <a href="https://github.com/NotaDown/NotaDown/releases/latest">Download the desktop app</a>
+  <a href="https://notadown.brookzhang.com">Online</a> · <a href="https://github.com/NotaDown/NotaDown/releases/latest">Download</a>
 </p>
 
 <p align="center">
