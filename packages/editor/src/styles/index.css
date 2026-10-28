@@ -720,6 +720,32 @@
   background: transparent;
 }
 
+.nd-diff-editor {
+  height: 100%;
+  overflow: hidden;
+  background: var(--nd-bg);
+  color: var(--nd-text);
+}
+
+/* 合并视图内部编辑器是自适应高度，滚动条只能挂在外层容器上。 */
+.nd-diff-editor .cm-mergeView {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+.nd-diff-editor .cm-mergeViewEditor {
+  min-width: 0;
+  border-right: 1px solid var(--nd-border);
+}
+
+.nd-diff-editor .cm-mergeViewEditor:last-child {
+  border-right: none;
+}
+
+.nd-diff-editor .cm-mergeViewEditor .cm-editor {
+  background: var(--nd-bg);
+}
+
 @media (max-width: 720px) {
   .nd-editor .milkdown .ProseMirror,
   .nd-source-editor .cm-content {

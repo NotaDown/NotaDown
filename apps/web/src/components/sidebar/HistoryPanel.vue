@@ -2,6 +2,8 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
+  Diff,
+  Eye,
   FileText,
   History as HistoryIcon,
   RefreshCw,
@@ -25,18 +27,24 @@ const workspace = useWorkspaceStore()
 
 const records = ref<HistoryRecord[]>([])
 const loading = ref(false)
-const showAll = ref(true)
+const showAll = ref(false)
 const now = ref(Date.now())
 let requestToken = 0
 let clock: number | null = null
 
 const active = computed(() => tabs.activeTab)
-const filterKey = computed(() =>
-  showAll.value ? undefined : (tabs.activeDocumentKey ?? undefined),
-)
 const canFilterCurrent = computed(() => tabs.activeDocumentKey !== null)
+// 默认只看当前文档的历史；没有打开任何文档时退回全部。
+const showCurrentOnly = computed(() => !showAll.value && canFilterCurrent.value)
+const filterKey = computed(() =>
+  showCurrentOnly.value ? (tabs.activeDocumentKey ?? undefined) : undefined,
+)
 
 const currentKey = computed(() => tabs.activeDocumentKey)
+
+function canCompare(record: HistoryRecord): boolean {
+  return tabs.tabForDocumentKey(record.documentKey) !== null
+}
 
 function sourceLabel(source: HistoryRecord['source']): string {
   if (source === 'manual') return t('sidebar.snapshotManual')
@@ -74,6 +82,15 @@ async function restore(record: HistoryRecord): Promise<void> {
   if (restored) await refresh()
 }
 
+function openPreview(record: HistoryRecord, compare: boolean): void {
+  ui.openHistoryDialog(record, compare ? 'compare' : 'preview')
+}
+
+/** 整行是主入口：能对比就直接进对比视图。 */
+function openRow(record: HistoryRecord): void {
+  openPreview(record, canCompare(record))
+}
+
 async function remove(record: HistoryRecord): Promise<void> {
   const confirmed = await ui.confirm({
     title: t('common.delete'),
@@ -92,7 +109,7 @@ async function remove(record: HistoryRecord): Promise<void> {
 }
 
 function toggleFilter(): void {
-  if (!showAll.value) {
+  if (showCurrentOnly.value) {
     showAll.value = true
     return
   }
@@ -110,6 +127,13 @@ watch(
 watch(filterKey, () => {
   if (ui.sidebarView === 'history') void refresh()
 })
+
+watch(
+  () => ui.historyListToken,
+  () => {
+    if (ui.sidebarView === 'history') void refresh()
+  },
+)
 
 watch(
   () => ui.sidebarOpen,
@@ -136,17 +160,17 @@ onBeforeUnmount(() => {
       <button
         type="button"
         class="history-filter"
-        :class="{ 'is-current': !showAll }"
-        :disabled="showAll && !canFilterCurrent"
-        :title="showAll ? t('sidebar.historyAll') : active?.name"
+        :class="{ 'is-current': showCurrentOnly }"
+        :disabled="!canFilterCurrent"
+        :title="showCurrentOnly ? active?.name : t('sidebar.historyAll')"
         @click="toggleFilter"
       >
         <HistoryIcon :size="13" />
         <span class="history-filter__label">
           {{
-            showAll
-              ? t('sidebar.historyAll')
-              : t('sidebar.historyFor', { name: active?.name ?? '' })
+            showCurrentOnly
+              ? t('sidebar.historyFor', { name: active?.name ?? '' })
+              : t('sidebar.historyAll')
           }}
         </span>
       </button>
@@ -172,7 +196,17 @@ onBeforeUnmount(() => {
     </div>
 
     <div v-else class="history-panel__list nd-scroll">
-      <div v-for="record in records" :key="record.id" class="history-row">
+      <div
+        v-for="record in records"
+        :key="record.id"
+        class="history-row"
+        role="button"
+        tabindex="0"
+        :title="canCompare(record) ? t('sidebar.historyCompare') : t('sidebar.historyPreviewAction')"
+        @click="openRow(record)"
+        @keydown.enter.prevent="openRow(record)"
+        @keydown.space.prevent="openRow(record)"
+      >
         <div class="history-row__head">
           <FileText :size="13" class="history-row__icon" />
           <span class="history-row__name">{{ record.fileName }}</span>
@@ -195,8 +229,25 @@ onBeforeUnmount(() => {
           <button
             type="button"
             class="nd-icon-btn history-row__action"
+            :title="t('sidebar.historyPreviewAction')"
+            @click.stop="openPreview(record, false)"
+          >
+            <Eye :size="13" />
+          </button>
+          <button
+            type="button"
+            class="nd-icon-btn history-row__action"
+            :title="t('sidebar.historyCompare')"
+            :disabled="!canCompare(record)"
+            @click.stop="openPreview(record, true)"
+          >
+            <Diff :size="13" />
+          </button>
+          <button
+            type="button"
+            class="nd-icon-btn history-row__action"
             :title="t('sidebar.restore')"
-            @click="restore(record)"
+            @click.stop="restore(record)"
           >
             <RotateCcw :size="13" />
           </button>
@@ -204,7 +255,7 @@ onBeforeUnmount(() => {
             type="button"
             class="nd-icon-btn history-row__action"
             :title="t('common.delete')"
-            @click="remove(record)"
+            @click.stop="remove(record)"
           >
             <Trash2 :size="13" />
           </button>
@@ -277,6 +328,8 @@ onBeforeUnmount(() => {
   gap: 2px;
   padding: 7px 8px;
   border-radius: var(--nd-radius-sm);
+  cursor: pointer;
+  user-select: none;
 }
 
 .history-row:hover {
@@ -288,7 +341,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 6px;
   min-width: 0;
-  padding-right: 46px;
+  padding-right: 94px;
   color: var(--nd-text);
   font-size: 12.5px;
   font-weight: 550;
@@ -357,6 +410,11 @@ onBeforeUnmount(() => {
 .history-row__action {
   width: 22px;
   height: 22px;
+}
+
+.history-row__action:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .is-spinning {

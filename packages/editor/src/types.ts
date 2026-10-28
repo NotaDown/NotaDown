@@ -174,6 +174,24 @@ export interface SourceEditorOptions {
   largeDocument?: boolean
 }
 
+/** CodeMirror 合并视图自带文案，宿主没有 i18n 时回落英文，所以由调用方注入。 */
+export interface DiffEditorLabels {
+  /** 折叠的未改动行占位文案，`$` 会被替换成行数。 */
+  unchangedLines: string
+}
+
+export interface DiffEditorOptions {
+  root: HTMLElement
+  original: string
+  modified: string
+  dark?: boolean
+  labels?: DiffEditorLabels
+}
+
+export interface DiffEditor {
+  destroy(): void
+}
+
 export interface SourceEditor {
   getValue(): string
   setValue(value: string): void

@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { createId } from '@notadown/shared'
-import type { SidebarView, ToastMessage } from '@notadown/shared'
+import type { HistoryRecord, SidebarView, ToastMessage } from '@notadown/shared'
 import type { FindResult } from '@notadown/editor'
 import { useSettingsStore } from './settings'
 
@@ -59,6 +59,9 @@ export const useUiStore = defineStore('ui', () => {
   const toasts = ref<ToastMessage[]>([])
   const confirmState = ref<ConfirmState | null>(null)
   const unsavedState = ref<UnsavedState | null>(null)
+  const historyRecord = ref<HistoryRecord | null>(null)
+  const historyView = ref<'preview' | 'compare'>('preview')
+  const historyListToken = ref(0)
   const searchFocusToken = ref(0)
 
   let confirmResolver: ((value: boolean) => void) | null = null
@@ -74,7 +77,8 @@ export const useUiStore = defineStore('ui', () => {
       defaultAppOpen.value ||
       updateOpen.value ||
       confirmState.value !== null ||
-      unsavedState.value !== null,
+      unsavedState.value !== null ||
+      historyRecord.value !== null,
   )
 
   function toggleSidebar(value?: boolean): void {
@@ -164,6 +168,20 @@ export const useUiStore = defineStore('ui', () => {
     resolver?.(choice)
   }
 
+  function openHistoryDialog(record: HistoryRecord, view: 'preview' | 'compare' = 'preview'): void {
+    historyRecord.value = record
+    historyView.value = view
+  }
+
+  function closeHistoryDialog(): void {
+    historyRecord.value = null
+    historyView.value = 'preview'
+  }
+
+  function notifyHistoryChanged(): void {
+    historyListToken.value += 1
+  }
+
   function closeTopLayer(): boolean {
     if (confirmState.value) {
       resolveConfirm(false)
@@ -171,6 +189,10 @@ export const useUiStore = defineStore('ui', () => {
     }
     if (unsavedState.value) {
       resolveUnsaved('cancel')
+      return true
+    }
+    if (historyRecord.value) {
+      closeHistoryDialog()
       return true
     }
     if (paletteOpen.value) {
@@ -221,6 +243,9 @@ export const useUiStore = defineStore('ui', () => {
     toasts,
     confirmState,
     unsavedState,
+    historyRecord,
+    historyView,
+    historyListToken,
     searchFocusToken,
     hasBlockingModal,
     toggleSidebar,
@@ -235,6 +260,9 @@ export const useUiStore = defineStore('ui', () => {
     resolveConfirm,
     askUnsaved,
     resolveUnsaved,
+    openHistoryDialog,
+    closeHistoryDialog,
+    notifyHistoryChanged,
     closeTopLayer,
   }
 })

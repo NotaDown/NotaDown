@@ -85,6 +85,10 @@ export const useTabsStore = defineStore('tabs', () => {
     )
   }
 
+  function tabForDocumentKey(documentKey: string): EditorTab | null {
+    return tabs.value.find((tab) => sameDocumentKey(tab.ref.key, documentKey)) ?? null
+  }
+
   function activate(key: string): void {
     if (!tabs.value.some((tab) => tab.key === key)) return
     activeKey.value = key
@@ -878,6 +882,7 @@ export const useTabsStore = defineStore('tabs', () => {
     isDirty,
     findTab,
     findByRef,
+    tabForDocumentKey,
     activate,
     createUntitled,
     addOpenedDocument,

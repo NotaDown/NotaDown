@@ -26,6 +26,7 @@ import SettingsDialog from '@/components/dialogs/SettingsDialog.vue'
 import ShortcutsDialog from '@/components/dialogs/ShortcutsDialog.vue'
 import CommandPalette from '@/components/dialogs/CommandPalette.vue'
 import QuickOpen from '@/components/dialogs/QuickOpen.vue'
+import HistoryPreviewDialog from '@/components/dialogs/HistoryPreviewDialog.vue'
 
 const commands = useAppCommands()
 provide(APP_COMMANDS_KEY, commands)
@@ -75,6 +76,7 @@ const { t } = useI18n()
     <ShortcutsDialog />
     <CommandPalette />
     <QuickOpen />
+    <HistoryPreviewDialog />
   </div>
 </template>
 

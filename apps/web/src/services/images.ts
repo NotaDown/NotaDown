@@ -65,7 +65,10 @@ export async function saveTabImage(file: File, tab: EditorTab): Promise<EditorIm
   return { src, displayUrl: src }
 }
 
-export async function resolveEditorImageUrl(src: string, tab: EditorTab): Promise<string> {
+export async function resolveEditorImageUrl(
+  src: string,
+  tab: Pick<EditorTab, 'ref'>,
+): Promise<string> {
   if (!src || isRemoteOrDataUrl(src)) return src
   if (src.startsWith('#')) return src
 
