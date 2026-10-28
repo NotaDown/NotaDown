@@ -4,7 +4,6 @@ English is canonical; entries are generated from conventional commits by `pnpm c
 
 ## v0.1.2
 
-
 ### 🚀 Features
 
 - **settings:** Add four text-width modes (14497e2)
@@ -14,7 +13,6 @@ English is canonical; entries are generated from conventional commits by `pnpm c
 
 
 ## v0.1.1
-
 
 ### 🚀 Features
 
@@ -27,7 +25,6 @@ English is canonical; entries are generated from conventional commits by `pnpm c
 
 
 ## v0.1.0
-
 
 ### 🚀 Features
 
@@ -89,7 +86,6 @@ English is canonical; entries are generated from conventional commits by `pnpm c
 
 ## v0.1.0-alpha.2
 
-
 ### 🚀 Features
 
 - **design:** Add Markdown file icon (7f0ac57)
@@ -110,7 +106,6 @@ English is canonical; entries are generated from conventional commits by `pnpm c
 
 
 ## v0.1.0-alpha.1
-
 
 ### 🚀 Features
 

@@ -50,7 +50,10 @@ const commits = parseCommits(await getGitDiff(config.from, config.to, cwd), conf
   .map((commit) => ({ ...commit, type: commit.type.toLowerCase() }))
   .filter((commit) => config.types[commit.type] && !commit.message.startsWith('Revert "'))
 
-const markdown = (await generateMarkDown(commits, config)).trim()
+// changelogen pads both sides of the release heading with a blank line, which renders as two empty lines under it
+const markdown = (await generateMarkDown(commits, config))
+  .trim()
+  .replace(/(^## .+)\n{3,}/gm, '$1\n\n')
 const defaultHeader = '# Changelog\n\nEnglish is canonical; entries are generated from conventional commits by `pnpm changelog`.'
 const firstEntry = changelog.match(/^#{2,3}\s+.*$/m)
 const prefix = firstEntry ? changelog.slice(0, firstEntry.index) : changelog
