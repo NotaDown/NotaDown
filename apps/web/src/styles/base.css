@@ -23,6 +23,16 @@
   --nd-rail-width: 46px;
   --nd-topbar-height: 44px;
   --nd-statusbar-height: 28px;
+  --nd-tab-height: 36px;
+  --nd-sidebar-head-height: 34px;
+  --nd-tree-row-height: 27px;
+  --nd-menu-item-height: 30px;
+  --nd-control-height: 30px;
+  --nd-control-height-sm: 26px;
+  --nd-icon-button-size: 28px;
+  --nd-activity-button-size: 34px;
+  --nd-field-row-padding: 14px;
+  --nd-list-row-padding-y: 7px;
 
   /* Fallbacks match the default light theme; the settings store replaces them. */
   --nd-bg: #ffffff;
@@ -54,6 +64,38 @@
   --nd-syn-variable: #c18401;
   --nd-syn-operator: #0184bc;
   --nd-syn-type: #986801;
+}
+
+:root[data-density='compact'] {
+  --nd-rail-width: 42px;
+  --nd-topbar-height: 40px;
+  --nd-statusbar-height: 24px;
+  --nd-tab-height: 32px;
+  --nd-sidebar-head-height: 30px;
+  --nd-tree-row-height: 23px;
+  --nd-menu-item-height: 26px;
+  --nd-control-height: 27px;
+  --nd-control-height-sm: 24px;
+  --nd-icon-button-size: 26px;
+  --nd-activity-button-size: 30px;
+  --nd-field-row-padding: 10px;
+  --nd-list-row-padding-y: 5px;
+}
+
+:root[data-density='comfortable'] {
+  --nd-rail-width: 52px;
+  --nd-topbar-height: 50px;
+  --nd-statusbar-height: 32px;
+  --nd-tab-height: 40px;
+  --nd-sidebar-head-height: 38px;
+  --nd-tree-row-height: 31px;
+  --nd-menu-item-height: 34px;
+  --nd-control-height: 34px;
+  --nd-control-height-sm: 30px;
+  --nd-icon-button-size: 32px;
+  --nd-activity-button-size: 38px;
+  --nd-field-row-padding: 18px;
+  --nd-list-row-padding-y: 9px;
 }
 
 *,
@@ -153,7 +195,7 @@ a {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 30px;
+  height: var(--nd-control-height);
   padding: 0 12px;
   border: 1px solid var(--nd-border);
   border-radius: var(--nd-radius-md);
@@ -214,7 +256,7 @@ a {
 }
 
 .nd-btn--sm {
-  height: 26px;
+  height: var(--nd-control-height-sm);
   padding: 0 9px;
   font-size: 12px;
 }
@@ -223,8 +265,8 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: var(--nd-icon-button-size);
+  height: var(--nd-icon-button-size);
   padding: 0;
   border: none;
   border-radius: var(--nd-radius-sm);
@@ -253,7 +295,7 @@ a {
 .nd-select,
 .nd-textarea {
   width: 100%;
-  height: 30px;
+  height: var(--nd-control-height);
   padding: 0 10px;
   border: 1px solid var(--nd-border);
   border-radius: var(--nd-radius-md);
@@ -326,7 +368,7 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 14px 0;
+  padding: var(--nd-field-row-padding) 0;
 }
 
 .nd-field-row + .nd-field-row {
@@ -501,7 +543,7 @@ a {
   align-items: center;
   gap: 9px;
   width: 100%;
-  height: 30px;
+  height: var(--nd-menu-item-height);
   padding: 0 9px;
   border: none;
   border-radius: var(--nd-radius-sm);
@@ -586,8 +628,8 @@ a {
 
 @media (max-width: 720px) {
   .nd-icon-btn {
-    width: 32px;
-    height: 32px;
+    width: max(var(--nd-icon-button-size), 32px);
+    height: max(var(--nd-icon-button-size), 32px);
   }
 
   .nd-overlay,
@@ -614,7 +656,7 @@ a {
   }
 
   .nd-menu-item {
-    height: 34px;
+    height: max(var(--nd-menu-item-height), 34px);
   }
 }
 

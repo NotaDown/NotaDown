@@ -194,7 +194,7 @@ function folderOf(path: string): string {
   gap: 6px;
   margin: 8px 10px 4px;
   padding: 0 6px 0 9px;
-  height: 30px;
+  height: var(--nd-control-height);
   border: 1px solid var(--nd-border);
   border-radius: var(--nd-radius-md);
   background: var(--nd-bg);
@@ -279,7 +279,7 @@ function folderOf(path: string): string {
   flex-direction: column;
   gap: 2px;
   width: 100%;
-  padding: 7px 8px;
+  padding: var(--nd-list-row-padding-y) 8px;
   border: none;
   border-radius: var(--nd-radius-sm);
   background: transparent;

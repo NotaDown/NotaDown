@@ -286,7 +286,7 @@ onBeforeUnmount(() => {
   gap: 6px;
   overflow: hidden;
   min-width: 0;
-  height: 26px;
+  height: var(--nd-control-height-sm);
   padding: 0 8px;
   border: 1px solid var(--nd-border);
   border-radius: 99px;
@@ -326,7 +326,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 7px 8px;
+  padding: var(--nd-list-row-padding-y) 8px;
   border-radius: var(--nd-radius-sm);
   cursor: pointer;
   user-select: none;

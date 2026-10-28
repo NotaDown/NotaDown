@@ -104,8 +104,8 @@ function openShortcuts(): void {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: var(--nd-activity-button-size);
+  height: var(--nd-activity-button-size);
   border: none;
   border-radius: var(--nd-radius-md);
   background: transparent;

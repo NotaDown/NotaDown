@@ -420,6 +420,13 @@ export const enUS = {
         wide: 'Wide',
         full: 'Full',
       },
+      uiDensity: 'Interface density',
+      uiDensityHint: 'Sets the height and spacing of the toolbar, sidebar, tabs and menus. Body text is unaffected.',
+      densityModes: {
+        compact: 'Compact',
+        default: 'Default',
+        comfortable: 'Comfortable',
+      },
       preview: 'Preview',
       previewText: 'The quick brown fox jumps over the lazy dog.',
     },

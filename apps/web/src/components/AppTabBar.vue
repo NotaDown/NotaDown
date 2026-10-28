@@ -372,7 +372,7 @@ async function submitRename(): Promise<void> {
   display: flex;
   flex: 0 0 auto;
   align-items: stretch;
-  height: 36px;
+  height: var(--nd-tab-height);
   border-bottom: 1px solid var(--nd-border);
   background: var(--nd-bg-elevated);
 }
@@ -502,8 +502,8 @@ async function submitRename(): Promise<void> {
 
 .tab-bar__add,
 .tab-bar__folder {
-  width: 26px;
-  height: 26px;
+  width: var(--nd-control-height-sm);
+  height: var(--nd-control-height-sm);
 }
 
 .tab-rename-dialog {

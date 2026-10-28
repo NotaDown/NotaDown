@@ -420,6 +420,13 @@ export const zhCN = {
         wide: '较宽',
         full: '全宽',
       },
+      uiDensity: '界面密度',
+      uiDensityHint: '调整工具栏、侧边栏、标签页与菜单的行高和间距，正文排版不受影响。',
+      densityModes: {
+        compact: '紧凑',
+        default: '默认',
+        comfortable: '宽松',
+      },
       preview: '预览',
       previewText: '一只敏捷的棕色狐狸跳过了懒狗。',
     },

@@ -29,6 +29,7 @@ import {
   type LocalePreference,
   type PageWidthMode,
   type ThemeId,
+  type UiDensity,
 } from '@notadown/shared'
 import { LOCALE_NAMES, SUPPORTED_LOCALES } from '@notadown/i18n'
 import { platform } from '@/platform'
@@ -82,6 +83,12 @@ const COLOR_MODES: Array<{ id: ColorMode; label: string }> = [
   { id: 'system', label: 'settings.appearanceSection.system' },
   { id: 'light', label: 'settings.appearanceSection.light' },
   { id: 'dark', label: 'settings.appearanceSection.dark' },
+]
+
+const DENSITIES: Array<{ id: UiDensity; label: string }> = [
+  { id: 'compact', label: 'settings.appearanceSection.densityModes.compact' },
+  { id: 'default', label: 'settings.appearanceSection.densityModes.default' },
+  { id: 'comfortable', label: 'settings.appearanceSection.densityModes.comfortable' },
 ]
 
 const IMAGE_MODES: Array<{ id: ImageStorageMode; label: string }> = [
@@ -204,6 +211,10 @@ function chooseColorMode(id: ColorMode): void {
 
 function choosePageWidth(id: PageWidthMode): void {
   draft.pageWidth = id
+}
+
+function chooseDensity(id: UiDensity): void {
+  draft.uiDensity = id
 }
 
 const previewMaxWidth = computed(() => {
@@ -504,6 +515,27 @@ async function clearHistory(): Promise<void> {
                       {{ t(mode.label) }}
                     </button>
                   </div>
+                </div>
+
+                <div class="nd-field">
+                  <span class="nd-field-label">
+                    {{ t('settings.appearanceSection.uiDensity') }}
+                  </span>
+                  <div class="segmented">
+                    <button
+                      v-for="mode in DENSITIES"
+                      :key="mode.id"
+                      type="button"
+                      class="segmented__item"
+                      :class="{ 'is-active': draft.uiDensity === mode.id }"
+                      @click="chooseDensity(mode.id)"
+                    >
+                      {{ t(mode.label) }}
+                    </button>
+                  </div>
+                  <p class="nd-field-hint">
+                    {{ t('settings.appearanceSection.uiDensityHint') }}
+                  </p>
                 </div>
 
                 <div class="nd-field">

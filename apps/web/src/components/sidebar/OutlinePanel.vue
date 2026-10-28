@@ -72,7 +72,7 @@ function indent(level: number): string {
   display: flex;
   align-items: center;
   width: 100%;
-  min-height: 26px;
+  min-height: var(--nd-tree-row-height);
   padding: 4px 8px;
   border: none;
   border-radius: var(--nd-radius-sm);

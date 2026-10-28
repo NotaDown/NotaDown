@@ -97,7 +97,7 @@ onClickOutside(root, () => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 26px;
+  height: var(--nd-control-height-sm);
   padding: 0 10px;
   border: 1px solid var(--nd-border);
   border-radius: 999px;
@@ -139,7 +139,7 @@ onClickOutside(root, () => {
   align-items: center;
   gap: 8px;
   width: 100%;
-  height: 30px;
+  height: var(--nd-menu-item-height);
   padding: 0 8px;
   border: none;
   border-radius: 6px;

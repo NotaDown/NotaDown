@@ -104,7 +104,7 @@ function resetWidth(): void {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 34px;
+  height: var(--nd-sidebar-head-height);
   padding: 0 6px 0 14px;
   flex: 0 0 auto;
 }

@@ -5,6 +5,7 @@ import {
   type ColorMode,
   type PageWidthMode,
   type ThemeId,
+  type UiDensity,
 } from '@notadown/shared'
 
 const UI_FONT =
@@ -37,6 +38,7 @@ export interface ThemeApplication {
   fontSize: number
   lineHeight: number
   pageWidth: PageWidthMode
+  density: UiDensity
   customCss: string
 }
 
@@ -75,6 +77,7 @@ export function applyTheme(application: ThemeApplication): void {
   const root = document.documentElement
   root.dataset.theme = application.theme
   root.dataset.colorMode = application.mode
+  root.dataset.density = application.density
   root.style.colorScheme = application.mode
 }
 
@@ -90,6 +93,7 @@ export function applySettingsTheme(
     fontSize: settings.fontSize,
     lineHeight: settings.lineHeight,
     pageWidth: settings.pageWidth,
+    density: settings.uiDensity,
     customCss: settings.customCss,
   })
 }
@@ -104,6 +108,7 @@ export function bootstrapTheme(): void {
     fontSize: 17,
     lineHeight: 1.75,
     pageWidth: 'default',
+    density: 'default',
     customCss: '',
   })
 }
