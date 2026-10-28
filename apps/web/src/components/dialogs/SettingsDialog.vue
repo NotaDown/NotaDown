@@ -15,6 +15,7 @@ import {
   Type,
   History,
   ExternalLink,
+  FolderOpen,
   X,
 } from 'lucide-vue-next'
 import {
@@ -150,6 +151,23 @@ watch(
   },
 )
 
+const canRevealHistoryDir = platform.capabilities.revealInFolder
+const historyDirPath = ref('')
+
+watch(
+  [section, () => ui.settingsOpen],
+  ([nextSection, open]) => {
+    if (!open || !canRevealHistoryDir || nextSection !== 'history') return
+    if (historyDirPath.value) return
+    void platform
+      .historyDir()
+      .then((dir) => {
+        historyDirPath.value = dir
+      })
+      .catch(() => undefined)
+  },
+)
+
 function close(): void {
   ui.settingsOpen = false
 }
@@ -271,6 +289,14 @@ async function openRepository(): Promise<void> {
     await platform.openExternal(REPOSITORY_URL)
   } catch {
     ui.toast('error', t('toasts.openFailed'))
+  }
+}
+
+async function openHistoryDir(): Promise<void> {
+  try {
+    await platform.openHistoryDir()
+  } catch {
+    ui.toast('error', t('settings.historySection.openFailed'))
   }
 }
 
@@ -808,6 +834,17 @@ async function clearHistory(): Promise<void> {
                   </label>
                 </div>
 
+                <div v-if="historyDirPath" class="nd-field-row settings-history-dir">
+                  <div class="settings-history-dir__value">
+                    <span class="nd-field-label">{{ t('settings.historySection.location') }}</span>
+                    <p class="nd-field-hint">{{ historyDirPath }}</p>
+                  </div>
+                  <button type="button" class="nd-btn nd-btn--sm" @click="openHistoryDir">
+                    <FolderOpen :size="13" />
+                    {{ t('settings.historySection.openFolder') }}
+                  </button>
+                </div>
+
                 <div class="nd-field-row">
                   <span class="nd-field-label">{{ t('settings.historySection.interval') }}</span>
                   <div class="settings-slider nd-field-control">
@@ -1227,6 +1264,14 @@ async function clearHistory(): Promise<void> {
 .settings-inline-actions--start {
   justify-content: flex-start;
   margin-top: 20px;
+}
+
+.settings-history-dir__value {
+  min-width: 0;
+}
+
+.settings-history-dir .nd-field-hint {
+  word-break: break-all;
 }
 
 .storage-modes {

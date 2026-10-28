@@ -43,6 +43,8 @@ const mocks = vi.hoisted(() => ({
     readHistory: vi.fn(async () => null),
     deleteHistory: vi.fn(async () => undefined),
     clearHistory: vi.fn(async () => undefined),
+    historyDir: vi.fn(() => 'C:/Users/me/AppData/Roaming/NotaDown/history'),
+    openHistoryDir: vi.fn(async () => undefined),
   },
   state: {
     loadSettings: vi.fn(async () => null),
@@ -231,5 +233,13 @@ describe('registerIpcHandlers', () => {
   it('returns queued files', async () => {
     await expect(invoke('takeOpenFiles')).resolves.toEqual(['C:/docs/a.md'])
     expect(mocks.openFiles.takeOpenFiles).toHaveBeenCalledOnce()
+  })
+
+  it('exposes and opens the local history directory', async () => {
+    await expect(invoke('historyDir')).resolves.toBe(
+      'C:/Users/me/AppData/Roaming/NotaDown/history',
+    )
+    await expect(invoke('openHistoryDir')).resolves.toBeUndefined()
+    expect(mocks.history.openHistoryDir).toHaveBeenCalledOnce()
   })
 })

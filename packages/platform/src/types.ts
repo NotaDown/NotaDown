@@ -84,6 +84,8 @@ export interface Platform {
   readHistory(id: string): Promise<HistoryDetail | null>
   deleteHistory(id: string): Promise<void>
   clearHistory(): Promise<void>
+  historyDir(): Promise<string>
+  openHistoryDir(): Promise<void>
 
   loadSettings(): Promise<Partial<AppSettings> | null>
   saveSettings(settings: AppSettings): Promise<void>

@@ -170,6 +170,11 @@ async function dispatch(
     case 'historyClear':
       await history.clearHistory()
       return undefined
+    case 'historyDir':
+      return history.historyDir()
+    case 'openHistoryDir':
+      await history.openHistoryDir()
+      return undefined
 
     case 'loadSettings':
       return state.loadSettings()

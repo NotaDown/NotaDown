@@ -1,4 +1,4 @@
-import { app } from 'electron'
+import { app, shell } from 'electron'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import {
@@ -27,7 +27,7 @@ function enqueue<T>(task: () => Promise<T>): Promise<T> {
   return next
 }
 
-function historyDir(): string {
+export function historyDir(): string {
   return path.join(app.getPath('userData'), 'history')
 }
 
@@ -162,4 +162,11 @@ export function clearHistory(): Promise<void> {
     await fs.rm(contentDir(), { recursive: true, force: true })
     await fs.rm(indexFile(), { force: true })
   })
+}
+
+export async function openHistoryDir(): Promise<void> {
+  const dir = historyDir()
+  await fs.mkdir(dir, { recursive: true })
+  const failure = await shell.openPath(dir)
+  if (failure) throw new Error('OPEN_FAILED')
 }

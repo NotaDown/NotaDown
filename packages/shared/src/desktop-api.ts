@@ -89,6 +89,8 @@ export interface DesktopInvokeMap {
   historyRead: { args: [id: string]; result: HistoryDetail | null }
   historyDelete: { args: [id: string]; result: void }
   historyClear: { args: []; result: void }
+  historyDir: { args: []; result: string }
+  openHistoryDir: { args: []; result: void }
   loadSettings: { args: []; result: Partial<AppSettings> | null }
   saveSettings: { args: [settings: AppSettings]; result: void }
   loadSession: { args: []; result: SessionState | null }

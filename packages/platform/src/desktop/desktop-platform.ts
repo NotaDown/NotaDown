@@ -295,6 +295,14 @@ export class DesktopPlatform implements Platform {
     await this.bridge.invoke('historyClear')
   }
 
+  async historyDir(): Promise<string> {
+    return this.bridge.invoke('historyDir')
+  }
+
+  async openHistoryDir(): Promise<void> {
+    await this.bridge.invoke('openHistoryDir')
+  }
+
   async loadSettings(): Promise<Partial<AppSettings> | null> {
     return this.bridge.invoke('loadSettings')
   }

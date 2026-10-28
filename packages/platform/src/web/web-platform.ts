@@ -593,6 +593,14 @@ export class WebPlatform implements Platform {
     await db.clear('history')
   }
 
+  async historyDir(): Promise<string> {
+    throw new Error('UNSUPPORTED')
+  }
+
+  async openHistoryDir(): Promise<void> {
+    throw new Error('UNSUPPORTED')
+  }
+
   async loadSettings(): Promise<Partial<AppSettings> | null> {
     return kvGet<Partial<AppSettings>>('settings')
   }
