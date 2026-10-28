@@ -428,7 +428,7 @@ export const zhCN = {
         comfortable: '宽松',
       },
       contentSpacing: '正文间距',
-      contentSpacingHint: '调整段落、标题、列表与代码块之间的间距，行高由上方单独控制。',
+      contentSpacingHint: '调整段落、标题、列表、代码块与表格的间距，行高由上方单独控制。',
       preview: '预览',
       previewText: '一只敏捷的棕色狐狸跳过了懒狗。',
       previewTextSecondary: '狐狸回头看了一眼，继续朝林子深处走去。',

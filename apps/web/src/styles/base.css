@@ -18,6 +18,7 @@
   --nd-editor-font-size: 17px;
   --nd-line-height: 1.75;
   --nd-prose-spacing: 1;
+  --nd-table-spacing: 0.6;
   --nd-editor-width: 760px;
   --nd-editor-padding-top: 64px;
   --nd-sidebar-width: 260px;
@@ -100,11 +101,18 @@
 }
 
 :root[data-content-density='compact'] {
-  --nd-prose-spacing: 0.7;
+  --nd-prose-spacing: 0.5;
+  --nd-table-spacing: 0.3;
+}
+
+:root[data-content-density='default'] {
+  --nd-prose-spacing: 0.6;
+  --nd-table-spacing: 0.6;
 }
 
 :root[data-content-density='comfortable'] {
-  --nd-prose-spacing: 1.3;
+  --nd-prose-spacing: 1.1;
+  --nd-table-spacing: 0.7;
 }
 
 *,

@@ -81,6 +81,7 @@
 
 .nd-editor .milkdown .ProseMirror p {
   margin: calc(0.75em * var(--nd-prose-spacing, 1)) 0;
+  padding: calc(4px * var(--nd-prose-spacing, 1)) 0;
 }
 
 .nd-editor .milkdown .ProseMirror h1,
@@ -211,7 +212,7 @@
 
 .nd-editor .milkdown .milkdown-code-block {
   margin: calc(1.1em * var(--nd-prose-spacing, 1)) 0;
-  padding: 12px 18px 14px;
+  padding: calc(12px * var(--nd-prose-spacing, 1)) 18px calc(14px * var(--nd-prose-spacing, 1));
   background: var(--nd-code-bg);
   border: 1px solid var(--nd-code-border);
   border-radius: 10px;
@@ -256,7 +257,7 @@
 
 .nd-editor .milkdown .ProseMirror table {
   width: 100%;
-  margin: calc(1.1em * var(--nd-prose-spacing, 1)) 0;
+  margin: calc(1.1em * var(--nd-table-spacing, 0.6)) 0;
   border-collapse: collapse;
   table-layout: fixed;
   overflow: hidden;
@@ -265,7 +266,7 @@
 .nd-editor .milkdown .ProseMirror th,
 .nd-editor .milkdown .ProseMirror td {
   border: 1px solid var(--nd-border);
-  padding: calc(7px * var(--nd-prose-spacing, 1)) 12px;
+  padding: calc(8px * var(--nd-table-spacing, 0.6)) 12px;
   vertical-align: top;
   text-align: left;
 }
@@ -762,6 +763,6 @@
 
   .nd-editor .milkdown .ProseMirror th,
   .nd-editor .milkdown .ProseMirror td {
-    padding: calc(6px * var(--nd-prose-spacing, 1)) 9px;
+    padding: calc(7px * var(--nd-table-spacing, 0.6)) 9px;
   }
 }

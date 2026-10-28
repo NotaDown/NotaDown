@@ -428,7 +428,7 @@ export const enUS = {
         comfortable: 'Comfortable',
       },
       contentSpacing: 'Body spacing',
-      contentSpacingHint: 'Adjusts the space between paragraphs, headings, lists and code blocks. Line height is set separately.',
+      contentSpacingHint: 'Adjusts the space between paragraphs, headings, lists, code blocks and tables. Line height is set separately.',
       preview: 'Preview',
       previewText: 'The quick brown fox jumps over the lazy dog.',
       previewTextSecondary: 'The fox looks back once, then continues into the woods.',
