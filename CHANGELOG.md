@@ -2,6 +2,33 @@
 
 English is canonical; entries are generated from conventional commits by `pnpm changelog`.
 
+## v0.2.1
+
+### 🚀 Features
+
+- **menu:** Add copy file name and limit copy path to desktop (2e9b36f)
+- **rename:** Rename the current document or tree entry with F2 (27f37e8)
+- **tabs:** Create a document by double-clicking the tab strip (20b4d5e)
+- **rename:** Rename tree entries inline and follow the work area (e1f1ac7)
+- **update:** Show the update source and download address (e5c6781)
+- **settings:** Default autosave to off (152cac6)
+- **settings:** Add compact, default and comfortable interface density (52a7c98)
+
+### 🩹 Bug Fixes
+
+- **settings:** Right-align the default app button in general settings (69c1ac1)
+- **rename:** Stop blur commits from stealing focus back to the old row (d8fcc29)
+- **desktop:** Close a running NotaDown before installing over it (c28e799)
+
+### 📖 Documentation
+
+- Document Pages environment branch rule for tag releases (9872885)
+
+### 📦 Build
+
+- Add a divider above the download links in release notes (e0c8e5a)
+
+
 ## v0.2.0
 
 ### 🚀 Features
