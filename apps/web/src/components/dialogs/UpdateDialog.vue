@@ -208,6 +208,9 @@ function formatBytes(value: number): string {
               <button type="button" class="nd-btn" @click="close">
                 {{ t('update.later') }}
               </button>
+              <button type="button" class="nd-btn" @click="update.openReleases()">
+                {{ t('update.manualDownload') }}
+              </button>
               <button
                 type="button"
                 class="nd-btn nd-btn--primary"

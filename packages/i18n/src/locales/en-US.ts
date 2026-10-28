@@ -110,6 +110,7 @@ export const enUS = {
     available: 'A new version is available.',
     update: 'Update now',
     later: 'Later',
+    manualDownload: 'Download manually',
     downloading: 'Downloading update…',
     downloaded: 'Update downloaded and ready to install.',
     restartInstall: 'Restart and install',

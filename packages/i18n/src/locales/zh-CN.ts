@@ -110,6 +110,7 @@ export const zhCN = {
     available: '有新版本可用。',
     update: '立即更新',
     later: '稍后',
+    manualDownload: '手动下载',
     downloading: '正在下载更新…',
     downloaded: '更新已下载，可以安装。',
     restartInstall: '重启并安装',
