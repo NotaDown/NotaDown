@@ -7,11 +7,13 @@ English is canonical; entries are generated from conventional commits by `pnpm c
 ### 🚀 Features
 
 - **editor:** Add body spacing density options (affb4d2)
+- **update:** Add manual download button to the update dialog (41521a0)
 
 ### 🩹 Bug Fixes
 
 - **desktop:** Probe GitHub with a 4s timeout before the update check (06ca0e8)
 - **editor:** Tune body spacing levels and table density (a9a9cf7)
+- **editor:** Show pointer cursor on links (1ff3b2e)
 
 
 ## v0.2.1
