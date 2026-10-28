@@ -29,11 +29,12 @@
 
 `pages` 任务把与 `notadown-web.zip` 同源的 `apps/web/dist` 构建部署到 https://notadown.brookzhang.com，只在正式版 tag 运行：预发布版不会改动线上站点，线上始终等于最近的正式版。
 
-一次性配置，位置在仓库的 **Settings → Pages**：
+一次性配置，位置在仓库的 **Settings**：
 
 - 发布源选 **GitHub Actions**。源不是 GitHub Actions 时，`Configure Pages` 会报 `Get Pages site failed`。
 - 自定义域名填 `notadown.brookzhang.com`，并开启 **Enforce HTTPS**。域名只保存在这一处设置里：Actions 发布的站点会忽略产物中的 `CNAME` 文件，构建里无需携带。
 - DNS 加一条 `CNAME` 记录 `notadown` → `notadown.github.io`。域名走 CDN（EdgeOne）时该记录必须设为仅 DNS；被代理的记录会终止在 CDN，到不了 Pages。
+- **Settings → Environments → `github-pages` → Deployment branches**：选 **All workflows**，或添加一条类型为 **Tag**、模式为 `v*` 的规则。规则只覆盖分支时，tag 触发的运行会被拒：`Tag "v1.2.3" is not allowed to deploy to github-pages due to environment protection rules`。模式用 glob 而非正则，匹配不带 `refs/tags/` 前缀的 tag 名。
 
 构建不写死基础路径：[apps/web/vite.config.ts](../apps/web/vite.config.ts) 的 `base` 是相对路径，同一份产物部署到项目页 `notadown.github.io/NotaDown/` 也能正常访问。
 

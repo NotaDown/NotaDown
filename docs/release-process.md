@@ -29,11 +29,12 @@ Release assets (version shown as `1.2.3`):
 
 The `pages` job publishes the same `apps/web/dist` build that ships as `notadown-web.zip` to https://notadown.brookzhang.com. Stable tags only: a pre-release leaves the live site on the previous stable version.
 
-One-time setup, in the repository's **Settings → Pages**:
+One-time setup, in the repository's **Settings**:
 
 - Publishing source: **GitHub Actions**. While another source is selected, `Configure Pages` fails with `Get Pages site failed`.
 - Custom domain: `notadown.brookzhang.com`, with **Enforce HTTPS** on. The domain is stored only in this setting — a workflow-published site ignores a `CNAME` file in the artifact, so the build carries none.
 - DNS: a `CNAME` record `notadown` → `notadown.github.io`. Where the zone runs behind a CDN (EdgeOne), keep that record DNS-only; a proxied record terminates at the CDN and never reaches Pages.
+- **Settings → Environments → `github-pages` → Deployment branches**: **All workflows**, or a rule of type **Tag** with the pattern `v*`. A rule limited to branches rejects the release run with `Tag "v1.2.3" is not allowed to deploy to github-pages due to environment protection rules`. Patterns are glob, not regex, and match the bare tag name without a `refs/tags/` prefix.
 
 No base path is baked in: [apps/web/vite.config.ts](../apps/web/vite.config.ts) uses a relative `base`, so the same artifact also serves correctly from the `notadown.github.io/NotaDown/` project page.
 
