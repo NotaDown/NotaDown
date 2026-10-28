@@ -10,6 +10,8 @@ export type UpdateStatus =
 
 export type UpdateUnsupportedReason = 'development' | 'platform'
 
+export type UpdateDownloadSource = 'auto' | 'github'
+
 export interface UpdateSnapshot {
   status: UpdateStatus
   currentVersion: string

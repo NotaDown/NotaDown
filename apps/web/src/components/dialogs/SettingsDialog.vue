@@ -958,6 +958,27 @@ async function clearHistory(): Promise<void> {
                   </button>
                 </div>
 
+                <div class="nd-field">
+                  <label class="nd-field-label" for="settings-update-source">
+                    {{ t('settings.updatesSection.downloadSource') }}
+                  </label>
+                  <select
+                    id="settings-update-source"
+                    v-model="draft.updateDownloadSource"
+                    class="nd-select"
+                  >
+                    <option value="auto">
+                      {{ t('settings.updatesSection.downloadSourceAuto') }}
+                    </option>
+                    <option value="github">
+                      {{ t('settings.updatesSection.downloadSourceGithub') }}
+                    </option>
+                  </select>
+                  <p class="nd-field-hint">
+                    {{ t('settings.updatesSection.downloadSourceHint') }}
+                  </p>
+                </div>
+
                 <div class="nd-field-row">
                   <div>
                     <label class="nd-field-label" for="settings-auto-check-updates">

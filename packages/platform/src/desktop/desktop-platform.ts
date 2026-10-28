@@ -20,6 +20,7 @@ import {
   type SearchOptions,
   type SearchResult,
   type SessionState,
+  type UpdateDownloadSource,
   type UpdateSnapshot,
   type WorkspaceEvent,
   type WorkspaceInfo,
@@ -352,8 +353,8 @@ export class DesktopPlatform implements Platform {
     return this.bridge.invoke('checkForUpdate')
   }
 
-  async downloadUpdate(): Promise<void> {
-    await this.bridge.invoke('downloadUpdate')
+  async downloadUpdate(source?: UpdateDownloadSource): Promise<void> {
+    await this.bridge.invoke('downloadUpdate', source)
   }
 
   async installUpdate(): Promise<void> {

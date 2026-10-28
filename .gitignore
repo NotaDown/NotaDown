@@ -11,6 +11,7 @@ Thumbs.db
 .vscode/
 .idea/
 coverage/
+update-metadata/
 playwright-report/
 test-results/
 *.tsbuildinfo

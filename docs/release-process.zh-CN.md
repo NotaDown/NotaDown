@@ -7,6 +7,7 @@
 3. `git add package.json CHANGELOG.md` → `git commit -m "chore: release v1.2.3"` → `git push`
 4. `git tag v1.2.3` → `git push origin v1.2.3`，触发 [release.yml](../.github/workflows/release.yml)：`validate` 校验 tag 与根版本一致，`web` 与 `desktop` 在三个平台并行构建，`publish` 取 CHANGELOG.md 中对应的 `## v1.2.3` 小节，追加各平台下载链接（每个链接附 gh-proxy 国内镜像），然后创建 GitHub Release。
 5. 打开验证。
+6. 正式版发布后确认 `metadata` 任务把频道文件传到了自建更新源（预发布版跳过）。该任务失败时在 Actions 里单独重跑它即可，见下节。
 
 版本号带连字符后缀的 tag（`v1.2.3-beta.1`、`v1.2.3-rc.1`）会把 Release 发布为**预发布版（pre-release）**；不带后缀的 `v1.2.3` 发布为正式版。根 `package.json` 写同一串值，后缀一并带上。
 
@@ -21,6 +22,25 @@
 - `NotaDown.1.2.3-x64.exe` — Windows NSIS 安装包
 - `NotaDown.1.2.3-x64.dmg` / `NotaDown.1.2.3-arm64.dmg` — macOS 镜像
 - `NotaDown.1.2.3-x86_64.AppImage` / `NotaDown.1.2.3-amd64.deb` — Linux
+
+## 自建更新元数据源
+
+桌面端默认从 GitHub 读取频道文件（`latest.yml`、`latest-linux.yml`），GitHub 不可达时改读 `https://notadown-dl.brookzhang.com/updater/`（配置在 [apps/desktop/src/update-sources.ts](../apps/desktop/src/update-sources.ts)）。
+
+正式版发布会触发 [release.yml](../.github/workflows/release.yml) 的 `metadata` 任务（`needs: publish`，跳过预发布）：它运行 `node scripts/update-metadata.mjs --tag <tag>`，从 GitHub Release 拉取两个频道文件、校验版本与 tag 一致、把安装包地址改写成 GitHub 绝对地址，再用固定版本的 coscli 上传到 COS 桶 `notadown-1302260381` 的 `updater/` 前缀。任务失败时在 Actions 里选 "Re-run failed jobs" 只重跑它，不会重建发行包；coscli 自身带退避重试。
+
+需要两个仓库 secret：`TENCENTCLOUD_SECRET_ID`、`TENCENTCLOUD_SECRET_KEY`。子账号附加预设策略 `QcloudCOSDataWriteOnly` 即可：任务关闭了 coscli 的桶类型自动探测，不会调用 `HeadBucket`；要收窄资源范围则改用自定义策略，只授该桶 `updater/*` 的 `cos:PutObject`。本地用同一子账号补传时，coscli 配置需同样设 `disableautofetchbuckettype: "true"`：
+
+```bash
+pnpm update-metadata                    # 取根 package.json 的版本，或 --tag v1.2.3
+coscli cp update-metadata/latest.yml cos://notadown-1302260381/updater/latest.yml
+coscli cp update-metadata/latest-linux.yml cos://notadown-1302260381/updater/latest-linux.yml
+```
+
+- 应用请求 `<base>/latest.yml`（Windows）与 `<base>/latest-linux.yml`（Linux AppImage）
+- 校验值来自自建源，安装包字节仍先走 GitHub，失败时依次探测代理镜像
+- 只上传正式版：通用频道不做预发布过滤，放上 beta 的频道文件会让稳定版客户端升级到 beta
+- 客户端每次请求带 `?noCache=<随机值>`，CDN 保持默认的“参数参与缓存”即可；若开了“过滤参数”，请给 `/updater/*` 配很短的 TTL，否则会继续返回旧版本的频道文件
 
 ## 说明
 

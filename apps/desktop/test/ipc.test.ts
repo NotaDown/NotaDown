@@ -180,6 +180,23 @@ describe('registerIpcHandlers', () => {
     expect(onSaved).toHaveBeenCalledWith(settings)
   })
 
+  it('passes the download source to the update service', async () => {
+    const updateService = {
+      getState: vi.fn(),
+      check: vi.fn(),
+      download: vi.fn(async () => undefined),
+      install: vi.fn(),
+    }
+    registerIpcHandlers(undefined, undefined, updateService)
+    handler = mocks.electron.handle.mock.calls.at(-1)?.[1] as Handler
+
+    await invoke('downloadUpdate', 'github')
+    expect(updateService.download).toHaveBeenCalledWith('github')
+
+    await invoke('downloadUpdate')
+    expect(updateService.download).toHaveBeenLastCalledWith('auto')
+  })
+
   it('recreates the window when requested', async () => {
     const recreate = vi.fn()
     registerIpcHandlers(undefined, recreate)

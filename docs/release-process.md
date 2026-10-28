@@ -7,6 +7,7 @@ English | [简体中文](./release-process.zh-CN.md)
 3. `git add package.json CHANGELOG.md` → `git commit -m "chore: release v1.2.3"` → `git push`
 4. `git tag v1.2.3` → `git push origin v1.2.3` to trigger [release.yml](../.github/workflows/release.yml): `validate` checks the tag against the root version, `web` and `desktop` build in parallel on three platforms, `publish` takes the matching `## v1.2.3` section from CHANGELOG.md, appends per-platform download links (each with a gh-proxy mirror), and opens the GitHub Release.
 5. Open and verify.
+6. For a stable release, check that the `metadata` job uploaded the channel files to the self-hosted source (prereleases skip it). If it fails, re-run that job on its own, see below.
 
 A tag whose version carries a hyphen suffix (`v1.2.3-beta.1`, `v1.2.3-rc.1`) publishes the GitHub Release as a **pre-release**; a plain `v1.2.3` tag publishes it as the stable release. Root `package.json` holds the same string, suffix included.
 
@@ -21,6 +22,25 @@ Release assets (version shown as `1.2.3`):
 - `NotaDown.1.2.3-x64.exe` — Windows NSIS installer
 - `NotaDown.1.2.3-x64.dmg` / `NotaDown.1.2.3-arm64.dmg` — macOS disk images
 - `NotaDown.1.2.3-x86_64.AppImage` / `NotaDown.1.2.3-amd64.deb` — Linux
+
+## Self-hosted update metadata
+
+The desktop app reads its channel files (`latest.yml`, `latest-linux.yml`) from GitHub by default. When GitHub is unreachable it reads them from `https://notadown-dl.brookzhang.com/updater/` instead (configured in [apps/desktop/src/update-sources.ts](../apps/desktop/src/update-sources.ts)).
+
+A stable release triggers the `metadata` job in [release.yml](../.github/workflows/release.yml) (`needs: publish`, skipped for prereleases). It runs `node scripts/update-metadata.mjs --tag <tag>`, which fetches both channel files from the GitHub release, checks their version against the tag, rewrites asset URLs to absolute GitHub URLs, then uploads them with a pinned coscli to the `updater/` prefix of the `notadown-1302260381` COS bucket. If the job fails, choose "Re-run failed jobs" to retry only it without rebuilding the release; coscli retries with backoff on its own.
+
+Two repository secrets are required: `TENCENTCLOUD_SECRET_ID` and `TENCENTCLOUD_SECRET_KEY`. The `QcloudCOSDataWriteOnly` preset is enough for the sub-account: the job disables coscli's bucket-type detection, so no `HeadBucket` call is made (use a custom policy limited to `cos:PutObject` on `updater/*` if the scope needs narrowing). When retrying locally with the same sub-account, set `disableautofetchbuckettype: "true"` in the coscli config:
+
+```bash
+pnpm update-metadata                    # uses the root package.json version, or --tag v1.2.3
+coscli cp update-metadata/latest.yml cos://notadown-1302260381/updater/latest.yml
+coscli cp update-metadata/latest-linux.yml cos://notadown-1302260381/updater/latest-linux.yml
+```
+
+- The app requests `<base>/latest.yml` (Windows) and `<base>/latest-linux.yml` (Linux AppImage)
+- The checksum comes from the self-hosted source; installer bytes still come from GitHub first, then from the probed proxy mirrors
+- Publish stable releases only: the generic channel has no prerelease filter, so a beta channel file would upgrade stable clients to a beta
+- Clients request the channel files with `?noCache=<random>`, so keep the CDN's default query-in-cache-key behaviour; if query filtering is enabled, give `/updater/*` a very short TTL or it will keep serving the previous channel files
 
 ## Notes
 

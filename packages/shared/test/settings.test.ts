@@ -22,4 +22,14 @@ describe('normalizeSettings', () => {
     expect(normalizeSettings({ pageWidth: 'huge' }).pageWidth).toBe(DEFAULT_SETTINGS.pageWidth)
     expect(normalizeSettings({ pageWidth: 1200 }).pageWidth).toBe(DEFAULT_SETTINGS.pageWidth)
   })
+
+  it('validates the update download source', () => {
+    expect(normalizeSettings({ updateDownloadSource: 'auto' }).updateDownloadSource).toBe('auto')
+    expect(normalizeSettings({ updateDownloadSource: 'github' }).updateDownloadSource).toBe(
+      'github',
+    )
+    expect(normalizeSettings({ updateDownloadSource: 'mirror' }).updateDownloadSource).toBe(
+      DEFAULT_SETTINGS.updateDownloadSource,
+    )
+  })
 })

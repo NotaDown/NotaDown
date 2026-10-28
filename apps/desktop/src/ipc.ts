@@ -243,7 +243,7 @@ async function dispatch(
       return updateService.check()
     case 'downloadUpdate':
       if (!updateService) throw new Error('UNSUPPORTED')
-      await updateService.download()
+      await updateService.download(args[0] === 'github' ? 'github' : 'auto')
       return undefined
     case 'installUpdate':
       if (!updateService) throw new Error('UNSUPPORTED')

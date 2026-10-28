@@ -17,6 +17,7 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
     "changelog": "node scripts/changelog.mjs",
+    "update-metadata": "node scripts/update-metadata.mjs",
     "screenshot:readme": "node examples/readme-screenshot/capture.mjs"
   },
   "devDependencies": {

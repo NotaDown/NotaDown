@@ -17,7 +17,7 @@ import type {
   TitleBarMode,
   WorkspaceEvent,
 } from './types'
-import type { UpdateSnapshot } from './update'
+import type { UpdateDownloadSource, UpdateSnapshot } from './update'
 
 export interface DesktopInvokeMap {
   getVersion: { args: []; result: string }
@@ -103,7 +103,7 @@ export interface DesktopInvokeMap {
   openDefaultAppSettings: { args: []; result: void }
   takeOpenFiles: { args: []; result: string[] }
   checkForUpdate: { args: []; result: UpdateSnapshot }
-  downloadUpdate: { args: []; result: void }
+  downloadUpdate: { args: [source?: UpdateDownloadSource]; result: void }
   installUpdate: { args: []; result: void }
 }
 

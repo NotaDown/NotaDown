@@ -1,13 +1,48 @@
 import {
   UPDATE_RELEASES_URL,
+  type UpdateDownloadSource,
   type UpdateSnapshot,
   type UpdateUnsupportedReason,
 } from '@notadown/shared'
+import { UPDATE_MIRRORS } from './update-sources'
+
+const MIRROR_PROBE_TIMEOUT_MS = 6000
+
+// Mirrors the `publish` block in electron-builder.yml. setFeedURL has no
+// "restore packaged config" form, so a metadata check swaps the feed back with
+// these options afterwards.
+const GITHUB_FEED = { provider: 'github', owner: 'NotaDown', repo: 'NotaDown' } as const
+
+export interface UpdateFeedOptions {
+  provider: 'github'
+  owner: string
+  repo: string
+}
 
 export interface UpdateInfoLike {
   version: string
   releaseNotes?: unknown
   releaseDate?: string | null
+}
+
+export interface UpdateFileLike {
+  url: string
+  sha512?: string
+  size?: number
+}
+
+export interface UpdateInfoWithFilesLike extends UpdateInfoLike {
+  files?: UpdateFileLike[]
+}
+
+export interface ResolvedUpdateFileLike {
+  url: URL
+  info: UpdateFileLike
+  packageInfo?: { path: string; sha512?: string }
+}
+
+export interface UpdateProviderLike {
+  resolveFiles(info: UpdateInfoLike): ResolvedUpdateFileLike[]
 }
 
 export interface UpdateProgressLike {
@@ -29,6 +64,12 @@ export interface UpdaterAdapter {
   checkForUpdates(): Promise<UpdateCheckResultLike | null>
   downloadUpdate(): Promise<unknown>
   quitAndInstall(isSilent?: boolean, isForceRunAfter?: boolean): void
+  setFeedURL?(options: string | UpdateFeedOptions): void
+  updateInfoAndProvider?: {
+    info: UpdateInfoWithFilesLike
+    provider: UpdateProviderLike
+  } | null
+  disableDifferentialDownload?: boolean
 }
 
 export interface UpdateRuntime {
@@ -41,8 +82,12 @@ export interface UpdateRuntime {
 export interface UpdateService {
   getState(): UpdateSnapshot
   check(): Promise<UpdateSnapshot>
-  download(): Promise<void>
+  download(source?: UpdateDownloadSource): Promise<void>
   install(): void
+}
+
+export interface UpdateServiceOptions {
+  metadataBaseUrl?: string | null
 }
 
 export function getUnsupportedReason(
@@ -74,12 +119,93 @@ function normalizeReleaseNotes(value: unknown): string | null {
   return parts.length ? parts.join('\n\n') : null
 }
 
+function assetExtension(platform: string): string | null {
+  if (platform === 'win32') return '.exe'
+  if (platform === 'linux') return '.appimage'
+  return null
+}
+
+function isAcceptableProbe(response: Response, expectedSize: number | null): boolean {
+  if (response.status !== 200 && response.status !== 206) return false
+  const contentType = (response.headers.get('content-type') ?? '').toLowerCase()
+  if (contentType.includes('text/html')) return false
+
+  if (response.status === 200) {
+    const length = Number(response.headers.get('content-length') ?? '')
+    if (!Number.isFinite(length) || length <= 0) return false
+    if (expectedSize !== null && length !== expectedSize) return false
+  } else {
+    const range = /bytes\s+0-0\/(\d+)/i.exec(
+      response.headers.get('content-range') ?? '',
+    )
+    if (range && expectedSize !== null && Number(range[1]) !== expectedSize) return false
+  }
+  return true
+}
+
+async function probeMirror(
+  mirror: string,
+  assetUrl: string,
+  expectedSize: number | null,
+  signal: AbortSignal,
+): Promise<boolean> {
+  const response = await fetch(`${mirror}/${assetUrl}`, {
+    headers: { Range: 'bytes=0-0' },
+    redirect: 'follow',
+    signal,
+  })
+  try {
+    return isAcceptableProbe(response, expectedSize)
+  } finally {
+    await response.body?.cancel().catch(() => undefined)
+  }
+}
+
+function raceMirrors(
+  assetUrl: string,
+  expectedSize: number | null,
+  excluded: Set<string>,
+): Promise<string | null> {
+  const candidates = UPDATE_MIRRORS.filter((mirror) => !excluded.has(mirror))
+  if (candidates.length === 0) return Promise.resolve(null)
+
+  return new Promise((resolve) => {
+    let settled = false
+    let remaining = candidates.length
+    const controllers = candidates.map(() => new AbortController())
+    const timer = setTimeout(() => finish(null), MIRROR_PROBE_TIMEOUT_MS)
+
+    function finish(mirror: string | null): void {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      for (const controller of controllers) controller.abort()
+      resolve(mirror)
+    }
+
+    candidates.forEach((mirror, index) => {
+      probeMirror(mirror, assetUrl, expectedSize, controllers[index].signal)
+        .then((accepted) => {
+          if (accepted) finish(mirror)
+          else if (--remaining === 0) finish(null)
+        })
+        .catch(() => {
+          if (--remaining === 0) finish(null)
+        })
+    })
+  })
+}
+
 export function createUpdateService(
   updater: UpdaterAdapter,
   runtime: UpdateRuntime,
   onChange: (snapshot: UpdateSnapshot) => void,
+  options: UpdateServiceOptions = {},
 ): UpdateService {
   const unsupportedReason = getUnsupportedReason(runtime)
+  const metadataBaseUrl =
+    options.metadataBaseUrl?.trim().replace(/\/+$/, '') || null
+  const canCheckMetadata = Boolean(metadataBaseUrl && updater.setFeedURL)
 
   let state: UpdateSnapshot = {
     status: unsupportedReason ? 'unsupported' : 'idle',
@@ -107,6 +233,69 @@ export function createUpdateService(
   function patch(next: Partial<UpdateSnapshot>): void {
     state = { ...state, ...next }
     onChange(snapshot())
+  }
+
+  // While a fallback source is being tried, the updater's own error events are
+  // the attempts that failed, not the outcome. Defer them until the last one.
+  let fallbackActive = false
+  let deferredError: string | null = null
+
+  function resolveMirrorTarget(): { url: string; size: number | null } | null {
+    const extension = assetExtension(runtime.platform)
+    const update = updater.updateInfoAndProvider
+    if (!extension || !update) return null
+    try {
+      const files = update.provider.resolveFiles(update.info)
+      const file = files.find((entry) =>
+        entry.url.pathname.toLowerCase().endsWith(extension),
+      )
+      if (!file) return null
+      return {
+        url: file.url.href,
+        size: typeof file.info.size === 'number' ? file.info.size : null,
+      }
+    } catch {
+      return null
+    }
+  }
+
+  function applyMirror(mirror: string): (() => void) | null {
+    const update = updater.updateInfoAndProvider
+    if (!update) return null
+    const provider = update.provider
+    const original = provider.resolveFiles
+    provider.resolveFiles = (info) =>
+      original.call(provider, info).map((file) => {
+        const resolved: ResolvedUpdateFileLike = {
+          ...file,
+          url: new URL(`${mirror}/${file.url.href}`),
+        }
+        if (file.packageInfo) {
+          resolved.packageInfo = {
+            ...file.packageInfo,
+            path: `${mirror}/${file.packageInfo.path}`,
+          }
+        }
+        return resolved
+      })
+    return () => {
+      provider.resolveFiles = original
+    }
+  }
+
+  async function downloadFromMirror(mirror: string): Promise<void> {
+    const restore = applyMirror(mirror)
+    if (!restore) throw new Error('NO_UPDATE_AVAILABLE')
+    const differential = updater.disableDifferentialDownload
+    // Proxies are not reliable for block-map range requests; a full download
+    // is re-verified against the same SHA-512 from the GitHub channel file.
+    updater.disableDifferentialDownload = true
+    try {
+      await updater.downloadUpdate()
+    } finally {
+      updater.disableDifferentialDownload = differential
+      restore()
+    }
   }
 
   updater.on('update-available', (info: UpdateInfoLike) => {
@@ -159,6 +348,10 @@ export function createUpdateService(
   })
 
   updater.on('error', (error: Error) => {
+    if (fallbackActive) {
+      deferredError = errorMessage(error)
+      return
+    }
     patch({
       status: 'error',
       error: errorMessage(error),
@@ -182,6 +375,18 @@ export function createUpdateService(
       return
     }
     patch({ status: 'not-available', version: info?.version ?? null })
+  }
+
+  async function checkFirstPartyMetadata(): Promise<UpdateCheckResultLike | null> {
+    if (!metadataBaseUrl || !updater.setFeedURL) throw new Error('NO_METADATA_SOURCE')
+    updater.setFeedURL(metadataBaseUrl)
+    try {
+      return await updater.checkForUpdates()
+    } finally {
+      // The channel file lists absolute GitHub asset URLs, so the installer
+      // still comes from GitHub or, on failure, from the mirror fallback.
+      updater.setFeedURL(GITHUB_FEED)
+    }
   }
 
   async function check(): Promise<UpdateSnapshot> {
@@ -209,18 +414,36 @@ export function createUpdateService(
       error: null,
     })
 
+    fallbackActive = canCheckMetadata
+    deferredError = null
     try {
-      const result = await updater.checkForUpdates()
+      let result: UpdateCheckResultLike | null
+      try {
+        result = await updater.checkForUpdates()
+      } catch (githubError) {
+        if (!canCheckMetadata) throw githubError
+        patch({ status: 'checking', error: null })
+        try {
+          result = await checkFirstPartyMetadata()
+        } catch {
+          // The GitHub failure is the reason the user cannot update; the
+          // metadata one is only a consequence of it.
+          throw githubError
+        }
+      }
       applyCheckResult(result)
     } catch (error) {
       if (state.status !== 'error') {
         patch({ status: 'error', error: errorMessage(error) })
       }
+    } finally {
+      fallbackActive = false
+      deferredError = null
     }
     return snapshot()
   }
 
-  async function download(): Promise<void> {
+  async function download(source: UpdateDownloadSource = 'auto'): Promise<void> {
     if (state.status === 'downloading' || state.status === 'downloaded') return
     if (state.status !== 'available') throw new Error('NO_UPDATE_AVAILABLE')
 
@@ -233,11 +456,54 @@ export function createUpdateService(
       error: null,
     })
 
+    const target = source === 'auto' ? resolveMirrorTarget() : null
+    fallbackActive = target !== null
+    deferredError = null
+
     try {
-      await updater.downloadUpdate()
+      try {
+        await updater.downloadUpdate()
+        return
+      } catch (directError) {
+        if (!target) throw directError
+
+        const tried = new Set<string>()
+        let lastError = directError
+        while (true) {
+          patch({
+            status: 'downloading',
+            progress: 0,
+            transferred: 0,
+            total: null,
+            bytesPerSecond: null,
+          })
+          const mirror = await raceMirrors(target.url, target.size, tried)
+          if (!mirror) throw lastError
+          tried.add(mirror)
+          try {
+            await downloadFromMirror(mirror)
+            return
+          } catch (error) {
+            lastError = error
+          }
+        }
+      }
     } catch (error) {
-      patch({ status: 'error', error: errorMessage(error) })
+      fallbackActive = false
+      const message = deferredError ?? errorMessage(error)
+      deferredError = null
+      patch({
+        status: 'error',
+        error: message,
+        progress: null,
+        transferred: null,
+        total: null,
+        bytesPerSecond: null,
+      })
       throw error
+    } finally {
+      fallbackActive = false
+      deferredError = null
     }
   }
 

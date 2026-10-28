@@ -194,3 +194,56 @@ jobs:
           # after the version (v1.2.3-beta.1) publishes as a GitHub pre-release;
           # a plain v1.2.3 tag publishes as the current stable release.
           prerelease: ${{ contains(github.ref_name, '-') }}
+
+  # Separate job so a failed upload can be retried on its own ("Re-run failed
+  # jobs") without rebuilding the release. See docs/release-process.md.
+  metadata:
+    needs: publish
+    # Stable releases only: the generic update channel has no prerelease filter.
+    if: startsWith(github.ref, 'refs/tags/') && !contains(github.ref_name, '-')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Build channel files
+        run: node scripts/update-metadata.mjs --tag "$GITHUB_REF_NAME"
+
+      - name: Install coscli
+        env:
+          COSCLI_VERSION: v1.0.9
+          COSCLI_SHA256: a07de5ba2800147a700ed29036b0c76a4229088cee68e1682d0eae19b638a915
+        run: |
+          curl -fsSL "https://github.com/tencentyun/coscli/releases/download/${COSCLI_VERSION}/coscli-${COSCLI_VERSION}-linux-amd64" -o coscli
+          echo "${COSCLI_SHA256}  coscli" | sha256sum -c -
+          chmod +x coscli
+          ./coscli --version
+
+      - name: Upload channel files
+        env:
+          TENCENTCLOUD_SECRET_ID: ${{ secrets.TENCENTCLOUD_SECRET_ID }}
+          TENCENTCLOUD_SECRET_KEY: ${{ secrets.TENCENTCLOUD_SECRET_KEY }}
+        run: |
+          umask 077
+          config="$RUNNER_TEMP/cos.yaml"
+          # The CI key only has COS data-write permission, so coscli must not
+          # HEAD the bucket to detect its type; declare the bucket in config.
+          cat > "$config" <<EOF
+          cos:
+            base:
+              secretid: ${TENCENTCLOUD_SECRET_ID}
+              secretkey: ${TENCENTCLOUD_SECRET_KEY}
+              protocol: https
+              disableautofetchbuckettype: "true"
+            buckets:
+              - name: notadown-1302260381
+                alias: notadown
+                region: ap-shanghai
+                endpoint: cos.ap-shanghai.myqcloud.com
+          EOF
+          ./coscli --config-path "$config" cp update-metadata/latest.yml cos://notadown/updater/latest.yml
+          ./coscli --config-path "$config" cp update-metadata/latest-linux.yml cos://notadown/updater/latest-linux.yml
+          rm -f "$config"

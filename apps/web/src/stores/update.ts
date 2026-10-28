@@ -89,7 +89,7 @@ export const useUpdateStore = defineStore('update', () => {
     autoInstall = true
     installBlocked.value = false
     try {
-      await platform.downloadUpdate()
+      await platform.downloadUpdate(settings.settings.updateDownloadSource)
     } catch {
       // The main process reports download failures through the update events.
     }

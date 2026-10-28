@@ -6,6 +6,7 @@ import type {
   ThemeId,
   TitleBarMode,
 } from './types'
+import type { UpdateDownloadSource } from './update'
 
 export interface AppSettings {
   locale: LocalePreference
@@ -25,6 +26,7 @@ export interface AppSettings {
   showWordCount: boolean
   restoreSession: boolean
   autoCheckUpdates: boolean
+  updateDownloadSource: UpdateDownloadSource
   skippedUpdateVersion: string
   confirmDelete: boolean
   imageStorage: ImageStorageMode
@@ -58,6 +60,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   showWordCount: true,
   restoreSession: true,
   autoCheckUpdates: true,
+  updateDownloadSource: 'auto',
   skippedUpdateVersion: '',
   confirmDelete: true,
   imageStorage: 'document-assets',
@@ -95,6 +98,7 @@ const IMAGE_MODES = new Set([
   'global-attachments',
   'base64',
 ])
+const UPDATE_DOWNLOAD_SOURCES = new Set(['auto', 'github'])
 
 export function normalizeSettings(input: unknown): AppSettings {
   const source = input && typeof input === 'object' ? (input as Record<string, unknown>) : {}
@@ -119,6 +123,7 @@ export function normalizeSettings(input: unknown): AppSettings {
       if (key === 'titleBarMode' && !['integrated', 'native'].includes(value)) continue
       if (key === 'locale' && !LOCALES.has(value)) continue
       if (key === 'imageStorage' && !IMAGE_MODES.has(value)) continue
+      if (key === 'updateDownloadSource' && !UPDATE_DOWNLOAD_SOURCES.has(value)) continue
       if (key === 'defaultFileExtension' && !['md', 'markdown'].includes(value)) continue
       result[key] = value as never
     }

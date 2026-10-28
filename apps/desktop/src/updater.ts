@@ -3,6 +3,7 @@ import path from 'node:path'
 import { app } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import type { UpdateSnapshot } from '@notadown/shared'
+import { UPDATE_METADATA_BASE_URL } from './update-sources'
 import {
   createUpdateService,
   type UpdaterAdapter,
@@ -35,5 +36,6 @@ export function createDesktopUpdateService(
       appImage: Boolean(process.env.APPIMAGE),
     },
     onChange,
+    { metadataBaseUrl: UPDATE_METADATA_BASE_URL },
   )
 }

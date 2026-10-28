@@ -457,6 +457,12 @@ export const enUS = {
     updatesSection: {
       manualCheck: 'Check for updates',
       manualCheckHint: 'Look for a new version now and review its release notes.',
+      downloadSource: 'Update download',
+      downloadSourceAuto:
+        'Prefer GitHub Releases, fall back to a mirror when unreachable (Recommended)',
+      downloadSourceGithub: 'Use GitHub Releases only',
+      downloadSourceHint:
+        'Mirrors only relay installer bytes. Version metadata and the SHA-512 checksum come from GitHub, or from the NotaDown update source when GitHub is unreachable.',
     },
     aboutSection: {
       description: 'An offline-first Markdown editor for focused writing.',

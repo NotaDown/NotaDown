@@ -456,6 +456,11 @@ export const zhCN = {
     updatesSection: {
       manualCheck: '手动检查',
       manualCheckHint: '立即检查是否有新版本，有新版本时会显示更新日志。',
+      downloadSource: '更新包下载',
+      downloadSourceAuto: '优先使用 GitHub Release，无法访问时自动选择合适镜像（推荐）',
+      downloadSourceGithub: '仅使用 GitHub Release',
+      downloadSourceHint:
+        '镜像只转发安装包字节；版本信息与 SHA-512 优先取自 GitHub，GitHub 无法访问时改用 NotaDown 自建更新源。',
     },
     aboutSection: {
       description: '专注书写的离线优先 Markdown 编辑器。',
