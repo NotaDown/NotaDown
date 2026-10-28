@@ -2,6 +2,17 @@
 
 English is canonical; entries are generated from conventional commits by `pnpm changelog`.
 
+## v0.1.2
+
+
+### 🚀 Features
+
+- **settings:** Add four text-width modes (14497e2)
+- **editor:** Add floating text width control (6138086)
+- **desktop:** Check for updates automatically at startup (14c3211)
+- **settings:** Add very narrow text width preset (e6773ff)
+
+
 ## v0.1.1
 
 
