@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+  type ComponentPublicInstance,
+} from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   ChevronRight,
@@ -39,10 +47,14 @@ interface TreeRow {
 }
 
 interface TreeDialog {
-  mode: 'file' | 'folder' | 'rename'
+  mode: 'file' | 'folder'
   parent: string
-  path?: string
-  kind?: 'file' | 'directory'
+  name: string
+}
+
+interface TreeRename {
+  path: string
+  kind: 'file' | 'directory'
   name: string
 }
 
@@ -59,6 +71,10 @@ const dialog = ref<TreeDialog | null>(null)
 const dialogInput = ref<HTMLInputElement | null>(null)
 const dialogError = ref('')
 const busy = ref(false)
+
+const renameState = ref<TreeRename | null>(null)
+const renameInput = ref<HTMLInputElement | null>(null)
+let renameBusy = false
 
 const contextOpen = ref(false)
 const contextX = ref(0)
@@ -195,8 +211,8 @@ function onRowMenu(event: MouseEvent, node: WorkspaceNode): void {
   contextOpen.value = true
 }
 
-function openDialog(mode: TreeDialog['mode'], parent: string, path?: string, kind?: 'file' | 'directory', name = ''): void {
-  dialog.value = { mode, parent, path, kind, name }
+function openDialog(mode: TreeDialog['mode'], parent: string): void {
+  dialog.value = { mode, parent, name: '' }
   dialogError.value = ''
   void nextTick(() => {
     dialogInput.value?.focus()
@@ -211,11 +227,82 @@ function startCreate(mode: 'file' | 'folder'): void {
 function startRename(path: string, kind: 'file' | 'directory', name = basename(path)): void {
   contextOpen.value = false
   workspace.select(path)
-  openDialog('rename', dirname(path), path, kind, name)
+  renameState.value = { path, kind, name }
+  void nextTick(() => {
+    renameInput.value?.focus()
+    renameInput.value?.select()
+  })
+}
+
+function setRenameInput(element: Element | ComponentPublicInstance | null): void {
+  renameInput.value = element instanceof HTMLInputElement ? element : null
+}
+
+function cancelRename(): void {
+  const path = renameState.value?.path
+  renameState.value = null
+  if (!path) return
+  void nextTick(() => focusRow(path))
+}
+
+function rejectRename(keepEditing: boolean): void {
+  ui.toast('error', t('tree.invalidName'))
+  if (!keepEditing) {
+    renameState.value = null
+    return
+  }
+  renameInput.value?.focus()
+  renameInput.value?.select()
+}
+
+async function submitRename(keepEditing = true): Promise<void> {
+  const current = renameState.value
+  if (!current || renameBusy) return
+  const value = current.name.trim()
+  if (!value || /[\\/]/.test(value) || value === '.' || value === '..') {
+    rejectRename(keepEditing)
+    return
+  }
+  renameBusy = true
+  try {
+    const target = current.path
+    const nextPath = await workspace.renameEntry(target, value)
+    if (!nextPath) {
+      rejectRename(keepEditing)
+      return
+    }
+    renameState.value = null
+    if (nextPath !== target) {
+      tabs.remapWorkspacePath(target, nextPath, current.kind === 'directory')
+      ui.toast('success', t('tree.renamed', { name: basename(nextPath) }))
+    }
+    void nextTick(() => focusRow(nextPath))
+  } catch (error) {
+    ui.toast('error', t('errors.generic'), describeError(error))
+    if (keepEditing) {
+      renameInput.value?.focus()
+      renameInput.value?.select()
+    } else {
+      renameState.value = null
+    }
+  } finally {
+    renameBusy = false
+  }
+}
+
+function focusRow(path: string): void {
+  const rows = treeRoot.value?.querySelectorAll<HTMLElement>('.tree-row') ?? []
+  for (const row of rows) {
+    if (row.getAttribute('title') === path) {
+      row.focus()
+      return
+    }
+  }
 }
 
 function onRowKeydown(event: KeyboardEvent, node: WorkspaceNode): void {
   if ((event.target as HTMLElement).closest('button') !== null) return
+  if (event.target instanceof HTMLInputElement) return
   if (event.key === 'F2' || (commands.platform === 'mac' && event.key === 'Enter')) {
     event.preventDefault()
     startRename(node.path, node.kind, node.name)
@@ -227,11 +314,12 @@ function onRowKeydown(event: KeyboardEvent, node: WorkspaceNode): void {
 // The row handler only sees the key when a row holds DOM focus, which clicking
 // away from the tree loses. Catch F2 for the rest of the panel too.
 function onWindowKeydown(event: KeyboardEvent): void {
-  if (event.key !== 'F2' || event.defaultPrevented || dialog.value) return
+  if (event.key !== 'F2' || event.defaultPrevented) return
+  if (dialog.value || renameState.value) return
+  if (ui.workArea !== 'tree') return
   const target = event.target
   if (!(target instanceof Element)) return
-  if (target.closest('input, textarea, [contenteditable]:not([contenteditable="false"])')) return
-  if (!treeRoot.value?.contains(target)) return
+  if (target.closest('input, textarea, .nd-dialog, .nd-overlay')) return
   const selected = workspace.selectedPath
   if (!selected) return
   event.preventDefault()
@@ -253,15 +341,7 @@ async function submitDialog(): Promise<void> {
   busy.value = true
   dialogError.value = ''
   try {
-    if (current.mode === 'rename' && current.path) {
-      const target = current.path
-      const nextPath = await workspace.renameEntry(target, value)
-      if (nextPath && nextPath !== target) {
-        tabs.remapWorkspacePath(target, nextPath, current.kind === 'directory')
-        ui.toast('success', t('tree.renamed', { name: basename(nextPath) }))
-      }
-      dialog.value = null
-    } else if (current.mode === 'folder') {
+    if (current.mode === 'folder') {
       const path = await workspace.createDirectory(current.parent, value)
       if (path) ui.toast('success', t('tree.created', { name: basename(path) }))
       dialog.value = null
@@ -467,7 +547,11 @@ function closeDialog(): void {
 </script>
 
 <template>
-  <div ref="treeRoot" class="file-tree">
+  <div
+    ref="treeRoot"
+    class="file-tree"
+    @pointerdown="ui.setWorkArea('tree')"
+  >
     <div class="tree-toolbar">
       <button
         type="button"
@@ -566,7 +650,7 @@ function closeDialog(): void {
         role="treeitem"
         tabindex="0"
         :aria-expanded="row.node.kind === 'directory' ? isOpen(row.node) : undefined"
-        draggable="true"
+        :draggable="renameState?.path === row.node.path ? 'false' : 'true'"
         @click="handleRow(row.node)"
         @keydown="onRowKeydown($event, row.node)"
         @contextmenu.stop="onRowContext($event, row.node)"
@@ -586,7 +670,20 @@ function closeDialog(): void {
           :stroke-width="1.6"
           class="tree-row__icon"
         />
-        <span class="tree-row__name">{{ row.node.name }}</span>
+        <input
+          v-if="renameState?.path === row.node.path"
+          :ref="setRenameInput"
+          v-model="renameState.name"
+          class="tree-row__rename"
+          spellcheck="false"
+          @click.stop
+          @mousedown.stop
+          @dblclick.stop
+          @keydown.enter.prevent="submitRename()"
+          @keydown.esc.prevent.stop="cancelRename"
+          @blur="submitRename(false)"
+        >
+        <span v-else class="tree-row__name">{{ row.node.name }}</span>
         <span
           v-if="tabAlert(row.node)"
           class="tree-row__dot is-warning"
@@ -623,24 +720,16 @@ function closeDialog(): void {
         <div class="nd-dialog tree-dialog" @keydown.esc.stop="closeDialog">
           <header class="nd-dialog-header">
             <h2 class="nd-dialog-title">
-              {{
-                dialog.mode === 'rename'
-                  ? t('sidebar.rename')
-                  : dialog.mode === 'folder'
-                    ? t('sidebar.newFolder')
-                    : t('sidebar.newFile')
-              }}
+              {{ dialog.mode === 'folder' ? t('sidebar.newFolder') : t('sidebar.newFile') }}
             </h2>
           </header>
           <div class="nd-dialog-body">
             <label class="nd-field">
               <span class="nd-field-label">
                 {{
-                  dialog.mode === 'rename'
-                    ? t('tree.renamePlaceholder')
-                    : dialog.mode === 'folder'
-                      ? t('tree.newFolderPlaceholder')
-                      : t('tree.newFilePlaceholder')
+                  dialog.mode === 'folder'
+                    ? t('tree.newFolderPlaceholder')
+                    : t('tree.newFilePlaceholder')
                 }}
               </span>
               <input
@@ -648,11 +737,9 @@ function closeDialog(): void {
                 v-model="dialog.name"
                 class="nd-input"
                 :placeholder="
-                  dialog.mode === 'rename'
-                    ? t('tree.renamePlaceholder')
-                    : dialog.mode === 'folder'
-                      ? t('tree.newFolderPlaceholder')
-                      : t('tree.newFilePlaceholder')
+                  dialog.mode === 'folder'
+                    ? t('tree.newFolderPlaceholder')
+                    : t('tree.newFilePlaceholder')
                 "
                 spellcheck="false"
                 @keydown.enter.prevent="submitDialog"
@@ -665,7 +752,7 @@ function closeDialog(): void {
               {{ t('common.cancel') }}
             </button>
             <button type="button" class="nd-btn nd-btn--primary" :disabled="busy" @click="submitDialog">
-              {{ dialog.mode === 'rename' ? t('sidebar.rename') : t('common.create') }}
+              {{ t('common.create') }}
             </button>
           </footer>
         </div>
@@ -730,7 +817,7 @@ function closeDialog(): void {
   display: flex;
   align-items: center;
   gap: 5px;
-  height: 27px;
+  height: var(--nd-tree-row-height);
   padding-right: 8px;
   border-radius: var(--nd-radius-sm);
   color: var(--nd-text-secondary);
@@ -792,6 +879,24 @@ function closeDialog(): void {
   white-space: nowrap;
 }
 
+.tree-row__rename {
+  flex: 1;
+  min-width: 0;
+  height: 21px;
+  padding: 0 3px;
+  border: 1px solid color-mix(in srgb, var(--nd-accent) 60%, transparent);
+  border-radius: 4px;
+  background: var(--nd-bg);
+  color: var(--nd-text);
+  font: inherit;
+  outline: none;
+  user-select: text;
+}
+
+.tree-row__rename:focus {
+  border-color: var(--nd-accent);
+}
+
 .tree-row__dot {
   flex: 0 0 auto;
   width: 6px;
@@ -819,8 +924,8 @@ function closeDialog(): void {
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: 26px;
-  height: 26px;
+  width: var(--nd-control-height-sm);
+  height: var(--nd-control-height-sm);
   border: none;
   border-radius: 4px;
   background: transparent;
@@ -834,7 +939,7 @@ function closeDialog(): void {
 
 @media (max-width: 720px), (hover: none) {
   .tree-row {
-    height: 34px;
+    height: max(var(--nd-tree-row-height), 34px);
   }
 
   .tree-row__more {

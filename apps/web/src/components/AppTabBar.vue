@@ -214,15 +214,18 @@ function closeRenameDialog(): void {
   renameDialog.value = null
 }
 
-// F2 renames the document being written in, matching the tree's F2 hint.
+// F2 renames the document when the user is working in the editor; the tree
+// keeps its own inline rename while the tree is the last place they touched.
 function onWindowKeydown(event: KeyboardEvent): void {
   if (event.key !== 'F2' || event.defaultPrevented || renameDialog.value) return
   const target = event.target
   if (!(target instanceof Element)) return
-  const tab = menuOpen.value ? contextTab.value : tabs.activeTab
+  const fromMenu = menuOpen.value
+  if (!fromMenu && ui.workArea !== 'editor') return
+  if (target.closest('input, textarea, .nd-dialog, .nd-overlay')) return
+  const tab = fromMenu ? contextTab.value : tabs.activeTab
   if (tab?.ref.origin !== 'workspace' || !tab.ref.path) return
-  if (menuOpen.value) menuOpen.value = false
-  else if (target.closest('.nd-editor, .nd-source-editor') === null) return
+  if (fromMenu) menuOpen.value = false
   event.preventDefault()
   openRenameDialog(tab)
 }
@@ -262,7 +265,7 @@ async function submitRename(): Promise<void> {
 </script>
 
 <template>
-  <div class="tab-bar">
+  <div class="tab-bar" @pointerdown="ui.setWorkArea('editor')">
     <div class="tab-bar__list nd-scroll" @dblclick="onListDblClick">
       <button
         v-for="tab in tabs.tabs"

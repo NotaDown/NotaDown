@@ -56,6 +56,11 @@ export const useUiStore = defineStore('ui', () => {
   const findQuery = ref('')
   const findResult = ref<FindResult | null>(null)
 
+  // Where the user last worked by pointer or keyboard. Opening a document from
+  // the tree moves DOM focus into the editor, so focus alone cannot tell F2
+  // whether the intent is the tree entry or the document.
+  const workArea = ref<'tree' | 'editor'>('tree')
+
   const toasts = ref<ToastMessage[]>([])
   const confirmState = ref<ConfirmState | null>(null)
   const unsavedState = ref<UnsavedState | null>(null)
@@ -93,6 +98,10 @@ export const useUiStore = defineStore('ui', () => {
   function focusSearch(): void {
     setSidebarView('search')
     searchFocusToken.value += 1
+  }
+
+  function setWorkArea(area: 'tree' | 'editor'): void {
+    workArea.value = area
   }
 
   function openSettings(section: SettingsSection = 'general'): void {
@@ -240,6 +249,7 @@ export const useUiStore = defineStore('ui', () => {
     findOpen,
     findQuery,
     findResult,
+    workArea,
     toasts,
     confirmState,
     unsavedState,
@@ -251,6 +261,7 @@ export const useUiStore = defineStore('ui', () => {
     toggleSidebar,
     setSidebarView,
     focusSearch,
+    setWorkArea,
     openSettings,
     openFind,
     closeFind,

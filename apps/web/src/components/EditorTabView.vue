@@ -260,6 +260,11 @@ function documentCandidates(path: string): string[] {
   return [`${path}.md`, `${path}.markdown`, path]
 }
 
+function onEditorKeydown(event: KeyboardEvent): void {
+  if (event.key === 'F2') return
+  ui.setWorkArea('editor')
+}
+
 function keepDisk(): void {
   tabs.resolveConflict(props.tab.key, 'disk')
 }
@@ -274,7 +279,11 @@ function saveAsNew(): void {
 </script>
 
 <template>
-  <div class="editor-tab">
+  <div
+    class="editor-tab"
+    @pointerdown="ui.setWorkArea('editor')"
+    @keydown="onEditorKeydown"
+  >
     <div v-if="tab.conflict" class="editor-banner editor-banner--warning">
       <CircleAlert :size="15" class="editor-banner__icon" />
       <p class="editor-banner__text">
