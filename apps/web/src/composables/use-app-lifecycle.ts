@@ -6,6 +6,7 @@ import { saveCurrentSession } from '@/services/session'
 import { useSettingsStore } from '@/stores/settings'
 import { useTabsStore } from '@/stores/tabs'
 import { useUiStore } from '@/stores/ui'
+import { useUpdateStore } from '@/stores/update'
 import { useWorkspaceStore } from '@/stores/workspace'
 import { usesNativeTitleBar } from '@/window-chrome'
 import type { AppCommands } from './use-app-commands'
@@ -16,6 +17,7 @@ export function useAppLifecycle(commands: AppCommands): void {
   const tabs = useTabsStore()
   const ui = useUiStore()
   const workspace = useWorkspaceStore()
+  const update = useUpdateStore()
 
   const disposers: Array<() => void> = []
   let sessionTimer: number | null = null
@@ -24,6 +26,7 @@ export function useAppLifecycle(commands: AppCommands): void {
 
   onMounted(async () => {
     await settings.init()
+    if (settings.settings.autoCheckUpdates) void update.checkSilently()
 
     disposers.push(platform.onMenuCommand((command) => void commands.run(command)))
     disposers.push(platform.onOpenFiles(() => void openPendingFiles()))

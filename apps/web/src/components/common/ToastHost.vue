@@ -9,6 +9,7 @@ import {
 } from 'lucide-vue-next'
 import type { ToastMessage } from '@notadown/shared'
 import { useUiStore } from '@/stores/ui'
+import UpdateNotice from './UpdateNotice.vue'
 
 const { t } = useI18n()
 const ui = useUiStore()
@@ -24,6 +25,7 @@ function iconFor(type: ToastMessage['type']) {
 <template>
   <Teleport to="body">
     <div class="toast-host" aria-live="polite">
+      <UpdateNotice />
       <TransitionGroup name="toast">
         <div
           v-for="toast in ui.toasts"

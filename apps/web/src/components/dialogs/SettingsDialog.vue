@@ -355,6 +355,23 @@ async function clearHistory(): Promise<void> {
                   </label>
                 </div>
 
+                <div v-if="isDesktop" class="nd-field-row">
+                  <div>
+                    <label class="nd-field-label" for="settings-auto-check-updates">
+                      {{ t('settings.autoCheckUpdates') }}
+                    </label>
+                    <p class="nd-field-hint">{{ t('settings.autoCheckUpdatesHint') }}</p>
+                  </div>
+                  <label class="nd-switch nd-field-control">
+                    <input
+                      id="settings-auto-check-updates"
+                      v-model="draft.autoCheckUpdates"
+                      type="checkbox"
+                    />
+                    <span class="nd-switch-track" />
+                  </label>
+                </div>
+
                 <div v-if="isDesktop" class="nd-field">
                   <label class="nd-field-label" for="settings-title-bar">
                     {{ t('settings.generalSection.titleBar') }}
@@ -941,6 +958,13 @@ async function clearHistory(): Promise<void> {
                   </div>
                 </dl>
                 <div v-if="isDesktop" class="settings-about__actions">
+                  <label
+                    class="settings-about__auto-check"
+                    :title="t('settings.autoCheckUpdatesHint')"
+                  >
+                    <input v-model="draft.autoCheckUpdates" type="checkbox" />
+                    {{ t('settings.autoCheckUpdates') }}
+                  </label>
                   <button type="button" class="nd-btn nd-btn--sm" @click="update.check()">
                     <RefreshCw :size="13" />
                     {{ t('menu.checkForUpdates') }}
@@ -1310,8 +1334,27 @@ async function clearHistory(): Promise<void> {
 
 .settings-about__actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 12px;
   margin-top: 18px;
+}
+
+.settings-about__auto-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--nd-text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.settings-about__auto-check input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--nd-accent);
+  cursor: pointer;
 }
 
 .settings-dialog__footer {

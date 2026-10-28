@@ -20,6 +20,7 @@ export const useUpdateStore = defineStore('update', () => {
   const snapshot = ref<UpdateSnapshot | null>(null)
   const installing = ref(false)
   const installBlocked = ref(false)
+  const noticeVisible = ref(false)
 
   let unsubscribe: (() => void) | null = null
   let autoInstall = false
@@ -33,8 +34,17 @@ export const useUpdateStore = defineStore('update', () => {
     })
   }
 
+  function isSkippedVersion(next: UpdateSnapshot | null): boolean {
+    return (
+      next?.status === 'available' &&
+      next.version !== null &&
+      next.version === settings.settings.skippedUpdateVersion
+    )
+  }
+
   async function check(): Promise<void> {
     subscribe()
+    noticeVisible.value = false
     ui.updateOpen = true
     installBlocked.value = false
     try {
@@ -42,6 +52,36 @@ export const useUpdateStore = defineStore('update', () => {
     } catch (error) {
       ui.toast('error', t('update.checkFailed'), describeError(error))
     }
+  }
+
+  async function checkSilently(): Promise<void> {
+    if (platform.kind !== 'desktop') return
+    subscribe()
+    try {
+      const result = await platform.checkForUpdate()
+      snapshot.value = result
+      if (!ui.updateOpen && !isSkippedVersion(result)) {
+        noticeVisible.value = result.status === 'available'
+      }
+    } catch {
+      // Startup checks are silent; manual checks surface failures in the dialog.
+    }
+  }
+
+  function dismissNotice(): void {
+    noticeVisible.value = false
+  }
+
+  function skipVersion(): void {
+    noticeVisible.value = false
+    const version = snapshot.value?.version
+    if (version) settings.update({ skippedUpdateVersion: version })
+  }
+
+  async function startUpdate(): Promise<void> {
+    noticeVisible.value = false
+    ui.updateOpen = true
+    await download()
   }
 
   async function download(): Promise<void> {
@@ -94,9 +134,14 @@ export const useUpdateStore = defineStore('update', () => {
     snapshot,
     installing,
     installBlocked,
+    noticeVisible,
     check,
+    checkSilently,
     download,
     install,
+    startUpdate,
+    dismissNotice,
+    skipVersion,
     openReleases,
     dispose,
   }

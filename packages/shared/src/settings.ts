@@ -24,6 +24,8 @@ export interface AppSettings {
   typewriterMode: boolean
   showWordCount: boolean
   restoreSession: boolean
+  autoCheckUpdates: boolean
+  skippedUpdateVersion: string
   confirmDelete: boolean
   imageStorage: ImageStorageMode
   imageFileNamePattern: string
@@ -55,6 +57,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   typewriterMode: false,
   showWordCount: true,
   restoreSession: true,
+  autoCheckUpdates: true,
+  skippedUpdateVersion: '',
   confirmDelete: true,
   imageStorage: 'document-assets',
   imageFileNamePattern: '${timestamp}-${random}',
