@@ -133,6 +133,13 @@ function newTab(): void {
   void commands.run('file.new')
 }
 
+// The blank strip is covered by the spacer span, so `dblclick.self` never fires.
+function onListDblClick(event: MouseEvent): void {
+  const target = event.target
+  if (!(target instanceof Element) || target.closest('.tab')) return
+  newTab()
+}
+
 async function handleMenuSelect(id: string): Promise<void> {
   const tab = contextTab.value
   if (!tab) return
@@ -256,7 +263,7 @@ async function submitRename(): Promise<void> {
 
 <template>
   <div class="tab-bar">
-    <div class="tab-bar__list nd-scroll" @dblclick.self="newTab">
+    <div class="tab-bar__list nd-scroll" @dblclick="onListDblClick">
       <button
         v-for="tab in tabs.tabs"
         :key="tab.key"
