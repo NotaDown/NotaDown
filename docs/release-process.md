@@ -42,7 +42,7 @@ A failed deployment is retried with "Re-run failed jobs" on the `pages` job alon
 
 ## Self-hosted update metadata
 
-The desktop app reads its channel files (`latest.yml`, `latest-linux.yml`) from GitHub by default. When GitHub is unreachable it reads them from `https://notadown-dl.brookzhang.com/updater/` instead (configured in [apps/desktop/src/update-sources.ts](../apps/desktop/src/update-sources.ts)).
+The desktop app reads its channel files (`latest.yml`, `latest-linux.yml`) from GitHub by default. GitHub is probed with a 4-second timeout first (electron-updater's own requests have no short timeout), and when it does not answer the app reads the files from `https://notadown-dl.brookzhang.com/updater/` instead (configured in [apps/desktop/src/update-sources.ts](../apps/desktop/src/update-sources.ts)).
 
 A stable release triggers the `metadata` job in [release.yml](../.github/workflows/release.yml) (`needs: publish`, skipped for prereleases). It runs `node scripts/update-metadata.mjs --tag <tag>`, which fetches both channel files from the GitHub release, checks their version against the tag, rewrites asset URLs to absolute GitHub URLs, then uploads them with a pinned coscli to the `updater/` prefix of the `notadown-1302260381` COS bucket. If the job fails, choose "Re-run failed jobs" to retry only it without rebuilding the release; coscli retries with backoff on its own.
 

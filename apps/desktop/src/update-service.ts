@@ -9,6 +9,11 @@ import { UPDATE_MIRRORS } from './update-sources'
 
 const MIRROR_PROBE_TIMEOUT_MS = 6000
 
+// electron-updater has no short request timeout, so a blocked github.com makes
+// its own check hang for a minute or more before failing. The channel is probed
+// first so the first-party source takes over as soon as GitHub stops answering.
+const GITHUB_PROBE_TIMEOUT_MS = 4000
+
 // Mirrors the `publish` block in electron-builder.yml. setFeedURL has no
 // "restore packaged config" form, so a metadata check swaps the feed back with
 // these options afterwards.
@@ -102,6 +107,22 @@ export function getUnsupportedReason(
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
+}
+
+// Any HTTP answer counts as reachable: the probe only needs to tell "GitHub
+// answers at all" from "the connection is black-holed".
+async function githubAnswers(url: string): Promise<boolean> {
+  try {
+    const response = await fetch(url, {
+      headers: { Accept: 'application/json' },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(GITHUB_PROBE_TIMEOUT_MS),
+    })
+    await response.body?.cancel().catch(() => undefined)
+    return true
+  } catch {
+    return false
+  }
 }
 
 function normalizeReleaseNotes(value: unknown): string | null {
@@ -207,9 +228,11 @@ export function createUpdateService(
   const metadataBaseUrl =
     options.metadataBaseUrl?.trim().replace(/\/+$/, '') || null
   const canCheckMetadata = Boolean(metadataBaseUrl && updater.setFeedURL)
-  const metadataChannelUrl = metadataBaseUrl
-    ? `${metadataBaseUrl}/${runtime.platform === 'linux' ? 'latest-linux.yml' : 'latest.yml'}`
-    : null
+  const channelFile = runtime.platform === 'linux' ? 'latest-linux.yml' : 'latest.yml'
+  const metadataChannelUrl = metadataBaseUrl ? `${metadataBaseUrl}/${channelFile}` : null
+  // Same request GitHubProvider starts with, so a probe failure means its check
+  // would fail too.
+  const githubProbeUrl = `https://github.com/${GITHUB_FEED.owner}/${GITHUB_FEED.repo}/releases/latest`
 
   let state: UpdateSnapshot = {
     status: unsupportedReason ? 'unsupported' : 'idle',
@@ -429,18 +452,29 @@ export function createUpdateService(
     try {
       let result: UpdateCheckResultLike | null
       let metadataSource: UpdateMetadataSource = 'github'
-      try {
-        result = await updater.checkForUpdates()
-      } catch (githubError) {
-        if (!canCheckMetadata) throw githubError
-        patch({ status: 'checking', error: null })
+      if (canCheckMetadata && !(await githubAnswers(githubProbeUrl))) {
         metadataSource = 'self-hosted'
         try {
           result = await checkFirstPartyMetadata()
-        } catch {
-          // The GitHub failure is the reason the user cannot update; the
-          // metadata one is only a consequence of it.
-          throw githubError
+        } catch (metadataError) {
+          throw new Error(
+            `GitHub is unreachable and the fallback update channel also failed: ${errorMessage(metadataError)}`,
+          )
+        }
+      } else {
+        try {
+          result = await updater.checkForUpdates()
+        } catch (githubError) {
+          if (!canCheckMetadata) throw githubError
+          patch({ status: 'checking', error: null })
+          metadataSource = 'self-hosted'
+          try {
+            result = await checkFirstPartyMetadata()
+          } catch {
+            // The GitHub failure is the reason the user cannot update; the
+            // metadata one is only a consequence of it.
+            throw githubError
+          }
         }
       }
       applyCheckResult(result)

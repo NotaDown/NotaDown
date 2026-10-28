@@ -42,7 +42,7 @@
 
 ## 自建更新元数据源
 
-桌面端默认从 GitHub 读取频道文件（`latest.yml`、`latest-linux.yml`），GitHub 不可达时改读 `https://notadown-dl.brookzhang.com/updater/`（配置在 [apps/desktop/src/update-sources.ts](../apps/desktop/src/update-sources.ts)）。
+桌面端默认从 GitHub 读取频道文件（`latest.yml`、`latest-linux.yml`），检查前先用 4 秒超时探测 GitHub（electron-updater 自身的请求没有短超时）；无响应时改读 `https://notadown-dl.brookzhang.com/updater/`（配置在 [apps/desktop/src/update-sources.ts](../apps/desktop/src/update-sources.ts)）。
 
 正式版发布会触发 [release.yml](../.github/workflows/release.yml) 的 `metadata` 任务（`needs: publish`，跳过预发布）：它运行 `node scripts/update-metadata.mjs --tag <tag>`，从 GitHub Release 拉取两个频道文件、校验版本与 tag 一致、把安装包地址改写成 GitHub 绝对地址，再用固定版本的 coscli 上传到 COS 桶 `notadown-1302260381` 的 `updater/` 前缀。任务失败时在 Actions 里选 "Re-run failed jobs" 只重跑它，不会重建发行包；coscli 自身带退避重试。
 

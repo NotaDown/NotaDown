@@ -84,6 +84,17 @@ function provideUpdateFiles(updater: FakeUpdater, version = '1.3.0'): void {
   }
 }
 
+function stubGithubReachable(reachable = true) {
+  const fetchMock = vi.fn(async () => {
+    if (!reachable) {
+      throw new DOMException('The operation was aborted due to timeout', 'TimeoutError')
+    }
+    return new Response('{}', { status: 200 })
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  return fetchMock
+}
+
 afterEach(() => {
   vi.unstubAllGlobals()
 })
@@ -158,6 +169,7 @@ describe('createUpdateService', () => {
       {},
       { metadataBaseUrl: 'https://updates.example.test' },
     )
+    stubGithubReachable()
     provideUpdateFiles(updater)
     updater.checkForUpdates.mockImplementation(async () => {
       updater.emit('update-available', { version: '1.3.0' })
@@ -212,11 +224,42 @@ describe('createUpdateService', () => {
     })
   })
 
-  it('checks the first-party metadata when GitHub is unreachable', async () => {
+  it('goes straight to the first-party metadata when GitHub does not answer', async () => {
     const { updater, service, events } = setup(
       {},
       { metadataBaseUrl: 'https://updates.example.test/' },
     )
+    stubGithubReachable(false)
+    updater.checkForUpdates.mockImplementation(async () => {
+      updater.emit('update-available', { version: '1.3.0' })
+      return null
+    })
+
+    const state = await service.check()
+
+    expect(updater.checkForUpdates).toHaveBeenCalledTimes(1)
+    expect(updater.setFeedURL).toHaveBeenNthCalledWith(1, 'https://updates.example.test')
+    expect(updater.setFeedURL).toHaveBeenNthCalledWith(2, {
+      provider: 'github',
+      owner: 'NotaDown',
+      repo: 'NotaDown',
+    })
+    expect(state).toMatchObject({
+      status: 'available',
+      version: '1.3.0',
+      error: null,
+      metadataSource: 'self-hosted',
+      metadataUrl: 'https://updates.example.test/latest.yml',
+    })
+    expect(events.some((event) => event.status === 'error')).toBe(false)
+  })
+
+  it('checks the first-party metadata when the GitHub check fails', async () => {
+    const { updater, service, events } = setup(
+      {},
+      { metadataBaseUrl: 'https://updates.example.test/' },
+    )
+    stubGithubReachable()
     updater.checkForUpdates
       .mockImplementationOnce(async () => {
         updater.emit('error', new Error('getaddrinfo ENOTFOUND github.com'))
@@ -250,6 +293,7 @@ describe('createUpdateService', () => {
       {},
       { metadataBaseUrl: 'https://updates.example.test' },
     )
+    stubGithubReachable()
     updater.checkForUpdates
       .mockRejectedValueOnce(new Error('github unreachable'))
       .mockRejectedValueOnce(new Error('metadata unreachable'))
@@ -265,11 +309,28 @@ describe('createUpdateService', () => {
     })
   })
 
+  it('reports the unreachable GitHub and the failed fallback when both are down', async () => {
+    const { updater, service } = setup(
+      {},
+      { metadataBaseUrl: 'https://updates.example.test' },
+    )
+    stubGithubReachable(false)
+    updater.checkForUpdates.mockRejectedValue(new Error('metadata unreachable'))
+
+    const state = await service.check()
+
+    expect(state.status).toBe('error')
+    expect(state.error).toContain('GitHub is unreachable')
+    expect(state.error).toContain('metadata unreachable')
+    expect(updater.checkForUpdates).toHaveBeenCalledTimes(1)
+  })
+
   it('keeps GitHub as the only source when GitHub answers', async () => {
     const { updater, service } = setup(
       {},
       { metadataBaseUrl: 'https://updates.example.test' },
     )
+    const fetchMock = stubGithubReachable()
     updater.checkForUpdates.mockResolvedValue({ updateInfo: { version: '1.3.0' } })
 
     const state = await service.check()
@@ -280,6 +341,10 @@ describe('createUpdateService', () => {
       metadataSource: 'github',
       metadataUrl: null,
     })
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://github.com/NotaDown/NotaDown/releases/latest',
+      expect.objectContaining({ headers: { Accept: 'application/json' } }),
+    )
     expect(updater.setFeedURL).not.toHaveBeenCalled()
   })
 
