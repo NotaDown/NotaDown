@@ -22,6 +22,78 @@ Var AssocMkdLabel
 !endif
 Var AssocBackupHas
 Var AssocBackupValue
+Var NotaDownPrompt
+
+# The built-in check only matches instances whose image path is under $INSTDIR,
+# and it treats a failed PowerShell/CIM probe as "not running". Match the
+# executable name of the current user instead: no probe can fail silently, and
+# an instance started from another copy of the app is closed as well.
+!ifdef INSTALL_MODE_PER_ALL_USERS
+  !define NOTADOWN_PROCESS_FILTER ""
+!else
+  !define NOTADOWN_PROCESS_FILTER ' /FI "USERNAME eq %USERNAME%"'
+!endif
+
+# tasklist runs through cmd so that %USERNAME% expands; findstr exits with 0
+# only when a matching row exists.
+!macro NotaDownFindApp RUNNING
+  nsExec::Exec `"$SYSDIR\cmd.exe" /C tasklist${NOTADOWN_PROCESS_FILTER} /FI "IMAGENAME eq ${APP_EXECUTABLE_FILENAME}" /FO CSV /NH | "$SYSDIR\findstr.exe" /B /I /C:"\"${APP_EXECUTABLE_FILENAME}\""`
+  Pop ${RUNNING}
+!macroend
+
+# FORCE is either "graceful" (WM_CLOSE, lets the app persist its session) or
+# "force" (terminate). Runs through cmd like the lookup above, so that the
+# environment variable in the filter expands.
+!macro NotaDownStopApp FORCE
+  !if "${FORCE}" == "force"
+    nsExec::Exec `"$SYSDIR\cmd.exe" /C taskkill /F${NOTADOWN_PROCESS_FILTER} /IM "${APP_EXECUTABLE_FILENAME}"`
+  !else
+    nsExec::Exec `"$SYSDIR\cmd.exe" /C taskkill${NOTADOWN_PROCESS_FILTER} /IM "${APP_EXECUTABLE_FILENAME}"`
+  !endif
+  Pop $0
+!macroend
+
+!macro NotaDownSetPrompt ZH_TEXT EN_TEXT
+  ${If} $LANGUAGE == 2052
+    StrCpy $NotaDownPrompt "${ZH_TEXT}"
+  ${Else}
+    StrCpy $NotaDownPrompt "${EN_TEXT}"
+  ${EndIf}
+!macroend
+
+!macro customCheckAppRunning
+  !insertmacro NotaDownFindApp $R0
+  ${If} $R0 == 0
+    ${IfNot} ${Silent}
+      !insertmacro NotaDownSetPrompt "NotaDown 正在运行，需要先关闭才能继续安装。$\r$\n$\r$\n点击“确定”关闭它并继续，或点击“取消”退出安装。" "NotaDown is running and must be closed before installing.$\r$\n$\r$\nClick OK to close it and continue, or Cancel to exit."
+      MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "$NotaDownPrompt" /SD IDOK IDOK notadown_app_stop
+      Quit
+
+      notadown_app_stop:
+    ${EndIf}
+
+    !insertmacro NotaDownStopApp graceful
+    StrCpy $R1 0
+    notadown_app_wait:
+      Sleep 500
+      !insertmacro NotaDownFindApp $R0
+      ${If} $R0 != 0
+        Goto notadown_app_closed
+      ${EndIf}
+      IntOp $R1 $R1 + 1
+      ${If} $R1 == 6
+        !insertmacro NotaDownStopApp force
+      ${EndIf}
+      ${If} $R1 < 12
+        Goto notadown_app_wait
+      ${EndIf}
+      !insertmacro NotaDownSetPrompt "未能关闭 NotaDown。请手动退出后点击“重试”。" "NotaDown could not be closed. Quit it manually, then click Retry."
+      MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "$NotaDownPrompt" /SD IDCANCEL IDRETRY notadown_app_wait
+      Quit
+
+    notadown_app_closed:
+  ${EndIf}
+!macroend
 
 # Built-in registration runs before customInstall, so the previous defaults are
 # captured in customInit and restored on uninstall.
