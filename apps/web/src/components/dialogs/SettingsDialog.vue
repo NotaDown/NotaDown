@@ -30,6 +30,7 @@ import {
 } from '@notadown/shared'
 import { LOCALE_NAMES, SUPPORTED_LOCALES } from '@notadown/i18n'
 import { platform } from '@/platform'
+import { PAGE_WIDTH_MODES } from '@/page-widths'
 import { useSettingsStore } from '@/stores/settings'
 import { useTabsStore } from '@/stores/tabs'
 import { useUpdateStore } from '@/stores/update'
@@ -70,13 +71,6 @@ const COLOR_MODES: Array<{ id: ColorMode; label: string }> = [
   { id: 'system', label: 'settings.appearanceSection.system' },
   { id: 'light', label: 'settings.appearanceSection.light' },
   { id: 'dark', label: 'settings.appearanceSection.dark' },
-]
-
-const PAGE_WIDTH_MODES: Array<{ id: PageWidthMode; label: string }> = [
-  { id: 'narrow', label: 'settings.appearanceSection.widthModes.narrow' },
-  { id: 'default', label: 'settings.appearanceSection.widthModes.default' },
-  { id: 'wide', label: 'settings.appearanceSection.widthModes.wide' },
-  { id: 'full', label: 'settings.appearanceSection.widthModes.full' },
 ]
 
 const IMAGE_MODES: Array<{ id: ImageStorageMode; label: string }> = [

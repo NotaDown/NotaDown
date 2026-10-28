@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { useTabsStore } from '@/stores/tabs'
 import { useSettingsStore } from '@/stores/settings'
 import EditorTabView from './EditorTabView.vue'
+import EditorWidthControl from './EditorWidthControl.vue'
 import FindBar from './FindBar.vue'
 import WelcomeView from './WelcomeView.vue'
 
@@ -51,6 +52,7 @@ watch(
     </template>
 
     <FindBar v-if="tabs.activeTab" />
+    <EditorWidthControl v-if="tabs.activeTab" />
   </div>
 </template>
 
