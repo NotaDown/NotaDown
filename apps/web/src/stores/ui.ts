@@ -12,6 +12,7 @@ export type SettingsSection =
   | 'files'
   | 'history'
   | 'shortcuts'
+  | 'updates'
   | 'about'
 
 export interface ConfirmOptions {

@@ -2,6 +2,7 @@
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
+  Download,
   Image,
   Info,
   Keyboard,
@@ -57,15 +58,24 @@ const titleBarRecreatePending = computed(
   () => isDesktop && draft.titleBarMode !== appliedTitleBarMode.value,
 )
 
-const SECTIONS: Array<{ id: SettingsSection; icon: typeof Info; label: string }> = [
+interface SettingsSectionItem {
+  id: SettingsSection
+  icon: typeof Info
+  label: string
+}
+
+const ALL_SECTIONS: SettingsSectionItem[] = [
   { id: 'general', icon: SlidersHorizontal, label: 'settings.general' },
   { id: 'appearance', icon: Palette, label: 'settings.appearance' },
   { id: 'editor', icon: Type, label: 'settings.editor' },
   { id: 'files', icon: Image, label: 'settings.files' },
   { id: 'history', icon: History, label: 'settings.history' },
   { id: 'shortcuts', icon: Keyboard, label: 'settings.shortcuts' },
+  { id: 'updates', icon: Download, label: 'settings.updates' },
   { id: 'about', icon: Info, label: 'settings.about' },
 ]
+
+const SECTIONS = ALL_SECTIONS.filter((item) => isDesktop || item.id !== 'updates')
 
 const COLOR_MODES: Array<{ id: ColorMode; label: string }> = [
   { id: 'system', label: 'settings.appearanceSection.system' },
@@ -351,23 +361,6 @@ async function clearHistory(): Promise<void> {
                     <input
                       id="settings-confirm-delete"
                       v-model="draft.confirmDelete"
-                      type="checkbox"
-                    />
-                    <span class="nd-switch-track" />
-                  </label>
-                </div>
-
-                <div v-if="isDesktop" class="nd-field-row">
-                  <div>
-                    <label class="nd-field-label" for="settings-auto-check-updates">
-                      {{ t('settings.autoCheckUpdates') }}
-                    </label>
-                    <p class="nd-field-hint">{{ t('settings.autoCheckUpdatesHint') }}</p>
-                  </div>
-                  <label class="nd-switch nd-field-control">
-                    <input
-                      id="settings-auto-check-updates"
-                      v-model="draft.autoCheckUpdates"
                       type="checkbox"
                     />
                     <span class="nd-switch-track" />
@@ -916,6 +909,36 @@ async function clearHistory(): Promise<void> {
                 <ShortcutsList />
               </section>
 
+              <section v-else-if="section === 'updates'" class="settings-section">
+                <div class="nd-field-row">
+                  <div>
+                    <span class="nd-field-label">{{ t('settings.updatesSection.manualCheck') }}</span>
+                    <p class="nd-field-hint">{{ t('settings.updatesSection.manualCheckHint') }}</p>
+                  </div>
+                  <button type="button" class="nd-btn nd-btn--sm" @click="update.check()">
+                    <RefreshCw :size="13" />
+                    {{ t('menu.checkForUpdates') }}
+                  </button>
+                </div>
+
+                <div class="nd-field-row">
+                  <div>
+                    <label class="nd-field-label" for="settings-auto-check-updates">
+                      {{ t('settings.autoCheckUpdates') }}
+                    </label>
+                    <p class="nd-field-hint">{{ t('settings.autoCheckUpdatesHint') }}</p>
+                  </div>
+                  <label class="nd-switch nd-field-control">
+                    <input
+                      id="settings-auto-check-updates"
+                      v-model="draft.autoCheckUpdates"
+                      type="checkbox"
+                    />
+                    <span class="nd-switch-track" />
+                  </label>
+                </div>
+              </section>
+
               <section v-else class="settings-section settings-about">
                 <div class="settings-about__head">
                   <BrandMark :size="40" />
@@ -960,13 +983,6 @@ async function clearHistory(): Promise<void> {
                   </div>
                 </dl>
                 <div v-if="isDesktop" class="settings-about__actions">
-                  <label
-                    class="settings-about__auto-check"
-                    :title="t('settings.autoCheckUpdatesHint')"
-                  >
-                    <input v-model="draft.autoCheckUpdates" type="checkbox" />
-                    {{ t('settings.autoCheckUpdates') }}
-                  </label>
                   <button type="button" class="nd-btn nd-btn--sm" @click="update.check()">
                     <RefreshCw :size="13" />
                     {{ t('menu.checkForUpdates') }}
@@ -1340,23 +1356,6 @@ async function clearHistory(): Promise<void> {
   justify-content: flex-end;
   gap: 12px;
   margin-top: 18px;
-}
-
-.settings-about__auto-check {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--nd-text-secondary);
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.settings-about__auto-check input {
-  width: 14px;
-  height: 14px;
-  margin: 0;
-  accent-color: var(--nd-accent);
-  cursor: pointer;
 }
 
 .settings-dialog__footer {

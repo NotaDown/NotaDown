@@ -353,6 +353,7 @@ export const zhCN = {
     files: '文件',
     history: '历史',
     shortcuts: '快捷键',
+    updates: '更新',
     about: '关于',
     generalSection: {
       language: '界面语言',
@@ -448,6 +449,10 @@ export const zhCN = {
       clear: '清空全部历史…',
       clearConfirm: '删除本机保存的所有历史版本？此操作无法撤销。',
       cleared: '历史版本已清空',
+    },
+    updatesSection: {
+      manualCheck: '手动检查',
+      manualCheckHint: '立即检查是否有新版本，有新版本时会显示更新日志。',
     },
     aboutSection: {
       description: '专注书写的离线优先 Markdown 编辑器。',

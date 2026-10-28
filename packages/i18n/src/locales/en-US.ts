@@ -354,6 +354,7 @@ export const enUS = {
     files: 'Files',
     history: 'History',
     shortcuts: 'Shortcuts',
+    updates: 'Updates',
     about: 'About',
     generalSection: {
       language: 'Language',
@@ -449,6 +450,10 @@ export const enUS = {
       clear: 'Clear all history…',
       clearConfirm: 'Delete all locally stored versions? This cannot be undone.',
       cleared: 'Version history cleared',
+    },
+    updatesSection: {
+      manualCheck: 'Check for updates',
+      manualCheckHint: 'Look for a new version now and review its release notes.',
     },
     aboutSection: {
       description: 'An offline-first Markdown editor for focused writing.',
