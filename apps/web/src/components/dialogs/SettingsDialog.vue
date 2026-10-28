@@ -427,13 +427,15 @@ async function clearHistory(): Promise<void> {
                   </div>
                 </div>
 
-                <div v-if="canDefaultAppSettings" class="nd-field">
-                  <span class="nd-field-label">
-                    {{ t('settings.generalSection.defaultMarkdownApp') }}
-                  </span>
-                  <p class="nd-field-hint">
-                    {{ t('settings.generalSection.defaultMarkdownAppHint') }}
-                  </p>
+                <div v-if="canDefaultAppSettings" class="nd-field-row">
+                  <div>
+                    <span class="nd-field-label">
+                      {{ t('settings.generalSection.defaultMarkdownApp') }}
+                    </span>
+                    <p class="nd-field-hint">
+                      {{ t('settings.generalSection.defaultMarkdownAppHint') }}
+                    </p>
+                  </div>
                   <button
                     type="button"
                     class="nd-btn nd-btn--sm"
