@@ -45,6 +45,7 @@ export function createCodeMirrorTheme(): Extension {
         backgroundColor: 'var(--nd-selection) !important',
       },
       '.cm-activeLine': { backgroundColor: 'transparent' },
+      '.cm-activeLineGutter': { backgroundColor: 'transparent' },
       '.cm-gutters': {
         backgroundColor: 'transparent',
         color: 'var(--nd-text-muted)',
