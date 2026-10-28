@@ -276,7 +276,10 @@ async function submitRename(keepEditing = true): Promise<void> {
       tabs.remapWorkspacePath(target, nextPath, current.kind === 'directory')
       ui.toast('success', t('tree.renamed', { name: basename(nextPath) }))
     }
-    void nextTick(() => focusRow(nextPath))
+    // Only pull focus back when the commit came from the keyboard; on blur the
+    // user already moved on to whatever they clicked.
+    if (keepEditing) void nextTick(() => focusRow(nextPath))
+    else keepClickedRow(nextPath)
   } catch (error) {
     ui.toast('error', t('errors.generic'), describeError(error))
     if (keepEditing) {
@@ -298,6 +301,15 @@ function focusRow(path: string): void {
       return
     }
   }
+}
+
+// A rename started from the tree moves the selection to the renamed entry, but
+// a blur commit resolves after the user may have clicked another row.
+function keepClickedRow(renamedPath: string): void {
+  const active = document.activeElement
+  if (!(active instanceof Element)) return
+  const clicked = active.closest('.tree-row')?.getAttribute('title')
+  if (clicked && clicked !== renamedPath) workspace.select(clicked)
 }
 
 function onRowKeydown(event: KeyboardEvent, node: WorkspaceNode): void {
