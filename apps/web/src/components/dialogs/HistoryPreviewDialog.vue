@@ -22,6 +22,7 @@ import { resolveEditorImageUrl } from '@/services/images'
 import { useSettingsStore } from '@/stores/settings'
 import { useTabsStore } from '@/stores/tabs'
 import { useUiStore } from '@/stores/ui'
+import { usesOverlayWindowControls } from '@/window-chrome'
 
 type SurfaceMode = 'preview' | 'compare'
 
@@ -235,6 +236,10 @@ watch(
       <div
         v-if="record"
         class="nd-overlay nd-overlay--center nd-overlay--history"
+        :class="{
+          'nd-overlay--max': maximized,
+          'nd-overlay--avoid-controls': usesOverlayWindowControls,
+        }"
         @click.self="close"
       >
         <div
@@ -353,6 +358,11 @@ watch(
   width: 100%;
   height: 100%;
   max-height: none;
+}
+
+/* 桌面版的系统窗口按钮悬浮在右上角、盖在内容之上，放大态要把弹窗顶边压到那一条下面。 */
+.nd-overlay--max.nd-overlay--avoid-controls {
+  padding-top: calc(var(--nd-topbar-height) + 8px);
 }
 
 .history-dialog__head-actions {

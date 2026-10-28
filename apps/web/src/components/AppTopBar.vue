@@ -17,7 +17,11 @@ import { useWorkspaceStore } from '@/stores/workspace'
 import { useSettingsStore } from '@/stores/settings'
 import { useInjectedCommands } from '@/composables/use-app-commands'
 import { usePwaInstall } from '@/composables/use-pwa-install'
-import { appliedTitleBarMode, desktopPlatform } from '@/window-chrome'
+import {
+  appliedTitleBarMode,
+  desktopPlatform,
+  usesOverlayWindowControls,
+} from '@/window-chrome'
 import BrandMark from './common/BrandMark.vue'
 import PopupMenu from './common/PopupMenu.vue'
 import type { MenuItem } from './common/menu-types'
@@ -35,9 +39,6 @@ const integrated = computed(
 )
 const integratedMac = computed(
   () => integrated.value && desktopPlatform.value === 'darwin',
-)
-const overlayControls = computed(
-  () => integrated.value && desktopPlatform.value !== 'darwin',
 )
 
 const menuOpen = ref(false)
@@ -90,7 +91,7 @@ function handleMenuSelect(id: string): void {
       'is-desktop': isDesktop,
       'is-integrated': integrated,
       'is-mac': integratedMac,
-      'has-overlay-controls': overlayControls,
+      'has-overlay-controls': usesOverlayWindowControls,
     }"
   >
     <button
