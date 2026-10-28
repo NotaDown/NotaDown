@@ -138,6 +138,7 @@ export const zhCN = {
     closeRight: '关闭右侧标签页',
     closeOthers: '关闭其他标签页',
     closeAll: '关闭所有标签页',
+    copyName: '复制文件名',
     copyPath: '复制路径',
     reveal: '在文件管理器中显示',
   },

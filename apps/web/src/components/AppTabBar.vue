@@ -55,11 +55,12 @@ const contextItems = computed<MenuItem[]>(() => {
     items.push({ id: 'sep-1', separator: true })
     items.push({ id: 'rename', label: t('sidebar.rename') })
   }
-  if (path) {
-    items.push({ id: inWorkspace ? 'sep-2' : 'sep-1', separator: true })
-    if (inWorkspace && platform.capabilities.revealInFolder) {
-      items.push({ id: 'reveal', label: t('tabs.reveal') })
-    }
+  items.push({ id: inWorkspace ? 'sep-2' : 'sep-1', separator: true })
+  if (path && inWorkspace && platform.capabilities.revealInFolder) {
+    items.push({ id: 'reveal', label: t('tabs.reveal') })
+  }
+  items.push({ id: 'copy-name', label: t('tabs.copyName') })
+  if (path && platform.kind === 'desktop') {
     items.push({ id: 'copy-path', label: t('tabs.copyPath') })
   }
   return items
@@ -147,13 +148,12 @@ async function handleMenuSelect(id: string): Promise<void> {
     openRenameDialog(tab)
     return
   }
+  if (id === 'copy-name') {
+    await copyToClipboard(tab.name)
+    return
+  }
   if (id === 'copy-path' && tab.ref.path) {
-    try {
-      await navigator.clipboard.writeText(tab.ref.path)
-      ui.toast('success', t('toasts.linkCopied'))
-    } catch {
-      ui.toast('error', t('toasts.copyFailed'))
-    }
+    await copyToClipboard(tab.ref.path)
     return
   }
   if (id === 'reveal' && tab.ref.path) {
@@ -162,6 +162,15 @@ async function handleMenuSelect(id: string): Promise<void> {
     } catch {
       ui.toast('error', t('tree.revealUnavailable'))
     }
+  }
+}
+
+async function copyToClipboard(value: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(value)
+    ui.toast('success', t('common.copied'))
+  } catch {
+    ui.toast('error', t('toasts.copyFailed'))
   }
 }
 

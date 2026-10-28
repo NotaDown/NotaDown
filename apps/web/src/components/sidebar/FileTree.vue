@@ -102,7 +102,10 @@ const contextItems = computed<MenuItem[]>(() => {
     if (platform.capabilities.revealInFolder) {
       items.push({ id: 'reveal', label: t('sidebar.reveal') })
     }
-    items.push({ id: 'copy-path', label: t('tabs.copyPath') })
+    items.push({ id: 'copy-name', label: t('tabs.copyName') })
+    if (platform.kind === 'desktop') {
+      items.push({ id: 'copy-path', label: t('tabs.copyPath') })
+    }
     items.push({ id: 'sep-3', separator: true })
   }
   items.push({ id: 'refresh', label: t('sidebar.refresh') })
@@ -302,8 +305,11 @@ function handleContextSelect(id: string): void {
     case 'reveal':
       if (target) void revealEntry(target)
       break
+    case 'copy-name':
+      if (target) void copyValue(basename(target))
+      break
     case 'copy-path':
-      if (target) void copyPath(target)
+      if (target) void copyValue(target)
       break
     case 'refresh':
       void workspace.refresh()
@@ -345,9 +351,9 @@ async function revealEntry(path: string): Promise<void> {
   }
 }
 
-async function copyPath(path: string): Promise<void> {
+async function copyValue(value: string): Promise<void> {
   try {
-    await navigator.clipboard.writeText(path)
+    await navigator.clipboard.writeText(value)
     ui.toast('success', t('common.copied'))
   } catch {
     ui.toast('error', t('toasts.copyFailed'))

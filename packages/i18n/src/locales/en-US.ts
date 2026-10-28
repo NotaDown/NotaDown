@@ -139,6 +139,7 @@ export const enUS = {
     closeRight: 'Close tabs to the right',
     closeOthers: 'Close other tabs',
     closeAll: 'Close all tabs',
+    copyName: 'Copy file name',
     copyPath: 'Copy path',
     reveal: 'Show in file manager',
   },
