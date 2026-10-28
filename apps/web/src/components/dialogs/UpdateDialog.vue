@@ -27,6 +27,15 @@ const transfer = computed(() => {
   return `${formatBytes(snapshot.transferred)} / ${formatBytes(snapshot.total)}${speed}`
 })
 
+const sourceLabel = computed(() => {
+  const snapshot = update.snapshot
+  if (!snapshot?.metadataSource) return ''
+  if (snapshot.metadataSource === 'github') return 'GitHub'
+  return snapshot.metadataUrl ?? 'NotaDown'
+})
+
+const downloadLabel = computed(() => update.snapshot?.downloadUrl ?? '')
+
 interface NoteLine {
   kind: 'heading' | 'item' | 'text'
   text: string
@@ -98,6 +107,7 @@ function formatBytes(value: number): string {
   }
   return `${size >= 10 || unit === 0 ? Math.round(size) : size.toFixed(1)} ${units[unit]}`
 }
+
 </script>
 
 <template>
@@ -151,6 +161,14 @@ function formatBytes(value: number): string {
 
             <p v-if="status === 'error' && update.snapshot?.error" class="update-error-detail">
               {{ update.snapshot.error }}
+            </p>
+
+            <p v-if="sourceLabel" class="update-source">
+              <span>{{ t('update.metadataSource', { source: sourceLabel }) }}</span>
+              <template v-if="downloadLabel">
+                <span class="update-source__sep">·</span>
+                <span>{{ t('update.downloadAddress', { url: downloadLabel }) }}</span>
+              </template>
             </p>
 
             <div v-if="status === 'downloading'" class="update-progress">
@@ -311,6 +329,19 @@ function formatBytes(value: number): string {
   font-size: 11px;
   line-height: 1.5;
   word-break: break-word;
+}
+
+.update-source {
+  margin: -6px 0 0;
+  color: var(--nd-text-muted);
+  font-family: var(--nd-font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.update-source__sep {
+  margin: 0 6px;
 }
 
 .update-progress__bar {

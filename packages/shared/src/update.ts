@@ -12,6 +12,8 @@ export type UpdateUnsupportedReason = 'development' | 'platform'
 
 export type UpdateDownloadSource = 'auto' | 'github'
 
+export type UpdateMetadataSource = 'github' | 'self-hosted'
+
 export interface UpdateSnapshot {
   status: UpdateStatus
   currentVersion: string
@@ -25,6 +27,9 @@ export interface UpdateSnapshot {
   error: string | null
   reason: UpdateUnsupportedReason | null
   manualDownloadUrl: string
+  metadataSource: UpdateMetadataSource | null
+  metadataUrl: string | null
+  downloadUrl: string | null
 }
 
 export const UPDATE_RELEASES_URL = 'https://github.com/NotaDown/NotaDown/releases'

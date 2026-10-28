@@ -127,6 +127,8 @@ export const enUS = {
     close: 'Close',
     retry: 'Try again',
     unknownError: 'Unknown error',
+    metadataSource: 'Source {source}',
+    downloadAddress: 'Download {url}',
   },
   tabs: {
     saved: 'Saved',

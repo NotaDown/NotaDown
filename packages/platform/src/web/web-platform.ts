@@ -662,6 +662,9 @@ export class WebPlatform implements Platform {
       error: null,
       reason: 'platform',
       manualDownloadUrl: UPDATE_RELEASES_URL,
+      metadataSource: null,
+      metadataUrl: null,
+      downloadUrl: null,
     }
   }
 

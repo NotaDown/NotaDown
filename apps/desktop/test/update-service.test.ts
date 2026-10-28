@@ -141,8 +141,37 @@ describe('createUpdateService', () => {
       version: '1.3.0',
       releaseNotes: 'Fixed things',
       releaseDate: '2026-10-01T00:00:00.000Z',
+      metadataSource: 'github',
+      metadataUrl: null,
+      downloadUrl: null,
     })
-    expect(events.map((event) => event.status)).toEqual(['checking', 'available'])
+    expect(events.map((event) => event.status)).toEqual([
+      'checking',
+      'available',
+      'available',
+    ])
+    expect(events.at(-1)).toMatchObject({ metadataSource: 'github' })
+  })
+
+  it('records the planned download address from the update files', async () => {
+    const { updater, service } = setup(
+      {},
+      { metadataBaseUrl: 'https://updates.example.test' },
+    )
+    provideUpdateFiles(updater)
+    updater.checkForUpdates.mockImplementation(async () => {
+      updater.emit('update-available', { version: '1.3.0' })
+      return null
+    })
+
+    const state = await service.check()
+
+    expect(state).toMatchObject({
+      status: 'available',
+      metadataSource: 'github',
+      downloadUrl:
+        'https://github.com/NotaDown/NotaDown/releases/download/v1.3.0/NotaDown.1.3.0-x64.exe',
+    })
   })
 
   it('falls back to the check result when no event fires', async () => {
@@ -206,7 +235,13 @@ describe('createUpdateService', () => {
       owner: 'NotaDown',
       repo: 'NotaDown',
     })
-    expect(state).toMatchObject({ status: 'available', version: '1.3.0', error: null })
+    expect(state).toMatchObject({
+      status: 'available',
+      version: '1.3.0',
+      error: null,
+      metadataSource: 'self-hosted',
+      metadataUrl: 'https://updates.example.test/latest.yml',
+    })
     expect(events.some((event) => event.status === 'error')).toBe(false)
   })
 
@@ -239,7 +274,12 @@ describe('createUpdateService', () => {
 
     const state = await service.check()
 
-    expect(state).toMatchObject({ status: 'available', version: '1.3.0' })
+    expect(state).toMatchObject({
+      status: 'available',
+      version: '1.3.0',
+      metadataSource: 'github',
+      metadataUrl: null,
+    })
     expect(updater.setFeedURL).not.toHaveBeenCalled()
   })
 
@@ -310,6 +350,9 @@ describe('createUpdateService', () => {
     expect(fetchMock).not.toHaveBeenCalled()
     expect(updater.downloadUpdate).toHaveBeenCalledTimes(1)
     expect(updater.disableDifferentialDownload).toBe(false)
+    expect(service.getState().downloadUrl).toBe(
+      'https://github.com/NotaDown/NotaDown/releases/download/v1.3.0/NotaDown.1.3.0-x64.exe',
+    )
   })
 
   it('falls back to a mirror when the GitHub download fails', async () => {
@@ -349,7 +392,12 @@ describe('createUpdateService', () => {
     expect(updater.downloadUpdate).toHaveBeenCalledTimes(2)
     expect(fetchMock).toHaveBeenCalledTimes(4)
     expect(updater.disableDifferentialDownload).toBe(false)
-    expect(service.getState()).toMatchObject({ status: 'downloading', error: null })
+    expect(service.getState()).toMatchObject({
+      status: 'downloading',
+      error: null,
+      downloadUrl:
+        'https://gh-proxy.com/https://github.com/NotaDown/NotaDown/releases/download/v1.3.0/NotaDown.1.3.0-x64.exe',
+    })
   })
 
   it('tries another mirror when the first mirror download fails', async () => {

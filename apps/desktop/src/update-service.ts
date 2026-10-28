@@ -1,6 +1,7 @@
 import {
   UPDATE_RELEASES_URL,
   type UpdateDownloadSource,
+  type UpdateMetadataSource,
   type UpdateSnapshot,
   type UpdateUnsupportedReason,
 } from '@notadown/shared'
@@ -206,6 +207,9 @@ export function createUpdateService(
   const metadataBaseUrl =
     options.metadataBaseUrl?.trim().replace(/\/+$/, '') || null
   const canCheckMetadata = Boolean(metadataBaseUrl && updater.setFeedURL)
+  const metadataChannelUrl = metadataBaseUrl
+    ? `${metadataBaseUrl}/${runtime.platform === 'linux' ? 'latest-linux.yml' : 'latest.yml'}`
+    : null
 
   let state: UpdateSnapshot = {
     status: unsupportedReason ? 'unsupported' : 'idle',
@@ -220,6 +224,9 @@ export function createUpdateService(
     error: null,
     reason: unsupportedReason,
     manualDownloadUrl: UPDATE_RELEASES_URL,
+    metadataSource: null,
+    metadataUrl: null,
+    downloadUrl: null,
   }
 
   updater.autoDownload = false
@@ -412,17 +419,22 @@ export function createUpdateService(
       total: null,
       bytesPerSecond: null,
       error: null,
+      metadataSource: null,
+      metadataUrl: null,
+      downloadUrl: null,
     })
 
     fallbackActive = canCheckMetadata
     deferredError = null
     try {
       let result: UpdateCheckResultLike | null
+      let metadataSource: UpdateMetadataSource = 'github'
       try {
         result = await updater.checkForUpdates()
       } catch (githubError) {
         if (!canCheckMetadata) throw githubError
         patch({ status: 'checking', error: null })
+        metadataSource = 'self-hosted'
         try {
           result = await checkFirstPartyMetadata()
         } catch {
@@ -432,6 +444,11 @@ export function createUpdateService(
         }
       }
       applyCheckResult(result)
+      patch({
+        metadataSource,
+        metadataUrl: metadataSource === 'self-hosted' ? metadataChannelUrl : null,
+        downloadUrl: state.status === 'available' ? resolveMirrorTarget()?.url ?? null : null,
+      })
     } catch (error) {
       if (state.status !== 'error') {
         patch({ status: 'error', error: errorMessage(error) })
@@ -447,6 +464,7 @@ export function createUpdateService(
     if (state.status === 'downloading' || state.status === 'downloaded') return
     if (state.status !== 'available') throw new Error('NO_UPDATE_AVAILABLE')
 
+    const resolved = resolveMirrorTarget()
     patch({
       status: 'downloading',
       progress: 0,
@@ -454,9 +472,10 @@ export function createUpdateService(
       total: null,
       bytesPerSecond: null,
       error: null,
+      downloadUrl: resolved?.url ?? state.downloadUrl,
     })
 
-    const target = source === 'auto' ? resolveMirrorTarget() : null
+    const target = source === 'auto' ? resolved : null
     fallbackActive = target !== null
     deferredError = null
 
@@ -480,6 +499,7 @@ export function createUpdateService(
           const mirror = await raceMirrors(target.url, target.size, tried)
           if (!mirror) throw lastError
           tried.add(mirror)
+          patch({ downloadUrl: `${mirror}/${target.url}` })
           try {
             await downloadFromMirror(mirror)
             return

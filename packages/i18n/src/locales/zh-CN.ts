@@ -126,6 +126,8 @@ export const zhCN = {
     close: '关闭',
     retry: '重试',
     unknownError: '未知错误',
+    metadataSource: '来源 {source}',
+    downloadAddress: '下载 {url}',
   },
   tabs: {
     saved: '已保存',
