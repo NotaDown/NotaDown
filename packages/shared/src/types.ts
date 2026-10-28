@@ -6,7 +6,7 @@ export type TitleBarMode = 'integrated' | 'native'
 
 export type PageWidthMode = 'very-narrow' | 'narrow' | 'default' | 'wide' | 'full'
 
-export type UiDensity = 'compact' | 'default' | 'comfortable'
+export type DensityLevel = 'compact' | 'default' | 'comfortable'
 
 export type LocalePreference = 'system' | 'en-US' | 'zh-CN'
 

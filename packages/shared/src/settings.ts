@@ -5,7 +5,7 @@ import type {
   PageWidthMode,
   ThemeId,
   TitleBarMode,
-  UiDensity,
+  DensityLevel,
 } from './types'
 import type { UpdateDownloadSource } from './update'
 
@@ -19,7 +19,8 @@ export interface AppSettings {
   fontSize: number
   lineHeight: number
   pageWidth: PageWidthMode
-  uiDensity: UiDensity
+  uiDensity: DensityLevel
+  contentDensity: DensityLevel
   autosave: boolean
   autosaveDelay: number
   spellcheck: boolean
@@ -55,6 +56,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   lineHeight: 1.75,
   pageWidth: 'default',
   uiDensity: 'default',
+  contentDensity: 'default',
   autosave: false,
   autosaveDelay: 800,
   spellcheck: true,
@@ -93,7 +95,7 @@ const NUMBER_RULES: Partial<Record<keyof AppSettings, NumberRule>> = {
 
 const COLOR_MODES = new Set(['system', 'light', 'dark'])
 const PAGE_WIDTHS = new Set(['very-narrow', 'narrow', 'default', 'wide', 'full'])
-const UI_DENSITIES = new Set(['compact', 'default', 'comfortable'])
+const DENSITY_LEVELS = new Set(['compact', 'default', 'comfortable'])
 const THEMES = new Set(['default', 'paper', 'nordic', 'contrast'])
 const LOCALES = new Set(['system', 'en-US', 'zh-CN'])
 const IMAGE_MODES = new Set([
@@ -123,7 +125,8 @@ export function normalizeSettings(input: unknown): AppSettings {
       if (typeof value !== 'string') continue
       if (key === 'colorMode' && !COLOR_MODES.has(value)) continue
       if (key === 'pageWidth' && !PAGE_WIDTHS.has(value)) continue
-      if (key === 'uiDensity' && !UI_DENSITIES.has(value)) continue
+      if (key === 'uiDensity' && !DENSITY_LEVELS.has(value)) continue
+      if (key === 'contentDensity' && !DENSITY_LEVELS.has(value)) continue
       if (key === 'theme' && !THEMES.has(value)) continue
       if (key === 'titleBarMode' && !['integrated', 'native'].includes(value)) continue
       if (key === 'locale' && !LOCALES.has(value)) continue

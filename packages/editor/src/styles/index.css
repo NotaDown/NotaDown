@@ -80,7 +80,7 @@
 }
 
 .nd-editor .milkdown .ProseMirror p {
-  margin: 0.75em 0;
+  margin: calc(0.75em * var(--nd-prose-spacing, 1)) 0;
 }
 
 .nd-editor .milkdown .ProseMirror h1,
@@ -98,34 +98,34 @@
 
 .nd-editor .milkdown .ProseMirror h1 {
   font-size: 2em;
-  margin: 1.6em 0 0.6em;
+  margin: calc(1.6em * var(--nd-prose-spacing, 1)) 0 calc(0.6em * var(--nd-prose-spacing, 1));
 }
 
 .nd-editor .milkdown .ProseMirror h2 {
   font-size: 1.55em;
-  margin: 1.5em 0 0.5em;
+  margin: calc(1.5em * var(--nd-prose-spacing, 1)) 0 calc(0.5em * var(--nd-prose-spacing, 1));
   padding-bottom: 0.25em;
   border-bottom: 1px solid var(--nd-border);
 }
 
 .nd-editor .milkdown .ProseMirror h3 {
   font-size: 1.28em;
-  margin: 1.35em 0 0.45em;
+  margin: calc(1.35em * var(--nd-prose-spacing, 1)) 0 calc(0.45em * var(--nd-prose-spacing, 1));
 }
 
 .nd-editor .milkdown .ProseMirror h4 {
   font-size: 1.12em;
-  margin: 1.2em 0 0.4em;
+  margin: calc(1.2em * var(--nd-prose-spacing, 1)) 0 calc(0.4em * var(--nd-prose-spacing, 1));
 }
 
 .nd-editor .milkdown .ProseMirror h5 {
   font-size: 1em;
-  margin: 1.1em 0 0.35em;
+  margin: calc(1.1em * var(--nd-prose-spacing, 1)) 0 calc(0.35em * var(--nd-prose-spacing, 1));
 }
 
 .nd-editor .milkdown .ProseMirror h6 {
   font-size: 0.92em;
-  margin: 1.1em 0 0.35em;
+  margin: calc(1.1em * var(--nd-prose-spacing, 1)) 0 calc(0.35em * var(--nd-prose-spacing, 1));
   color: var(--nd-text-secondary);
 }
 
@@ -148,15 +148,15 @@
 .nd-editor .milkdown .ProseMirror ul,
 .nd-editor .milkdown .ProseMirror ol {
   padding-left: 1.6em;
-  margin: 0.6em 0;
+  margin: calc(0.6em * var(--nd-prose-spacing, 1)) 0;
 }
 
 .nd-editor .milkdown .ProseMirror li {
-  margin: 0.25em 0;
+  margin: calc(0.25em * var(--nd-prose-spacing, 1)) 0;
 }
 
 .nd-editor .milkdown .ProseMirror li > p {
-  margin: 0.15em 0;
+  margin: calc(0.15em * var(--nd-prose-spacing, 1)) 0;
 }
 
 .nd-editor .milkdown .ProseMirror .milkdown-list-item-block .content-dom > p {
@@ -165,7 +165,7 @@
 }
 
 .nd-editor .milkdown .ProseMirror .milkdown-list-item-block .content-dom > p + p {
-  margin-top: 0.75em;
+  margin-top: calc(0.75em * var(--nd-prose-spacing, 1));
 }
 
 /* The marker box must match one text line so it stays centred as the font size changes. */
@@ -174,18 +174,18 @@
 }
 
 .nd-editor .milkdown .ProseMirror blockquote {
-  margin: 1em 0;
+  margin: calc(1em * var(--nd-prose-spacing, 1)) 0;
   padding: 0.2em 0 0.2em 1.1em;
   border-left: 3px solid var(--nd-border-strong);
   color: var(--nd-text-secondary);
 }
 
 .nd-editor .milkdown .ProseMirror blockquote > p {
-  margin: 0.4em 0;
+  margin: calc(0.4em * var(--nd-prose-spacing, 1)) 0;
 }
 
 .nd-editor .milkdown .ProseMirror hr {
-  margin: 2.2em auto;
+  margin: calc(2.2em * var(--nd-prose-spacing, 1)) auto;
   width: 100%;
   border: none;
   border-top: 1px solid var(--nd-border);
@@ -210,7 +210,7 @@
 }
 
 .nd-editor .milkdown .milkdown-code-block {
-  margin: 1.1em 0;
+  margin: calc(1.1em * var(--nd-prose-spacing, 1)) 0;
   padding: 12px 18px 14px;
   background: var(--nd-code-bg);
   border: 1px solid var(--nd-code-border);
@@ -256,7 +256,7 @@
 
 .nd-editor .milkdown .ProseMirror table {
   width: 100%;
-  margin: 1.1em 0;
+  margin: calc(1.1em * var(--nd-prose-spacing, 1)) 0;
   border-collapse: collapse;
   table-layout: fixed;
   overflow: hidden;
@@ -265,7 +265,7 @@
 .nd-editor .milkdown .ProseMirror th,
 .nd-editor .milkdown .ProseMirror td {
   border: 1px solid var(--nd-border);
-  padding: 7px 12px;
+  padding: calc(7px * var(--nd-prose-spacing, 1)) 12px;
   vertical-align: top;
   text-align: left;
 }
@@ -280,7 +280,7 @@
 }
 
 .nd-editor .milkdown .ProseMirror .katex-display {
-  margin: 1em 0;
+  margin: calc(1em * var(--nd-prose-spacing, 1)) 0;
   overflow-x: auto;
   overflow-y: hidden;
   padding: 0.2em 0;
@@ -389,7 +389,7 @@
 }
 
 .nd-editor .milkdown .ProseMirror > .nd-html-block {
-  margin-block: 1.4em;
+  margin-block: calc(1.4em * var(--nd-prose-spacing, 1));
 }
 
 .nd-html-block[hidden],
@@ -422,7 +422,7 @@
 
 .nd-html-block pre,
 .nd-html-inline pre {
-  margin: 0.9em 0;
+  margin: calc(0.9em * var(--nd-prose-spacing, 1)) 0;
   padding: 12px 16px;
   overflow-x: auto;
   border: 1px solid var(--nd-code-border);
@@ -433,7 +433,7 @@
 
 .nd-html-block details,
 .nd-html-inline details {
-  margin: 0.6em 0;
+  margin: calc(0.6em * var(--nd-prose-spacing, 1)) 0;
 }
 
 .nd-html-block summary,
@@ -541,7 +541,7 @@
 }
 
 .nd-editor .milkdown .ProseMirror > .nd-mermaid {
-  margin-block: 1.4em;
+  margin-block: calc(1.4em * var(--nd-prose-spacing, 1));
 }
 
 .nd-mermaid.is-selected {
@@ -762,6 +762,6 @@
 
   .nd-editor .milkdown .ProseMirror th,
   .nd-editor .milkdown .ProseMirror td {
-    padding: 6px 9px;
+    padding: calc(6px * var(--nd-prose-spacing, 1)) 9px;
   }
 }

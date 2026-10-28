@@ -25,11 +25,11 @@ import {
   getThemeTokens,
   type AppSettings,
   type ColorMode,
+  type DensityLevel,
   type ImageStorageMode,
   type LocalePreference,
   type PageWidthMode,
   type ThemeId,
-  type UiDensity,
 } from '@notadown/shared'
 import { LOCALE_NAMES, SUPPORTED_LOCALES } from '@notadown/i18n'
 import { platform } from '@/platform'
@@ -85,7 +85,7 @@ const COLOR_MODES: Array<{ id: ColorMode; label: string }> = [
   { id: 'dark', label: 'settings.appearanceSection.dark' },
 ]
 
-const DENSITIES: Array<{ id: UiDensity; label: string }> = [
+const DENSITIES: Array<{ id: DensityLevel; label: string }> = [
   { id: 'compact', label: 'settings.appearanceSection.densityModes.compact' },
   { id: 'default', label: 'settings.appearanceSection.densityModes.default' },
   { id: 'comfortable', label: 'settings.appearanceSection.densityModes.comfortable' },
@@ -213,8 +213,12 @@ function choosePageWidth(id: PageWidthMode): void {
   draft.pageWidth = id
 }
 
-function chooseDensity(id: UiDensity): void {
+function chooseDensity(id: DensityLevel): void {
   draft.uiDensity = id
+}
+
+function chooseContentDensity(id: DensityLevel): void {
+  draft.contentDensity = id
 }
 
 const previewMaxWidth = computed(() => {
@@ -621,6 +625,25 @@ async function clearHistory(): Promise<void> {
                 </div>
 
                 <div class="nd-field">
+                  <span class="nd-field-label">{{ t('settings.appearanceSection.contentSpacing') }}</span>
+                  <div class="segmented">
+                    <button
+                      v-for="mode in DENSITIES"
+                      :key="mode.id"
+                      type="button"
+                      class="segmented__item"
+                      :class="{ 'is-active': draft.contentDensity === mode.id }"
+                      @click="chooseContentDensity(mode.id)"
+                    >
+                      {{ t(mode.label) }}
+                    </button>
+                  </div>
+                  <p class="nd-field-hint">
+                    {{ t('settings.appearanceSection.contentSpacingHint') }}
+                  </p>
+                </div>
+
+                <div class="nd-field">
                   <span class="nd-field-label">{{ t('settings.appearanceSection.preview') }}</span>
                   <div
                     class="settings-preview"
@@ -631,7 +654,8 @@ async function clearHistory(): Promise<void> {
                       maxWidth: previewMaxWidth,
                     }"
                   >
-                    {{ t('settings.appearanceSection.previewText') }}
+                    <p>{{ t('settings.appearanceSection.previewText') }}</p>
+                    <p>{{ t('settings.appearanceSection.previewTextSecondary') }}</p>
                   </div>
                 </div>
 
@@ -1279,6 +1303,14 @@ async function clearHistory(): Promise<void> {
   background: var(--nd-bg);
   color: var(--nd-text);
   font-family: var(--nd-font-editor);
+}
+
+.settings-preview p {
+  margin: 0;
+}
+
+.settings-preview p + p {
+  margin-top: calc(0.75em * var(--nd-prose-spacing, 1));
 }
 
 .settings-css {

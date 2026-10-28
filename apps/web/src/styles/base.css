@@ -17,6 +17,7 @@
   --nd-radius-lg: 12px;
   --nd-editor-font-size: 17px;
   --nd-line-height: 1.75;
+  --nd-prose-spacing: 1;
   --nd-editor-width: 760px;
   --nd-editor-padding-top: 64px;
   --nd-sidebar-width: 260px;
@@ -96,6 +97,14 @@
   --nd-activity-button-size: 38px;
   --nd-field-row-padding: 18px;
   --nd-list-row-padding-y: 9px;
+}
+
+:root[data-content-density='compact'] {
+  --nd-prose-spacing: 0.7;
+}
+
+:root[data-content-density='comfortable'] {
+  --nd-prose-spacing: 1.3;
 }
 
 *,

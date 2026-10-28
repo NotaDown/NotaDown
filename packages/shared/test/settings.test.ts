@@ -23,14 +23,21 @@ describe('normalizeSettings', () => {
     expect(normalizeSettings({ pageWidth: 1200 }).pageWidth).toBe(DEFAULT_SETTINGS.pageWidth)
   })
 
-  it('accepts every interface density and rejects unknown values', () => {
-    for (const uiDensity of ['compact', 'default', 'comfortable'] as const) {
-      expect(normalizeSettings({ uiDensity }).uiDensity).toBe(uiDensity)
+  it('accepts every density level and rejects unknown values', () => {
+    for (const density of ['compact', 'default', 'comfortable'] as const) {
+      const settings = normalizeSettings({ uiDensity: density, contentDensity: density })
+      expect(settings.uiDensity).toBe(density)
+      expect(settings.contentDensity).toBe(density)
     }
     expect(normalizeSettings({ uiDensity: 'dense' }).uiDensity).toBe(
       DEFAULT_SETTINGS.uiDensity,
     )
-    expect(normalizeSettings({ uiDensity: 1 }).uiDensity).toBe(DEFAULT_SETTINGS.uiDensity)
+    expect(normalizeSettings({ contentDensity: 'dense' }).contentDensity).toBe(
+      DEFAULT_SETTINGS.contentDensity,
+    )
+    expect(normalizeSettings({ contentDensity: 1 }).contentDensity).toBe(
+      DEFAULT_SETTINGS.contentDensity,
+    )
   })
 
   it('validates the update download source', () => {
