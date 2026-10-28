@@ -7,7 +7,13 @@ describe('normalizeSettings', () => {
   })
 
   it('accepts every supported page width mode', () => {
-    for (const pageWidth of ['narrow', 'default', 'wide', 'full'] as const) {
+    for (const pageWidth of [
+      'very-narrow',
+      'narrow',
+      'default',
+      'wide',
+      'full',
+    ] as const) {
       expect(normalizeSettings({ pageWidth }).pageWidth).toBe(pageWidth)
     }
   })

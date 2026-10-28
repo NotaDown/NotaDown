@@ -86,7 +86,7 @@ const NUMBER_RULES: Partial<Record<keyof AppSettings, NumberRule>> = {
 }
 
 const COLOR_MODES = new Set(['system', 'light', 'dark'])
-const PAGE_WIDTHS = new Set(['narrow', 'default', 'wide', 'full'])
+const PAGE_WIDTHS = new Set(['very-narrow', 'narrow', 'default', 'wide', 'full'])
 const THEMES = new Set(['default', 'paper', 'nordic', 'contrast'])
 const LOCALES = new Set(['system', 'en-US', 'zh-CN'])
 const IMAGE_MODES = new Set([

@@ -4,7 +4,7 @@ export type ColorMode = 'system' | 'light' | 'dark'
 
 export type TitleBarMode = 'integrated' | 'native'
 
-export type PageWidthMode = 'narrow' | 'default' | 'wide' | 'full'
+export type PageWidthMode = 'very-narrow' | 'narrow' | 'default' | 'wide' | 'full'
 
 export type LocalePreference = 'system' | 'en-US' | 'zh-CN'
 

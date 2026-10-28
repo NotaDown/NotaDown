@@ -170,7 +170,7 @@ const setupSource = `async () => {
     colorMode: ${JSON.stringify(options.mode)},
     fontSize: 17,
     lineHeight: 1.75,
-    pageWidth: 'narrow',
+    pageWidth: 'very-narrow',
     sidebarWidth: 286,
     showWordCount: true,
     focusMode: false,

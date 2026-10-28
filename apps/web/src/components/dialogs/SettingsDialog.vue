@@ -180,6 +180,8 @@ function choosePageWidth(id: PageWidthMode): void {
 
 const previewMaxWidth = computed(() => {
   switch (draft.pageWidth) {
+    case 'narrow':
+      return '460px'
     case 'default':
       return '500px'
     case 'wide':

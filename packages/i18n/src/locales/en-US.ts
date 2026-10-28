@@ -397,6 +397,7 @@ export const enUS = {
       lineHeight: 'Line height',
       pageWidth: 'Text width',
       widthModes: {
+        veryNarrow: 'Very narrow',
         narrow: 'Narrow',
         default: 'Default',
         wide: 'Wide',

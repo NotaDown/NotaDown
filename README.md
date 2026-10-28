@@ -23,7 +23,7 @@ NotaDown is a Markdown editor where writing and rendering share one surface. For
 - Autosave, manual save, per-tab save state and silent local version history for recovery.
 - Code highlighting, tables, task lists, KaTeX math, Mermaid diagrams and sanitized inline or block HTML.
 - Images stored next to the document, in a global attachments folder or embedded as data URLs.
-- Four preset themes, light and dark color modes, custom CSS, exact numeric type settings, four text-width modes (narrow, default, wide, full), focus mode and typewriter mode.
+- Four preset themes, light and dark color modes, custom CSS, exact numeric type settings, five text-width modes (very narrow, narrow, default, wide, full), focus mode and typewriter mode.
 - Export to standalone HTML or PDF.
 - English and Simplified Chinese UI.
 - Web and desktop editions from the same codebase.

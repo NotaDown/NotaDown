@@ -17,7 +17,8 @@ const MONO_FONT =
   "'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
 
 const PAGE_WIDTHS: Record<PageWidthMode, string> = {
-  narrow: '760px',
+  'very-narrow': '760px',
+  narrow: '880px',
   default: '1024px',
   wide: '1200px',
   full: '100%',

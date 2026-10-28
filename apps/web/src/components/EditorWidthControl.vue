@@ -20,6 +20,7 @@ const current = computed(
 )
 
 const glyphWidths: Record<PageWidthMode, string> = {
+  'very-narrow': '5px',
   narrow: '9px',
   default: '13px',
   wide: '17px',

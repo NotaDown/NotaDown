@@ -396,6 +396,7 @@ export const zhCN = {
       lineHeight: '行高',
       pageWidth: '正文宽度',
       widthModes: {
+        veryNarrow: '很窄',
         narrow: '较窄',
         default: '默认',
         wide: '较宽',
