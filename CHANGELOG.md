@@ -2,6 +2,28 @@
 
 English is canonical; entries are generated from conventional commits by `pnpm changelog`.
 
+## v0.2.0
+
+### 🚀 Features
+
+- **settings:** Move auto update check into its own Updates tab (55bdb5b)
+- **editor:** Keep the code block language label always visible (ad15d46)
+- **settings:** Show the version history folder and open it from settings (bdf6e83)
+- **desktop:** Add mirror downloads and self-hosted update metadata (cf83c1d)
+- **history:** Preview and diff saved versions before restoring them (33db69b)
+- **ci:** Deploy the web edition to GitHub Pages on stable releases (f500f7e)
+
+### 🩹 Bug Fixes
+
+- Remove the extra blank line under changelog release headings (92daf8b)
+- **editor:** Keep code block gutter out of the page stacking order (c222801)
+- **history:** Clear the window controls when maximizing the version dialog (c745481)
+
+### 📖 Documentation
+
+- **readme:** Shorten the header entry labels to Online and Download (52a1ee3)
+
+
 ## v0.1.2
 
 ### 🚀 Features
