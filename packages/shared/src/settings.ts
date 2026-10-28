@@ -52,7 +52,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   fontSize: 17,
   lineHeight: 1.75,
   pageWidth: 'default',
-  autosave: true,
+  autosave: false,
   autosaveDelay: 800,
   spellcheck: true,
   focusMode: false,
