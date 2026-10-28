@@ -4,6 +4,8 @@ export type ColorMode = 'system' | 'light' | 'dark'
 
 export type TitleBarMode = 'integrated' | 'native'
 
+export type PageWidthMode = 'narrow' | 'default' | 'wide' | 'full'
+
 export type LocalePreference = 'system' | 'en-US' | 'zh-CN'
 
 export type ThemeId = 'default' | 'paper' | 'nordic' | 'contrast'

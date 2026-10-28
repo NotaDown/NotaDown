@@ -2,6 +2,7 @@ import type {
   ColorMode,
   ImageStorageMode,
   LocalePreference,
+  PageWidthMode,
   ThemeId,
   TitleBarMode,
 } from './types'
@@ -15,7 +16,7 @@ export interface AppSettings {
   fontFamily: string
   fontSize: number
   lineHeight: number
-  editorWidth: number
+  pageWidth: PageWidthMode
   autosave: boolean
   autosaveDelay: number
   spellcheck: boolean
@@ -46,7 +47,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   fontFamily: '',
   fontSize: 17,
   lineHeight: 1.75,
-  editorWidth: 760,
+  pageWidth: 'default',
   autosave: true,
   autosaveDelay: 800,
   spellcheck: true,
@@ -73,7 +74,6 @@ type NumberRule = { min: number; max: number }
 const NUMBER_RULES: Partial<Record<keyof AppSettings, NumberRule>> = {
   fontSize: { min: 12, max: 32 },
   lineHeight: { min: 1.2, max: 2.6 },
-  editorWidth: { min: 480, max: 1400 },
   autosaveDelay: { min: 200, max: 10000 },
   historyIntervalMinutes: { min: 1, max: 120 },
   historyMaxPerFile: { min: 5, max: 1000 },
@@ -82,6 +82,7 @@ const NUMBER_RULES: Partial<Record<keyof AppSettings, NumberRule>> = {
 }
 
 const COLOR_MODES = new Set(['system', 'light', 'dark'])
+const PAGE_WIDTHS = new Set(['narrow', 'default', 'wide', 'full'])
 const THEMES = new Set(['default', 'paper', 'nordic', 'contrast'])
 const LOCALES = new Set(['system', 'en-US', 'zh-CN'])
 const IMAGE_MODES = new Set([
@@ -109,6 +110,7 @@ export function normalizeSettings(input: unknown): AppSettings {
     } else if (typeof defaultValue === 'string') {
       if (typeof value !== 'string') continue
       if (key === 'colorMode' && !COLOR_MODES.has(value)) continue
+      if (key === 'pageWidth' && !PAGE_WIDTHS.has(value)) continue
       if (key === 'theme' && !THEMES.has(value)) continue
       if (key === 'titleBarMode' && !['integrated', 'native'].includes(value)) continue
       if (key === 'locale' && !LOCALES.has(value)) continue

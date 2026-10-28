@@ -3,6 +3,7 @@ import {
   themeTokensToCss,
   type AppSettings,
   type ColorMode,
+  type PageWidthMode,
   type ThemeId,
 } from '@notadown/shared'
 
@@ -14,6 +15,13 @@ const DISPLAY_FONT =
   "'Iowan Old Style', 'Palatino Linotype', 'Source Serif 4', Georgia, 'Songti SC', 'Noto Serif SC', serif"
 const MONO_FONT =
   "'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
+
+const PAGE_WIDTHS: Record<PageWidthMode, string> = {
+  narrow: '760px',
+  default: '1024px',
+  wide: '1200px',
+  full: '100%',
+}
 
 export function resolveColorMode(mode: ColorMode, systemDark: boolean): 'light' | 'dark' {
   if (mode === 'light' || mode === 'dark') return mode
@@ -27,7 +35,7 @@ export interface ThemeApplication {
   monospace: boolean
   fontSize: number
   lineHeight: number
-  editorWidth: number
+  pageWidth: PageWidthMode
   customCss: string
 }
 
@@ -48,7 +56,7 @@ export function applyTheme(application: ThemeApplication): void {
     '--nd-font-mono': MONO_FONT,
     '--nd-editor-font-size': `${application.fontSize}px`,
     '--nd-line-height': String(application.lineHeight),
-    '--nd-editor-width': `${application.editorWidth}px`,
+    '--nd-editor-width': PAGE_WIDTHS[application.pageWidth],
   }
 
   const declarations = Object.entries(variables)
@@ -80,7 +88,7 @@ export function applySettingsTheme(
     monospace: settings.editorFontMonospace,
     fontSize: settings.fontSize,
     lineHeight: settings.lineHeight,
-    editorWidth: settings.editorWidth,
+    pageWidth: settings.pageWidth,
     customCss: settings.customCss,
   })
 }
@@ -94,7 +102,7 @@ export function bootstrapTheme(): void {
     monospace: false,
     fontSize: 17,
     lineHeight: 1.75,
-    editorWidth: 760,
+    pageWidth: 'default',
     customCss: '',
   })
 }

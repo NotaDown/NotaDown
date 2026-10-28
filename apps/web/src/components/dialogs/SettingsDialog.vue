@@ -25,6 +25,7 @@ import {
   type ColorMode,
   type ImageStorageMode,
   type LocalePreference,
+  type PageWidthMode,
   type ThemeId,
 } from '@notadown/shared'
 import { LOCALE_NAMES, SUPPORTED_LOCALES } from '@notadown/i18n'
@@ -71,6 +72,13 @@ const COLOR_MODES: Array<{ id: ColorMode; label: string }> = [
   { id: 'dark', label: 'settings.appearanceSection.dark' },
 ]
 
+const PAGE_WIDTH_MODES: Array<{ id: PageWidthMode; label: string }> = [
+  { id: 'narrow', label: 'settings.appearanceSection.widthModes.narrow' },
+  { id: 'default', label: 'settings.appearanceSection.widthModes.default' },
+  { id: 'wide', label: 'settings.appearanceSection.widthModes.wide' },
+  { id: 'full', label: 'settings.appearanceSection.widthModes.full' },
+]
+
 const IMAGE_MODES: Array<{ id: ImageStorageMode; label: string }> = [
   { id: 'document-assets', label: 'settings.filesSection.modes.document-assets' },
   { id: 'document-named', label: 'settings.filesSection.modes.document-named' },
@@ -81,7 +89,6 @@ const IMAGE_MODES: Array<{ id: ImageStorageMode; label: string }> = [
 type NumericSettingKey =
   | 'fontSize'
   | 'lineHeight'
-  | 'editorWidth'
   | 'autosaveDelay'
   | 'historyIntervalMinutes'
   | 'historyMaxPerFile'
@@ -93,7 +100,6 @@ const NUMBER_LIMITS: Record<
 > = {
   fontSize: { min: 12, max: 32, step: 1 },
   lineHeight: { min: 1.2, max: 2.6, step: 0.05 },
-  editorWidth: { min: 480, max: 1400, step: 10 },
   autosaveDelay: { min: 200, max: 10000, step: 100 },
   historyIntervalMinutes: { min: 1, max: 120, step: 1 },
   historyMaxPerFile: { min: 5, max: 1000, step: 5 },
@@ -173,6 +179,23 @@ function chooseTheme(id: ThemeId): void {
 function chooseColorMode(id: ColorMode): void {
   draft.colorMode = id
 }
+
+function choosePageWidth(id: PageWidthMode): void {
+  draft.pageWidth = id
+}
+
+const previewMaxWidth = computed(() => {
+  switch (draft.pageWidth) {
+    case 'default':
+      return '500px'
+    case 'wide':
+      return '560px'
+    case 'full':
+      return '100%'
+    default:
+      return '420px'
+  }
+})
 
 function chooseImageMode(id: ImageStorageMode): void {
   draft.imageStorage = id
@@ -432,6 +455,24 @@ async function clearHistory(): Promise<void> {
                 </div>
 
                 <div class="nd-field">
+                  <span class="nd-field-label">
+                    {{ t('settings.appearanceSection.pageWidth') }}
+                  </span>
+                  <div class="segmented">
+                    <button
+                      v-for="mode in PAGE_WIDTH_MODES"
+                      :key="mode.id"
+                      type="button"
+                      class="segmented__item"
+                      :class="{ 'is-active': draft.pageWidth === mode.id }"
+                      @click="choosePageWidth(mode.id)"
+                    >
+                      {{ t(mode.label) }}
+                    </button>
+                  </div>
+                </div>
+
+                <div class="nd-field">
                   <label class="nd-field-label" for="settings-font-family">
                     {{ t('settings.appearanceSection.fontFamily') }}
                   </label>
@@ -513,33 +554,6 @@ async function clearHistory(): Promise<void> {
                   </div>
                 </div>
 
-                <div class="nd-field-row">
-                  <div>
-                    <span class="nd-field-label">{{ t('settings.appearanceSection.editorWidth') }}</span>
-                  </div>
-                  <div class="settings-slider nd-field-control">
-                    <input
-                      v-model.number="draft.editorWidth"
-                      type="range"
-                      :min="NUMBER_LIMITS.editorWidth.min"
-                      :max="NUMBER_LIMITS.editorWidth.max"
-                      :step="NUMBER_LIMITS.editorWidth.step"
-                      :aria-label="t('settings.appearanceSection.editorWidth')"
-                    />
-                    <input
-                      class="nd-input settings-slider__number"
-                      type="number"
-                      :value="draft.editorWidth"
-                      :min="NUMBER_LIMITS.editorWidth.min"
-                      :max="NUMBER_LIMITS.editorWidth.max"
-                      :step="NUMBER_LIMITS.editorWidth.step"
-                      :aria-label="t('settings.appearanceSection.editorWidth')"
-                      @change="commitNumber('editorWidth', $event)"
-                    />
-                    <span class="settings-slider__unit">px</span>
-                  </div>
-                </div>
-
                 <div class="nd-field">
                   <span class="nd-field-label">{{ t('settings.appearanceSection.preview') }}</span>
                   <div
@@ -548,7 +562,7 @@ async function clearHistory(): Promise<void> {
                       fontFamily: draft.fontFamily || undefined,
                       fontSize: `${draft.fontSize}px`,
                       lineHeight: String(draft.lineHeight),
-                      maxWidth: `${Math.min(draft.editorWidth, 640)}px`,
+                      maxWidth: previewMaxWidth,
                     }"
                   >
                     {{ t('settings.appearanceSection.previewText') }}
