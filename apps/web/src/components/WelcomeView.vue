@@ -9,7 +9,7 @@ import {
   FolderOpen,
   Info,
   X,
-} from 'lucide-vue-next'
+} from '@lucide/vue'
 import { formatRelativeTime } from '@notadown/i18n'
 import { platform } from '@/platform'
 import {

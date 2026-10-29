@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { CircleAlert, FileWarning, Save } from 'lucide-vue-next'
+import { CircleAlert, FileWarning, Save } from '@lucide/vue'
 import {
   createMarkdownEditor,
   createSourceEditor,

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Search, X } from 'lucide-vue-next'
+import { Search, X } from '@lucide/vue'
 import { useUiStore } from '@/stores/ui'
 import ShortcutsList from '../common/ShortcutsList.vue'
 

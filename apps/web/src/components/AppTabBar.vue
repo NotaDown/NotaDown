@@ -15,7 +15,7 @@ import {
   TriangleAlert,
   X,
   FileWarning,
-} from 'lucide-vue-next'
+} from '@lucide/vue'
 import { basename } from '@notadown/shared'
 import { useTabsStore, type EditorTab } from '@/stores/tabs'
 import { useUiStore } from '@/stores/ui'

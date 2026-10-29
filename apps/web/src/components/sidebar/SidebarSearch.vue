@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { CaseSensitive, FileText, Search, X } from 'lucide-vue-next'
+import { CaseSensitive, FileText, Search, X } from '@lucide/vue'
 import { dirname, type SearchResult } from '@notadown/shared'
 import { platform } from '@/platform'
 import { useUiStore } from '@/stores/ui'

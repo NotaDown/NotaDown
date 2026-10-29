@@ -8,7 +8,7 @@ import {
   LoaderCircle,
   TriangleAlert,
   Type,
-} from 'lucide-vue-next'
+} from '@lucide/vue'
 import { countWords } from '@notadown/shared'
 import { formatNumber } from '@notadown/i18n'
 import { platform } from '@/platform'

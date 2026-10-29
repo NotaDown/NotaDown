@@ -6,7 +6,7 @@ import {
   Info,
   TriangleAlert,
   X,
-} from 'lucide-vue-next'
+} from '@lucide/vue'
 import type { ToastMessage } from '@notadown/shared'
 import { useUiStore } from '@/stores/ui'
 import UpdateNotice from './UpdateNotice.vue'

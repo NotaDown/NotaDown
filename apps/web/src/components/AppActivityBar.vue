@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Files, History, Keyboard, ListTree, Search, Settings } from 'lucide-vue-next'
+import { Files, History, Keyboard, ListTree, Search, Settings } from '@lucide/vue'
 import type { SidebarView } from '@notadown/shared'
 import { useUiStore } from '@/stores/ui'
 import { useTabsStore } from '@/stores/tabs'

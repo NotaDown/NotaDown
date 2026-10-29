@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { FileText, FolderOpen, Search } from 'lucide-vue-next'
+import { FileText, FolderOpen, Search } from '@lucide/vue'
 import { dirname, type FileEntry } from '@notadown/shared'
 import { platform } from '@/platform'
 import { useUiStore } from '@/stores/ui'

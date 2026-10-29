@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ArrowUpCircle, X } from 'lucide-vue-next'
+import { ArrowUpCircle, X } from '@lucide/vue'
 import { useUpdateStore } from '@/stores/update'
 
 const { t } = useI18n()

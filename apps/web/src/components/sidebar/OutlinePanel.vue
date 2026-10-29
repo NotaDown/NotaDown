@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ListTree } from 'lucide-vue-next'
+import { ListTree } from '@lucide/vue'
 import type { OutlineItem } from '@notadown/shared'
 import { useTabsStore } from '@/stores/tabs'
 import { getEditor } from '@/editor-registry'

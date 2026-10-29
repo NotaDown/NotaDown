@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { PanelLeftClose } from 'lucide-vue-next'
+import { PanelLeftClose } from '@lucide/vue'
 import { useUiStore } from '@/stores/ui'
 import FileTree from './sidebar/FileTree.vue'
 import SidebarSearch from './sidebar/SidebarSearch.vue'

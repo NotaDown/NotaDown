@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ChevronDown, ChevronUp, Search, X } from 'lucide-vue-next'
+import { ChevronDown, ChevronUp, Search, X } from '@lucide/vue'
 import { useUiStore } from '@/stores/ui'
 import { useTabsStore } from '@/stores/tabs'
 import { getEditor } from '@/editor-registry'

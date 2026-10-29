@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { onClickOutside } from '@vueuse/core'
-import { Check, MoveHorizontal } from 'lucide-vue-next'
+import { Check, MoveHorizontal } from '@lucide/vue'
 import type { PageWidthMode } from '@notadown/shared'
 import { PAGE_WIDTH_MODES } from '@/page-widths'
 import { useSettingsStore } from '@/stores/settings'

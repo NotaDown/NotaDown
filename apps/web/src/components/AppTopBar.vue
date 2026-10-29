@@ -10,7 +10,7 @@ import {
   Search,
   Settings,
   Sun,
-} from 'lucide-vue-next'
+} from '@lucide/vue'
 import { platform } from '@/platform'
 import { useUiStore } from '@/stores/ui'
 import { useWorkspaceStore } from '@/stores/workspace'

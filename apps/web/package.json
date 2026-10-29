@@ -10,13 +10,13 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
+    "@lucide/vue": "^1.64.0",
     "@notadown/editor": "workspace:*",
     "@notadown/exporter": "workspace:*",
     "@notadown/i18n": "workspace:*",
     "@notadown/platform": "workspace:*",
     "@notadown/shared": "workspace:*",
     "@vueuse/core": "^15.0.0",
-    "lucide-vue-next": "^0.577.0",
     "pinia": "^4.1.0",
     "vue": "^3.5.44",
     "vue-i18n": "catalog:"

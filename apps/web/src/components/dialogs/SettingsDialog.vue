@@ -17,7 +17,7 @@ import {
   ExternalLink,
   FolderOpen,
   X,
-} from 'lucide-vue-next'
+} from '@lucide/vue'
 import {
   DEFAULT_SETTINGS,
   THEMES,

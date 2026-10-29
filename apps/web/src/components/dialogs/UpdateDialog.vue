@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { X } from 'lucide-vue-next'
+import { X } from '@lucide/vue'
 import { platform } from '@/platform'
 import { useUiStore } from '@/stores/ui'
 import { useUpdateStore } from '@/stores/update'

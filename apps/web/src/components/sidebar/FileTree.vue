@@ -22,7 +22,7 @@ import {
   FolderX,
   MoreHorizontal,
   RefreshCw,
-} from 'lucide-vue-next'
+} from '@lucide/vue'
 import {
   basename,
   dirname,

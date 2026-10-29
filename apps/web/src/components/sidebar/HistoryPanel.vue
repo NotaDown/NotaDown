@@ -10,7 +10,7 @@ import {
   RotateCcw,
   Trash2,
   TriangleAlert,
-} from 'lucide-vue-next'
+} from '@lucide/vue'
 import { formatDateTime, formatRelativeTime } from '@notadown/i18n'
 import { dirname, type HistoryRecord } from '@notadown/shared'
 import { platform } from '@/platform'
