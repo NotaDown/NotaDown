@@ -9,8 +9,10 @@ directories:
 files:
   - dist/**/*
   - renderer/**/*
-  - '!renderer/**/*.map'
   - package.json
+  # Source maps are local debugging aids only; shipping them exposes the
+  # original sources and adds weight to dependencies that publish maps.
+  - '!**/*.map'
 
 asar: true
 publish:
