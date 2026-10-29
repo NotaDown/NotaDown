@@ -109,7 +109,14 @@ export class WebPlatform implements Platform {
   async openWorkspace(): Promise<OpenWorkspaceResult | null> {
     const picker = fsaWindow().showDirectoryPicker
     if (!picker) throw new Error('UNSUPPORTED')
-    const handle = await picker({ id: 'notadown-workspace', mode: 'readwrite' })
+    let handle: FsDirectoryHandle
+    try {
+      handle = await picker({ id: 'notadown-workspace', mode: 'readwrite' })
+    } catch (error) {
+      // Dismissing the native picker rejects with AbortError; that is a cancelled action, not a failure.
+      if (isAbortError(error)) return null
+      throw error
+    }
     if (!(await ensurePermission(handle))) throw new Error('PERMISSION_DENIED')
 
     const stored = await this.storedWorkspaces()
