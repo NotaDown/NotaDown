@@ -180,7 +180,7 @@ jobs:
           done
 
           {
-            printf '\n---\n\n### 下载 · Downloads\n\n'
+            printf '\n---\n\n### Downloads · 下载\n\n'
             printf -- '- **Windows (x64)**: '
             link 'Installer' "$win_exe"
             printf '\n- **macOS (Apple Silicon)**: '
