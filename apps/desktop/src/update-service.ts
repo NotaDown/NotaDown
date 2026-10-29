@@ -510,36 +510,47 @@ export function createUpdateService(
     })
 
     const target = source === 'auto' ? resolved : null
+    // The update was found through the self-hosted channel because github.com
+    // was unreachable at check time, so a direct attempt would only hang until
+    // its own timeout before the mirrors get a chance.
+    const skipDirect = target !== null && state.metadataSource === 'self-hosted'
     fallbackActive = target !== null
     deferredError = null
 
     try {
-      try {
-        await updater.downloadUpdate()
-        return
-      } catch (directError) {
-        if (!target) throw directError
+      let lastError: unknown = new Error(
+        'GitHub is unreachable and no update mirror answered',
+      )
+      if (!skipDirect) {
+        try {
+          await updater.downloadUpdate()
+          return
+        } catch (directError) {
+          if (!target) throw directError
+          lastError = directError
+        }
+      }
 
-        const tried = new Set<string>()
-        let lastError = directError
-        while (true) {
-          patch({
-            status: 'downloading',
-            progress: 0,
-            transferred: 0,
-            total: null,
-            bytesPerSecond: null,
-          })
-          const mirror = await raceMirrors(target.url, target.size, tried)
-          if (!mirror) throw lastError
-          tried.add(mirror)
-          patch({ downloadUrl: `${mirror}/${target.url}` })
-          try {
-            await downloadFromMirror(mirror)
-            return
-          } catch (error) {
-            lastError = error
-          }
+      if (!target) throw lastError
+
+      const tried = new Set<string>()
+      while (true) {
+        patch({
+          status: 'downloading',
+          progress: 0,
+          transferred: 0,
+          total: null,
+          bytesPerSecond: null,
+        })
+        const mirror = await raceMirrors(target.url, target.size, tried)
+        if (!mirror) throw lastError
+        tried.add(mirror)
+        patch({ downloadUrl: `${mirror}/${target.url}` })
+        try {
+          await downloadFromMirror(mirror)
+          return
+        } catch (error) {
+          lastError = error
         }
       }
     } catch (error) {

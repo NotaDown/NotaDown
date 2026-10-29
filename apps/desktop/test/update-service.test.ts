@@ -503,6 +503,77 @@ describe('createUpdateService', () => {
     expect(hosts).toEqual(['github.com', 'gh-proxy.com', 'ghproxy.net'])
   })
 
+  it('skips the direct GitHub download when the update came from the self-hosted channel', async () => {
+    const { updater, service } = setup(
+      {},
+      { metadataBaseUrl: 'https://updates.example.test' },
+    )
+    stubGithubReachable(false)
+    provideUpdateFiles(updater)
+    updater.checkForUpdates.mockImplementation(async () => {
+      updater.emit('update-available', { version: '1.3.0' })
+      return null
+    })
+
+    expect((await service.check()).metadataSource).toBe('self-hosted')
+
+    const urls: string[] = []
+    updater.downloadUpdate.mockImplementation(async () => {
+      const update = updater.updateInfoAndProvider!
+      urls.push(update.provider.resolveFiles(update.info)[0].url.href)
+    })
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: string | URL | Request) => {
+        const url = String(input)
+        if (url.startsWith('https://gh-proxy.com/')) {
+          return new Response(null, {
+            status: 206,
+            headers: {
+              'content-type': 'application/octet-stream',
+              'content-range': 'bytes 0-0/1000',
+            },
+          })
+        }
+        return new Response('forbidden', { status: 403 })
+      }),
+    )
+
+    await service.download('auto')
+
+    expect(urls).toEqual([
+      'https://gh-proxy.com/https://github.com/NotaDown/NotaDown/releases/download/v1.3.0/NotaDown.1.3.0-x64.exe',
+    ])
+  })
+
+  it('still tries GitHub directly when the update came from GitHub', async () => {
+    const { updater, service } = setup(
+      {},
+      { metadataBaseUrl: 'https://updates.example.test' },
+    )
+    stubGithubReachable()
+    provideUpdateFiles(updater)
+    updater.checkForUpdates.mockImplementation(async () => {
+      updater.emit('update-available', { version: '1.3.0' })
+      return null
+    })
+
+    expect((await service.check()).metadataSource).toBe('github')
+
+    const hosts: string[] = []
+    updater.downloadUpdate.mockImplementation(async () => {
+      const update = updater.updateInfoAndProvider!
+      hosts.push(update.provider.resolveFiles(update.info)[0].url.host)
+    })
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    await service.download('auto')
+
+    expect(hosts).toEqual(['github.com'])
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('keeps GitHub-only downloads away from mirrors', async () => {
     const { updater, service } = setup()
     updater.emit('update-available', { version: '1.3.0' })
