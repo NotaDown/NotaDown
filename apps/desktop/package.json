@@ -17,14 +17,14 @@
   },
   "devDependencies": {
     "@notadown/shared": "workspace:*",
-    "@types/node": "^24.10.0",
+    "@types/node": "catalog:",
     "chokidar": "^5.0.0",
     "cross-env": "^10.1.0",
     "electron": "^44.9.0",
     "electron-builder": "^26.15.3",
     "tsup": "^9.0.0",
-    "typescript": "^5.9.3",
-    "vitest": "^5.0.5"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "dependencies": {
     "electron-updater": "^6.8.11"

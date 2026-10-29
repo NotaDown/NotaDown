@@ -19,12 +19,12 @@
     "lucide-vue-next": "^0.577.0",
     "pinia": "^4.1.0",
     "vue": "^3.5.44",
-    "vue-i18n": "^11.4.16"
+    "vue-i18n": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^24.10.0",
+    "@types/node": "catalog:",
     "@vitejs/plugin-vue": "^6.0.10",
-    "typescript": "^5.9.3",
+    "typescript": "catalog:",
     "vite": "^8.3.4",
     "vue-tsc": "^3.3.13"
   }

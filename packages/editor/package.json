@@ -26,14 +26,14 @@
     "@milkdown/kit": "^7.22.3",
     "@notadown/shared": "workspace:*",
     "dompurify": "^3.4.17",
-    "katex": "^0.16.11",
-    "mermaid": "^12.2.0"
+    "katex": "catalog:",
+    "mermaid": "catalog:"
   },
   "peerDependencies": {
     "vue": "^3.5.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
-    "vitest": "^5.0.5"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

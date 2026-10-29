@@ -4,7 +4,7 @@
   "private": true,
   "description": "An offline-first Markdown editor inspired by distraction-free writing",
   "license": "MIT",
-  "packageManager": "pnpm@12.11.2",
+  "packageManager": "pnpm@12.16.1",
   "engines": {
     "node": ">=22"
   },
@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "changelogen": "^0.6.2",
-    "concurrently": "^9.2.1",
-    "wait-on": "^9.0.1"
+    "concurrently": "^10.0.6",
+    "wait-on": "^9.5.1"
   }
 }

@@ -12,12 +12,12 @@
   },
   "dependencies": {
     "@notadown/shared": "workspace:*",
-    "vue-i18n": "^11.4.16"
+    "vue-i18n": "catalog:"
   },
   "peerDependencies": {
     "vue": "^3.5.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "catalog:"
   }
 }
