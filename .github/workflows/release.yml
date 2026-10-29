@@ -1,15 +1,11 @@
 name: Release
 
+# Packaging and publishing only. Version tags build the installers, deploy the
+# web edition, and publish the GitHub Release; code checks live in ci.yml.
 on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: Release tag to verify the root version against (leave empty for a branch build)
-        required: false
-        default: ''
 
 concurrency:
   group: release-${{ github.ref }}
@@ -20,6 +16,7 @@ permissions:
 
 jobs:
   validate:
+    name: Verify the tag
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -27,7 +24,7 @@ jobs:
       # Release convention shared by the abrooka apps: the tag is `v` plus the root
       # package.json version, so a pre-release carries the same suffix in both
       # places (root `0.1.0-beta.1` with tag `v0.1.0-beta.1`).
-      - name: Verify tag matches the root package version
+      - name: Verify the tag against the root version
         env:
           TAG: ${{ github.event.inputs.tag || github.ref_name }}
         run: |
@@ -121,6 +118,7 @@ jobs:
           if-no-files-found: error
 
   publish:
+    name: Publish GitHub Release
     if: startsWith(github.ref, 'refs/tags/')
     needs:
       - web
