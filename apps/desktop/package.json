@@ -20,7 +20,7 @@
     "@types/node": "catalog:",
     "chokidar": "^6.0.0",
     "cross-env": "^10.1.0",
-    "electron": "^44.9.0",
+    "electron": "^45.1.0",
     "electron-builder": "^26.15.3",
     "tsup": "^9.0.0",
     "typescript": "catalog:",
