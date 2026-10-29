@@ -2,9 +2,9 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
-  Download,
   FolderX,
   Menu,
+  MonitorDown,
   Moon,
   PanelLeft,
   Search,
@@ -139,7 +139,7 @@ function handleMenuSelect(id: string): void {
         :title="t('web.installHint')"
         @click="install"
       >
-        <Download :size="16" />
+        <MonitorDown :size="16" />
       </button>
       <button
         type="button"
