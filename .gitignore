@@ -15,3 +15,5 @@ update-metadata/
 playwright-report/
 test-results/
 *.tsbuildinfo
+
+.npmrc
