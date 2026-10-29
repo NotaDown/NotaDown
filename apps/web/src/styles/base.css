@@ -49,6 +49,8 @@
   --nd-accent: #3b6ef5;
   --nd-accent-hover: #2f5ee0;
   --nd-accent-contrast: #ffffff;
+  /* Brand asset colour from design/logo; stays fixed across themes. */
+  --nd-brand-persimmon: #e4683f;
   --nd-selection: rgba(59, 110, 245, 0.18);
   --nd-code-bg: #f6f6f4;
   --nd-code-border: #e6e6e2;
