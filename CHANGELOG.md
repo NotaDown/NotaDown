@@ -2,6 +2,18 @@
 
 English is canonical; entries are generated from conventional commits by `pnpm changelog`.
 
+## v0.2.3
+
+### 🩹 Bug Fixes
+
+- **brand:** Use the approved monogram for the in-app brand mark (ed5a0f8)
+- **web:** Replace deprecated apple web app meta tag (832c828)
+
+### 📦 Build
+
+- Reorder the download heading in release notes to English first (0aade1a)
+
+
 ## v0.2.2
 
 ### 🚀 Features
