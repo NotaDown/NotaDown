@@ -39,6 +39,15 @@ for (const name of channelFiles) {
   const rewritten = channel.replace(/^( {2}- url:|path:) (.+)$/gm, (_, key, url) =>
     url.startsWith('http') ? `${key} ${url}` : `${key} ${assetBase}/${url}`,
   )
+  // A miss here would upload relative paths to a bucket that holds no
+  // installers; the client would fail on COS and on every mirror.
+  const unresolved = rewritten
+    .split('\n')
+    .find((line) => /^\s*(?:-\s+)?(?:url|path):\s+(?!https?:\/\/)/.test(line))
+  if (unresolved) {
+    console.error(`${name}: installer URL was not rewritten: ${unresolved.trim()}`)
+    process.exit(1)
+  }
   writeFileSync(path.join(outDir, name), rewritten)
   console.log(`${name} -> update-metadata/${name}`)
 }
