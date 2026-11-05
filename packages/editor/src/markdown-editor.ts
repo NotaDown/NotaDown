@@ -43,6 +43,7 @@ import {
   createLinkClickPlugin,
   createTypewriterPlugin,
 } from './prosemirror-plugins'
+import { keepSlashMenuInView } from './slash-menu'
 import type {
   EditorCommand,
   EditorLabels,
@@ -241,6 +242,7 @@ export async function createMarkdownEditor(
     labels: labels.blockMenu,
     editHtmlLabel: labels.html.edit,
   })
+  const detachSlashMenu = keepSlashMenuInView(host)
 
   let serializeTimer: number | null = null
   const serializeDelay = options.largeDocument ? 700 : 180
@@ -329,6 +331,7 @@ export async function createMarkdownEditor(
       view.dom.removeEventListener('focus', focusListener)
       view.dom.removeEventListener('blur', blurListener)
       detachBlockMenu()
+      detachSlashMenu()
       for (const url of objectUrls) URL.revokeObjectURL(url)
       void crepe.destroy()
       host.remove()
