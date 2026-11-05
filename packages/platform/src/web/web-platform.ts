@@ -284,6 +284,10 @@ export class WebPlatform implements Platform {
     throw new Error('UNSUPPORTED')
   }
 
+  async revealFile(): Promise<void> {
+    throw new Error('UNSUPPORTED')
+  }
+
   async openFileDialog(): Promise<OpenedDocument | null> {
     if (supportsFilePicker()) {
       const picker = fsaWindow().showOpenFilePicker

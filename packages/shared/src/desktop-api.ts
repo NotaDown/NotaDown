@@ -55,6 +55,7 @@ export interface DesktopInvokeMap {
   }
   deleteWorkspaceEntry: { args: [relativePath: string]; result: void }
   revealWorkspaceEntry: { args: [relativePath: string]; result: void }
+  revealFile: { args: [absolutePath: string]; result: void }
   openFileDialog: { args: []; result: OpenedDocument | null }
   readFile: {
     args: [absolutePath: string]

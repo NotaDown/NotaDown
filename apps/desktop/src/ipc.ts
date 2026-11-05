@@ -109,6 +109,9 @@ async function dispatch(
     case 'revealWorkspaceEntry':
       await workspace.revealWorkspaceEntry(String(args[0] ?? ''))
       return undefined
+    case 'revealFile':
+      await workspace.revealFile(String(args[0] ?? ''))
+      return undefined
 
     case 'openFileDialog':
       return workspace.openFileDialog(window)

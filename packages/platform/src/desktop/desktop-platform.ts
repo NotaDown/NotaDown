@@ -138,6 +138,10 @@ export class DesktopPlatform implements Platform {
     await this.bridge.invoke('revealWorkspaceEntry', path)
   }
 
+  async revealFile(absolutePath: string): Promise<void> {
+    await this.bridge.invoke('revealFile', absolutePath)
+  }
+
   async openFileDialog(): Promise<OpenedDocument | null> {
     return this.bridge.invoke('openFileDialog')
   }

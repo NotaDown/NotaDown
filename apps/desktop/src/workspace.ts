@@ -249,6 +249,10 @@ export async function revealWorkspaceEntry(relativePath: string): Promise<void> 
   shell.showItemInFolder(target)
 }
 
+export async function revealFile(absolutePath: string): Promise<void> {
+  shell.showItemInFolder(requireAbsolutePath(absolutePath))
+}
+
 export async function openFileDialog(
   window: BrowserWindow | null,
 ): Promise<OpenedDocument | null> {

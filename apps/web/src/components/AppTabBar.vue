@@ -73,7 +73,7 @@ const contextItems = computed<MenuItem[]>(() => {
     items.push({ id: 'delete', label: t('sidebar.delete'), danger: true })
   }
   items.push({ id: inWorkspace ? 'sep-2' : 'sep-1', separator: true })
-  if (path && inWorkspace && platform.capabilities.revealInFolder) {
+  if (path && platform.capabilities.revealInFolder) {
     items.push({ id: 'reveal', label: revealLabel.value })
   }
   items.push({ id: 'copy-name', label: t('tabs.copyName') })
@@ -186,7 +186,8 @@ async function handleMenuSelect(id: string): Promise<void> {
   }
   if (id === 'reveal' && tab.ref.path) {
     try {
-      await workspace.revealEntry(tab.ref.path)
+      if (tab.ref.origin === 'workspace') await workspace.revealEntry(tab.ref.path)
+      else await platform.revealFile(tab.ref.path)
     } catch {
       ui.toast('error', t('tree.revealUnavailable'))
     }
