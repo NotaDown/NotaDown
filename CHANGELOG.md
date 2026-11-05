@@ -2,6 +2,52 @@
 
 English is canonical; entries are generated from conventional commits by `pnpm changelog`.
 
+## v0.3.0-alpha.3
+
+### 🚀 Features
+
+- **tabs:** Add delete action to the tab context menu (672997a)
+- **web:** Label the reveal action for the platform (27258fe)
+- **desktop:** Reveal standalone files in the file manager (e9a1858)
+- **tabs:** Rename and delete standalone file tabs (4c74051)
+- **desktop:** Add optional New menu entry for Markdown files (f2f9395)
+- **update:** Support opting into alpha update checks (a877623)
+- **update:** Add a per-check alpha toggle to the update dialog (5051b79)
+
+### 🩹 Bug Fixes
+
+- **desktop:** Exclude source maps from packaged app (6d110e4)
+- **web:** Stop emitting source maps in production builds (b8708cf)
+- **desktop:** Skip the GitHub download when the update came from the self-hosted channel (a7d0fc3)
+- **release:** Fail metadata generation on unrewritten installer URLs (13785a4)
+- **desktop:** Fetch the electron binary before dev starts (4b15d9c)
+- **web:** Use an install-style icon for the PWA install button (197fb71)
+- **web:** Treat dismissing the folder picker as cancellation (e4fea5c)
+- **desktop:** Move deleted entries to the recycle bin (dd09462)
+- **changelog:** Exclude release commits from generated notes (b2ef89b)
+- **recent:** Show absolute paths for workspace files and dedupe entries (7f272a1)
+- **settings:** Clarify the alpha update hint (f1f4dcd)
+
+### 📦 Build
+
+- Switch CI to pnpm/setup (a849877)
+- Align CI and release workflow structure (6e4c221)
+
+### 🏡 Chores
+
+- **deps:** Centralize shared versions in a pnpm catalog (a3f45cd)
+- **deps:** Align katex with the version Milkdown Crepe renders with (b47d5ce)
+- **deps:** Bump chokidar to 6 (8c8e3b2)
+- **deps:** Align the @types/node catalog specifier (ff398a1)
+- **deps:** Switch the icon package to @lucide/vue (988d204)
+- **deps:** Update Electron to 45.1.0 (55b213b)
+- **deps:** Refresh the lockfile (9ba474a)
+
+### 🎨 Styles
+
+- **editor:** Align slash menu with block handle menu (541685c)
+
+
 ## v0.3.0-alpha.2
 
 ### 🚀 Features
