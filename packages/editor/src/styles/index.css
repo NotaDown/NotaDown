@@ -63,11 +63,15 @@
   color: var(--nd-text);
 }
 
+/*
+ * Crepe's block handle is two 32px buttons plus a 2px gap (66px), offset 16px from the block,
+ * so it needs an 82px gutter; 86px leaves 4px before .nd-editor clips it. The 44px added to
+ * max-width is 2 × (86 - 64), restoring the text width lost to the wider padding.
+ */
 .nd-editor .milkdown .ProseMirror {
   max-width: min(100%, calc(var(--nd-editor-width, 780px) + 44px));
   min-height: 100%;
   margin: 0 auto;
-  /* The block handle (66px wide, 16px away) overhangs the block, so the gutter must fit it. */
   padding: var(--nd-editor-padding-top, 64px) 86px 45vh;
   outline: none;
   font-size: var(--nd-editor-font-size, 16px);
@@ -770,6 +774,7 @@
   font-family: inherit;
 }
 
+/* Mirrors the rendered view's gutter and measure, so switching modes does not reflow text. */
 .nd-source-editor .cm-content {
   max-width: min(100%, calc(var(--nd-editor-width, 780px) + 44px));
   min-height: 100%;
@@ -833,7 +838,8 @@
   }
 }
 
-/* A narrow desktop window still shows the block handle, which needs its gutter. */
+/* 720px is the compact-layout breakpoint above; a desktop window that size still shows the
+   block handle, so it keeps the same 86px gutter. */
 @media (max-width: 720px) and (hover: hover) and (pointer: fine) {
   .nd-editor .milkdown .ProseMirror,
   .nd-source-editor .cm-content {
