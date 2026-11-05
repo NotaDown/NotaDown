@@ -143,7 +143,9 @@ export const zhCN = {
     closeAll: '关闭所有标签页',
     copyName: '复制文件名',
     copyPath: '复制路径',
-    reveal: '在文件管理器中显示',
+    reveal: '在文件管理器中打开',
+    revealWindows: '在文件资源管理器中打开',
+    revealMac: '在 Finder 中打开',
   },
   sidebar: {
     files: '文件',
@@ -158,7 +160,6 @@ export const zhCN = {
     rename: '重命名',
     duplicate: '创建副本',
     delete: '删除',
-    reveal: '在文件管理器中显示',
     refresh: '刷新',
     emptyFolder: '此文件夹为空',
     dropToMove: '移动到这里',

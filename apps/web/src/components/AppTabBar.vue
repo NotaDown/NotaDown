@@ -24,6 +24,7 @@ import { platform } from '@/platform'
 import { describeError } from '@/errors'
 import { useInjectedCommands } from '@/composables/use-app-commands'
 import { useDeleteEntry } from '@/composables/use-delete-entry'
+import { useRevealLabel } from '@/composables/use-reveal-label'
 import PopupMenu from './common/PopupMenu.vue'
 import type { MenuItem } from './common/menu-types'
 
@@ -33,6 +34,7 @@ const ui = useUiStore()
 const workspace = useWorkspaceStore()
 const commands = useInjectedCommands()
 const { removeEntry } = useDeleteEntry()
+const revealLabel = useRevealLabel()
 
 const tabElements = new Map<string, HTMLElement>()
 
@@ -72,7 +74,7 @@ const contextItems = computed<MenuItem[]>(() => {
   }
   items.push({ id: inWorkspace ? 'sep-2' : 'sep-1', separator: true })
   if (path && inWorkspace && platform.capabilities.revealInFolder) {
-    items.push({ id: 'reveal', label: t('tabs.reveal') })
+    items.push({ id: 'reveal', label: revealLabel.value })
   }
   items.push({ id: 'copy-name', label: t('tabs.copyName') })
   if (path && platform.kind === 'desktop') {

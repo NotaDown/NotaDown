@@ -144,7 +144,9 @@ export const enUS = {
     closeAll: 'Close all tabs',
     copyName: 'Copy file name',
     copyPath: 'Copy path',
-    reveal: 'Show in file manager',
+    reveal: 'Open in file manager',
+    revealWindows: 'Open in File Explorer',
+    revealMac: 'Open in Finder',
   },
   sidebar: {
     files: 'Files',
@@ -159,7 +161,6 @@ export const enUS = {
     rename: 'Rename',
     duplicate: 'Duplicate',
     delete: 'Delete',
-    reveal: 'Show in file manager',
     refresh: 'Refresh',
     emptyFolder: 'This folder is empty',
     dropToMove: 'Move here',

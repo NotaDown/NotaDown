@@ -38,6 +38,7 @@ import { useTabsStore } from '@/stores/tabs'
 import { useUiStore } from '@/stores/ui'
 import { useInjectedCommands } from '@/composables/use-app-commands'
 import { useDeleteEntry } from '@/composables/use-delete-entry'
+import { useRevealLabel } from '@/composables/use-reveal-label'
 import PopupMenu from '../common/PopupMenu.vue'
 import type { MenuItem } from '../common/menu-types'
 
@@ -64,6 +65,7 @@ const tabs = useTabsStore()
 const ui = useUiStore()
 const commands = useInjectedCommands()
 const { removeEntry } = useDeleteEntry()
+const revealLabel = useRevealLabel()
 
 const treeRoot = ref<HTMLElement | null>(null)
 
@@ -118,7 +120,7 @@ const contextItems = computed<MenuItem[]>(() => {
     items.push({ id: 'delete', label: t('sidebar.delete'), danger: true })
     items.push({ id: 'sep-2', separator: true })
     if (platform.capabilities.revealInFolder) {
-      items.push({ id: 'reveal', label: t('sidebar.reveal') })
+      items.push({ id: 'reveal', label: revealLabel.value })
     }
     items.push({ id: 'copy-name', label: t('tabs.copyName') })
     if (platform.kind === 'desktop') {
