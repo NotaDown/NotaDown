@@ -10,7 +10,7 @@ English | [简体中文](./release-process.zh-CN.md)
 6. For a stable release, check that the `metadata` job uploaded the channel files to the self-hosted source (prereleases skip it). If it fails, re-run that job on its own, see below.
 7. For a stable release, check that the `pages` job deployed the web edition (prereleases skip it). If it fails, re-run that job on its own, see below.
 
-A tag whose version carries a hyphen suffix (`v1.2.3-beta.1`, `v1.2.3-rc.1`) publishes the GitHub Release as a **pre-release**; a plain `v1.2.3` tag publishes it as the stable release. Root `package.json` holds the same string, suffix included.
+A tag whose version carries a hyphen suffix (`v1.2.3-beta.1`, `v1.2.3-rc.1`) publishes the GitHub Release as a **pre-release**; a plain `v1.2.3` tag publishes it as the stable release. Root `package.json` holds the same string, suffix included. Clients only see prereleases when the installed build is itself a prerelease or the user turns on **Check for alpha updates** under Settings → Updates.
 
 | Purpose | URL |
 | --- | --- |
@@ -57,6 +57,7 @@ coscli cp update-metadata/latest-linux.yml cos://notadown-1302260381/updater/lat
 - The app requests `<base>/latest.yml` (Windows) and `<base>/latest-linux.yml` (Linux AppImage)
 - The checksum comes from the self-hosted source; installer bytes still come from GitHub first, then from the probed proxy mirrors
 - Publish stable releases only: the generic channel has no prerelease filter, so a beta channel file would upgrade stable clients to a beta
+- Prerelease versions come from GitHub only. The self-hosted source carries the stable channel, so a check that falls back to it can still offer stable updates but never a prerelease
 - Clients request the channel files with `?noCache=<random>`, so keep the CDN's default query-in-cache-key behaviour; if query filtering is enabled, give `/updater/*` a very short TTL or it will keep serving the previous channel files
 
 ## Notes

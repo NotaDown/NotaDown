@@ -458,6 +458,14 @@ a {
   outline-offset: 2px;
 }
 
+.nd-switch:has(input:disabled) {
+  cursor: default;
+}
+
+.nd-switch input:disabled + .nd-switch-track {
+  opacity: 0.55;
+}
+
 .nd-kbd {
   display: inline-flex;
   align-items: center;

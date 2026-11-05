@@ -42,13 +42,15 @@ export const useUpdateStore = defineStore('update', () => {
     )
   }
 
-  async function check(): Promise<void> {
+  async function check(
+    allowPrerelease = settings.settings.checkPrereleaseUpdates,
+  ): Promise<void> {
     subscribe()
     noticeVisible.value = false
     ui.updateOpen = true
     installBlocked.value = false
     try {
-      snapshot.value = await platform.checkForUpdate()
+      snapshot.value = await platform.checkForUpdate(allowPrerelease)
     } catch (error) {
       ui.toast('error', t('update.checkFailed'), describeError(error))
     }
@@ -58,7 +60,9 @@ export const useUpdateStore = defineStore('update', () => {
     if (platform.kind !== 'desktop') return
     subscribe()
     try {
-      const result = await platform.checkForUpdate()
+      const result = await platform.checkForUpdate(
+        settings.settings.checkPrereleaseUpdates,
+      )
       snapshot.value = result
       if (!ui.updateOpen && !isSkippedVersion(result)) {
         noticeVisible.value = result.status === 'available'

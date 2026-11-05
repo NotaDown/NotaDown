@@ -49,4 +49,12 @@ describe('normalizeSettings', () => {
       DEFAULT_SETTINGS.updateDownloadSource,
     )
   })
+
+  it('defaults prerelease update checks off and accepts a boolean', () => {
+    expect(normalizeSettings({}).checkPrereleaseUpdates).toBe(false)
+    expect(normalizeSettings({ checkPrereleaseUpdates: true }).checkPrereleaseUpdates).toBe(true)
+    expect(normalizeSettings({ checkPrereleaseUpdates: 'yes' }).checkPrereleaseUpdates).toBe(
+      false,
+    )
+  })
 })

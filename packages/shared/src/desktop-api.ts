@@ -105,7 +105,7 @@ export interface DesktopInvokeMap {
   openExternal: { args: [url: string]; result: void }
   openDefaultAppSettings: { args: []; result: void }
   takeOpenFiles: { args: []; result: string[] }
-  checkForUpdate: { args: []; result: UpdateSnapshot }
+  checkForUpdate: { args: [allowPrerelease?: boolean]; result: UpdateSnapshot }
   downloadUpdate: { args: [source?: UpdateDownloadSource]; result: void }
   installUpdate: { args: []; result: void }
 }

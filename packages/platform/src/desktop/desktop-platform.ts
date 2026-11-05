@@ -362,8 +362,8 @@ export class DesktopPlatform implements Platform {
     return this.bridge.onOpenFiles(callback)
   }
 
-  async checkForUpdate(): Promise<UpdateSnapshot> {
-    return this.bridge.invoke('checkForUpdate')
+  async checkForUpdate(allowPrerelease?: boolean): Promise<UpdateSnapshot> {
+    return this.bridge.invoke('checkForUpdate', allowPrerelease)
   }
 
   async downloadUpdate(source?: UpdateDownloadSource): Promise<void> {

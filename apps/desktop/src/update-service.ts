@@ -87,7 +87,7 @@ export interface UpdateRuntime {
 
 export interface UpdateService {
   getState(): UpdateSnapshot
-  check(): Promise<UpdateSnapshot>
+  check(allowPrerelease?: boolean): Promise<UpdateSnapshot>
   download(source?: UpdateDownloadSource): Promise<void>
   install(): void
 }
@@ -419,7 +419,7 @@ export function createUpdateService(
     }
   }
 
-  async function check(): Promise<UpdateSnapshot> {
+  async function check(allowPrerelease = false): Promise<UpdateSnapshot> {
     if (unsupportedReason) {
       patch({ status: 'unsupported', reason: unsupportedReason })
       return snapshot()
@@ -431,6 +431,10 @@ export function createUpdateService(
     ) {
       return snapshot()
     }
+
+    // A prerelease build always follows its own channel; a stable build only
+    // sees prereleases when the user opted in.
+    updater.allowPrerelease = runtime.currentVersion.includes('-') || allowPrerelease
 
     patch({
       status: 'checking',

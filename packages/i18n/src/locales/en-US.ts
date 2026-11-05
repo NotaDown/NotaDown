@@ -491,6 +491,9 @@ export const enUS = {
       downloadSourceGithub: 'Use GitHub Releases only',
       downloadSourceHint:
         'Mirrors only relay installer bytes. Version metadata and the SHA-512 checksum come from GitHub, or from the NotaDown update source when GitHub is unreachable.',
+      checkPrerelease: 'Check for alpha updates',
+      checkPrereleaseHint:
+        'Stable builds also check alpha and other pre-release versions. This stays on while an alpha build is installed.',
     },
     aboutSection: {
       description: 'An offline-first Markdown editor for focused writing.',

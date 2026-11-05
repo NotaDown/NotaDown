@@ -48,6 +48,7 @@ const tabs = useTabsStore()
 const update = useUpdateStore()
 const ui = useUiStore()
 const isDesktop = platform.kind === 'desktop'
+const isPrereleaseBuild = platform.version.includes('-')
 const canDefaultAppSettings = platform.capabilities.defaultAppSettings
 const REPOSITORY_URL = 'https://github.com/NotaDown/NotaDown'
 
@@ -194,6 +195,10 @@ function setLocale(event: Event): void {
 
 function setExtension(event: Event): void {
   draft.defaultFileExtension = (event.target as HTMLSelectElement).value as 'md' | 'markdown'
+}
+
+function setCheckPrerelease(event: Event): void {
+  draft.checkPrereleaseUpdates = (event.target as HTMLInputElement).checked
 }
 
 function setTitleBarMode(event: Event): void {
@@ -1049,6 +1054,27 @@ async function clearHistory(): Promise<void> {
                       id="settings-auto-check-updates"
                       v-model="draft.autoCheckUpdates"
                       type="checkbox"
+                    />
+                    <span class="nd-switch-track" />
+                  </label>
+                </div>
+
+                <div class="nd-field-row">
+                  <div>
+                    <label class="nd-field-label" for="settings-check-prerelease">
+                      {{ t('settings.updatesSection.checkPrerelease') }}
+                    </label>
+                    <p class="nd-field-hint">
+                      {{ t('settings.updatesSection.checkPrereleaseHint') }}
+                    </p>
+                  </div>
+                  <label class="nd-switch nd-field-control">
+                    <input
+                      id="settings-check-prerelease"
+                      :checked="isPrereleaseBuild || draft.checkPrereleaseUpdates"
+                      :disabled="isPrereleaseBuild"
+                      type="checkbox"
+                      @change="setCheckPrerelease"
                     />
                     <span class="nd-switch-track" />
                   </label>

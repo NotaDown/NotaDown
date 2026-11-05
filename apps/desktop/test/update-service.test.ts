@@ -134,6 +134,27 @@ describe('createUpdateService', () => {
     expect(setup().updater.allowPrerelease).toBe(false)
   })
 
+  it('lets a stable build opt into prerelease updates per check', async () => {
+    const { updater, service } = setup()
+
+    await service.check()
+    expect(updater.allowPrerelease).toBe(false)
+
+    await service.check(true)
+    expect(updater.allowPrerelease).toBe(true)
+
+    await service.check()
+    expect(updater.allowPrerelease).toBe(false)
+  })
+
+  it('keeps prerelease checks on for a prerelease build regardless of the flag', async () => {
+    const { updater, service } = setup({ currentVersion: '1.0.0-alpha.1' })
+
+    await service.check(false)
+
+    expect(updater.allowPrerelease).toBe(true)
+  })
+
   it('marks an available update from the event payload', async () => {
     const { updater, service, events } = setup()
     updater.checkForUpdates.mockImplementation(async () => {

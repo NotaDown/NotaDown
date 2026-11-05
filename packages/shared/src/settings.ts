@@ -29,6 +29,7 @@ export interface AppSettings {
   showWordCount: boolean
   restoreSession: boolean
   autoCheckUpdates: boolean
+  checkPrereleaseUpdates: boolean
   updateDownloadSource: UpdateDownloadSource
   skippedUpdateVersion: string
   confirmDelete: boolean
@@ -65,6 +66,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   showWordCount: true,
   restoreSession: true,
   autoCheckUpdates: true,
+  checkPrereleaseUpdates: false,
   updateDownloadSource: 'auto',
   skippedUpdateVersion: '',
   confirmDelete: true,
