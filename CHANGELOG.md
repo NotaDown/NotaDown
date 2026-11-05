@@ -2,7 +2,7 @@
 
 English is canonical; entries are generated from conventional commits by `pnpm changelog`.
 
-## v0.3.0-alpha.3
+## v0.3.0-alpha.4
 
 ### 🚀 Features
 
@@ -27,6 +27,11 @@ English is canonical; entries are generated from conventional commits by `pnpm c
 - **changelog:** Exclude release commits from generated notes (b2ef89b)
 - **recent:** Show absolute paths for workspace files and dedupe entries (7f272a1)
 - **settings:** Clarify the alpha update hint (f1f4dcd)
+- **desktop:** Isolate dev userData from the installed app (1d24ac6)
+
+### 📖 Documentation
+
+- **comments:** Rewrite remaining Chinese code comments in English (2d47577)
 
 ### 📦 Build
 
