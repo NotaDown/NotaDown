@@ -105,7 +105,7 @@ function handleMenuSelect(id: string): void {
 
     <div class="topbar__brand">
       <BrandMark :size="22" />
-      <span class="topbar__name">NotaDown</span>
+      <span class="topbar__name">{{ platform.appName }}</span>
     </div>
 
     <span

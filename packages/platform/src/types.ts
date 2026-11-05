@@ -35,6 +35,7 @@ export interface AssetTarget {
 export interface Platform {
   readonly kind: PlatformKind
   readonly capabilities: PlatformCapabilities
+  readonly appName: string
   readonly version: string
 
   getVersion(): Promise<string>

@@ -1,4 +1,5 @@
 import {
+  APP_NAME,
   basename,
   createId,
   ensureMarkdownExtension,
@@ -79,6 +80,7 @@ const TEXT_FILE_TYPES = [
 export class WebPlatform implements Platform {
   readonly kind = 'web' as const
   readonly capabilities: PlatformCapabilities
+  readonly appName = APP_NAME
   readonly version: string
 
   private workspace: WorkspaceInfo | null = null

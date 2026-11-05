@@ -10,6 +10,8 @@ files:
   - dist/**/*
   - renderer/**/*
   - package.json
+  # Dev-only badge icons; packaged builds use icon.ico / icon.png.
+  - '!dist/icon-dev.*'
   # Source maps are local debugging aids only; shipping them exposes the
   # original sources and adds weight to dependencies that publish maps.
   - '!**/*.map'

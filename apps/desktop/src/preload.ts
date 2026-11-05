@@ -1,4 +1,6 @@
 import {
+  APP_NAME,
+  DESKTOP_APP_NAME_ARG,
   DESKTOP_ASSET_SCHEME,
   DESKTOP_DOCUMENT_EVENTS_CHANNEL,
   DESKTOP_INVOKE_CHANNEL,
@@ -23,6 +25,9 @@ const titleBarMode: TitleBarMode =
   titleBarModeArg?.slice(DESKTOP_TITLE_BAR_ARG.length) === 'native'
     ? 'native'
     : 'integrated'
+
+const appNameArg = process.argv.find((arg) => arg.startsWith(DESKTOP_APP_NAME_ARG))
+const appName = appNameArg?.slice(DESKTOP_APP_NAME_ARG.length) || APP_NAME
 
 const bridge: DesktopBridge = {
   invoke<K extends DesktopInvokeMethod>(
@@ -73,6 +78,7 @@ const bridge: DesktopBridge = {
     return () => ipcRenderer.removeListener(DESKTOP_UPDATE_EVENTS_CHANNEL, listener)
   },
   platform: process.platform,
+  appName,
   titleBarMode,
 }
 

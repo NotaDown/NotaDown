@@ -1089,7 +1089,7 @@ async function clearHistory(): Promise<void> {
                 <div class="settings-about__head">
                   <BrandMark :size="40" />
                   <div>
-                    <div class="settings-about__name">NotaDown</div>
+                    <div class="settings-about__name">{{ platform.appName }}</div>
                     <p class="settings-about__description">
                       {{ t('settings.aboutSection.description') }}
                     </p>

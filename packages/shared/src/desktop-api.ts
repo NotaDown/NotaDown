@@ -127,11 +127,13 @@ export interface DesktopBridge {
   onMenuCommand(callback: (command: string) => void): () => void
   onOpenFiles(callback: () => void): () => void
   onUpdateEvent(callback: (snapshot: UpdateSnapshot) => void): () => void
+  appName: string
   platform: string
   titleBarMode: TitleBarMode
 }
 
 export const DESKTOP_TITLE_BAR_ARG = '--notadown-title-bar='
+export const DESKTOP_APP_NAME_ARG = '--notadown-app-name='
 export const DESKTOP_INVOKE_CHANNEL = 'notadown:invoke'
 export const DESKTOP_WORKSPACE_EVENTS_CHANNEL = 'notadown:workspace-events'
 export const DESKTOP_DOCUMENT_EVENTS_CHANNEL = 'notadown:document-events'

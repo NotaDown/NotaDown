@@ -31,6 +31,7 @@ import type { AssetTarget, DocumentWriteResult, Platform } from '../types'
 export class DesktopPlatform implements Platform {
   readonly kind = 'desktop' as const
   readonly capabilities: PlatformCapabilities
+  readonly appName: string
   readonly version: string
 
   private readonly bridge: DesktopBridge
@@ -38,6 +39,7 @@ export class DesktopPlatform implements Platform {
 
   constructor(bridge: DesktopBridge, version: string) {
     this.bridge = bridge
+    this.appName = bridge.appName
     this.version = version
     this.capabilities = {
       folderWorkspace: true,

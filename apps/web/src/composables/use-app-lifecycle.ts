@@ -121,7 +121,7 @@ export function useAppLifecycle(commands: AppCommands): void {
 
   function updateTitle(): void {
     const workspaceName = usesNativeTitleBar.value ? workspace.info?.name : undefined
-    const suffix = workspaceName ? `${workspaceName} — NotaDown` : 'NotaDown'
+    const suffix = workspaceName ? `${workspaceName} — ${platform.appName}` : platform.appName
     const tab = tabs.activeTab
     if (!tab) {
       document.title = suffix

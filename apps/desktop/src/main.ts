@@ -1,4 +1,6 @@
 import {
+  APP_NAME,
+  DESKTOP_APP_NAME_ARG,
   DESKTOP_ASSET_SCHEME,
   DESKTOP_OPEN_FILES_CHANNEL,
   DESKTOP_TITLE_BAR_ARG,
@@ -17,13 +19,15 @@ import { loadSettings } from './state'
 import { createDesktopUpdateService } from './updater'
 import { stopWatch } from './workspace'
 
-app.setName('NotaDown')
+const APP_USER_MODEL_ID = 'com.notadown.app'
 
-// Keep the unpackaged instance out of the installed app's userData so their
-// single-instance locks (and session/settings files) don't collide.
-if (!app.isPackaged && !app.commandLine.hasSwitch('user-data-dir')) {
-  app.setPath('userData', `${app.getPath('userData')}-dev`)
-}
+const isDev = !app.isPackaged
+const DEV_APP_NAME = `${APP_NAME} Dev`
+const DEV_APP_USER_MODEL_ID = `${APP_USER_MODEL_ID}.dev`
+
+// The dev name also gives the unpackaged app its own default userData
+// directory, keeping its single-instance lock and settings separate.
+app.setName(isDev ? DEV_APP_NAME : APP_NAME)
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -43,7 +47,7 @@ const RENDERER_INDEX = path.join(__dirname, '../renderer/index.html')
 const RENDERER_URL = pathToFileURL(RENDERER_INDEX).toString()
 const WINDOW_ICON = path.join(
   __dirname,
-  process.platform === 'win32' ? 'icon.ico' : 'icon.png',
+  `${isDev ? 'icon-dev' : 'icon'}.${process.platform === 'win32' ? 'ico' : 'png'}`,
 )
 
 async function recreateWindow(): Promise<void> {
@@ -82,7 +86,10 @@ function createWindow(): BrowserWindow {
     ...frameOptions,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
-      additionalArguments: [`${DESKTOP_TITLE_BAR_ARG}${chrome.titleBarMode}`],
+      additionalArguments: [
+        `${DESKTOP_TITLE_BAR_ARG}${chrome.titleBarMode}`,
+        `${DESKTOP_APP_NAME_ARG}${app.getName()}`,
+      ],
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -162,7 +169,8 @@ if (!hasLock) {
   })
 
   void app.whenReady().then(async () => {
-    app.setAppUserModelId('com.notadown.app')
+    app.setAppUserModelId(isDev ? DEV_APP_USER_MODEL_ID : APP_USER_MODEL_ID)
+    if (isDev && process.platform === 'darwin') app.dock?.setIcon(WINDOW_ICON)
     await resolveWindowChrome()
 
     protocol.handle(DESKTOP_ASSET_SCHEME, (request) => {
