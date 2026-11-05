@@ -19,6 +19,7 @@ import * as history from './history'
 import { takeOpenFiles } from './open-files'
 import * as state from './state'
 import type { UpdateService } from './update-service'
+import { allowAppQuit, confirmWindowClose } from './window-close'
 import * as workspace from './workspace'
 
 // Keep in sync with productName in electron-builder.yml — Settings resolves the
@@ -246,6 +247,11 @@ async function dispatch(
     case 'takeOpenFiles':
       return takeOpenFiles()
 
+    case 'closeWindow':
+      if (!window) throw new Error('NO_WINDOW')
+      confirmWindowClose(window, args[0] === true)
+      return undefined
+
     case 'checkForUpdate':
       if (!updateService) throw new Error('UNSUPPORTED')
       return updateService.check(args[0] === true)
@@ -255,6 +261,7 @@ async function dispatch(
       return undefined
     case 'installUpdate':
       if (!updateService) throw new Error('UNSUPPORTED')
+      allowAppQuit()
       updateService.install()
       return undefined
 

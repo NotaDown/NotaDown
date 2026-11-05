@@ -105,6 +105,7 @@ export interface DesktopInvokeMap {
   openExternal: { args: [url: string]; result: void }
   openDefaultAppSettings: { args: []; result: void }
   takeOpenFiles: { args: []; result: string[] }
+  closeWindow: { args: [quit: boolean]; result: void }
   checkForUpdate: { args: [allowPrerelease?: boolean]; result: UpdateSnapshot }
   downloadUpdate: { args: [source?: UpdateDownloadSource]; result: void }
   installUpdate: { args: []; result: void }
@@ -126,6 +127,7 @@ export interface DesktopBridge {
   onDocumentEvents(callback: (events: DocumentChangeEvent[]) => void): () => void
   onMenuCommand(callback: (command: string) => void): () => void
   onOpenFiles(callback: () => void): () => void
+  onCloseRequest(callback: (quit: boolean) => void): () => void
   onUpdateEvent(callback: (snapshot: UpdateSnapshot) => void): () => void
   appName: string
   platform: string
@@ -139,6 +141,7 @@ export const DESKTOP_WORKSPACE_EVENTS_CHANNEL = 'notadown:workspace-events'
 export const DESKTOP_DOCUMENT_EVENTS_CHANNEL = 'notadown:document-events'
 export const DESKTOP_MENU_COMMAND_CHANNEL = 'notadown:menu-command'
 export const DESKTOP_OPEN_FILES_CHANNEL = 'notadown:open-files'
+export const DESKTOP_CLOSE_REQUEST_CHANNEL = 'notadown:close-request'
 export const DESKTOP_UPDATE_EVENTS_CHANNEL = 'notadown:update-events'
 export const DESKTOP_ASSET_SCHEME = 'notadown-asset'
 

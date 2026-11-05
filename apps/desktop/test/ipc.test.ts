@@ -63,6 +63,10 @@ const mocks = vi.hoisted(() => ({
   openFiles: {
     takeOpenFiles: vi.fn(() => ['C:/docs/a.md']),
   },
+  windowClose: {
+    allowAppQuit: vi.fn(),
+    confirmWindowClose: vi.fn(),
+  },
 }))
 
 vi.mock('electron', () => ({
@@ -78,6 +82,7 @@ vi.mock('../src/state', () => mocks.state)
 vi.mock('../src/export', () => mocks.exporter)
 vi.mock('../src/chrome', () => mocks.chrome)
 vi.mock('../src/open-files', () => mocks.openFiles)
+vi.mock('../src/window-close', () => mocks.windowClose)
 
 import { registerIpcHandlers } from '../src/ipc'
 
@@ -250,6 +255,20 @@ describe('registerIpcHandlers', () => {
   it('returns queued files', async () => {
     await expect(invoke('takeOpenFiles')).resolves.toEqual(['C:/docs/a.md'])
     expect(mocks.openFiles.takeOpenFiles).toHaveBeenCalledOnce()
+  })
+
+  it('confirms window close requests', async () => {
+    await expect(invoke('closeWindow', true)).resolves.toBeUndefined()
+    expect(mocks.windowClose.confirmWindowClose).toHaveBeenCalledWith(window, true)
+
+    await expect(invoke('closeWindow', false)).resolves.toBeUndefined()
+    expect(mocks.windowClose.confirmWindowClose).toHaveBeenLastCalledWith(window, false)
+  })
+
+  it('rejects window close without a sender window', async () => {
+    mocks.electron.fromWebContents.mockReturnValueOnce(null)
+    await expect(invoke('closeWindow', false)).rejects.toThrow('NO_WINDOW')
+    expect(mocks.windowClose.confirmWindowClose).not.toHaveBeenCalled()
   })
 
   it('exposes and opens the local history directory', async () => {

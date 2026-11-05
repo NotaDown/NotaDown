@@ -19,6 +19,7 @@ interface BridgeOptions {
 function createBridge(options: BridgeOptions = {}) {
   const calls: Array<{ method: string; args: unknown[] }> = []
   const openFileListeners = new Set<() => void>()
+  const closeListeners = new Set<(quit: boolean) => void>()
   const documentListeners = new Set<(events: DocumentChangeEvent[]) => void>()
 
   const bridge = {
@@ -58,10 +59,14 @@ function createBridge(options: BridgeOptions = {}) {
       openFileListeners.add(callback)
       return () => openFileListeners.delete(callback)
     },
+    onCloseRequest: (callback: (quit: boolean) => void) => {
+      closeListeners.add(callback)
+      return () => closeListeners.delete(callback)
+    },
     platform: options.platform ?? 'win32',
   } as unknown as DesktopBridge
 
-  return { bridge, calls, openFileListeners, documentListeners }
+  return { bridge, calls, openFileListeners, closeListeners, documentListeners }
 }
 
 async function createPlatform(options: BridgeOptions = {}) {
@@ -227,6 +232,23 @@ describe('DesktopPlatform pending open files', () => {
 
     dispose()
     expect(openFileListeners.has(listener)).toBe(false)
+  })
+})
+
+describe('DesktopPlatform window close', () => {
+  it('forwards close requests and confirms them over the bridge', async () => {
+    const { platform, calls, closeListeners } = await createPlatform()
+    const listener = vi.fn()
+
+    const dispose = platform.onCloseRequest(listener)
+    for (const callback of closeListeners) callback(true)
+    expect(listener).toHaveBeenCalledWith(true)
+
+    dispose()
+    expect(closeListeners.size).toBe(0)
+
+    await platform.confirmCloseWindow(true)
+    expect(calls).toContainEqual({ method: 'closeWindow', args: [true] })
   })
 })
 

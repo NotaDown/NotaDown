@@ -104,6 +104,8 @@ export interface Platform {
   getPathForFile(file: File): string | null
   onMenuCommand(callback: (command: string) => void): () => void
   onOpenFiles(callback: () => void): () => void
+  onCloseRequest(callback: (quit: boolean) => void): () => void
+  confirmCloseWindow(quit: boolean): Promise<void>
   checkForUpdate(allowPrerelease?: boolean): Promise<UpdateSnapshot>
   downloadUpdate(source?: UpdateDownloadSource): Promise<void>
   installUpdate(): Promise<void>

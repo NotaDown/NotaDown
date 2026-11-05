@@ -669,6 +669,14 @@ export class WebPlatform implements Platform {
     return () => undefined
   }
 
+  onCloseRequest(): () => void {
+    return () => undefined
+  }
+
+  async confirmCloseWindow(): Promise<void> {
+    // Browsers run their own beforeunload confirmation.
+  }
+
   async checkForUpdate(): Promise<UpdateSnapshot> {
     return {
       status: 'unsupported',

@@ -597,7 +597,7 @@ export const zhCN = {
   },
   dialogs: {
     unsavedTitle: '保存对 {name} 的更改？',
-    unsavedMessage: '如果不保存就关闭此标签页，更改将会丢失。',
+    unsavedMessage: '如果不保存就关闭，更改将会丢失。',
     saveAndClose: '保存并关闭',
     closeWithoutSaving: '不保存直接关闭',
     closeWindowTitle: '尚有未保存的更改',

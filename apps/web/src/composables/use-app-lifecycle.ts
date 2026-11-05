@@ -23,6 +23,8 @@ export function useAppLifecycle(commands: AppCommands): void {
   let sessionTimer: number | null = null
   let historyTimer: number | null = null
   let resizeTimer: number | null = null
+  let closePending = false
+  let unloadAllowed = false
 
   onMounted(async () => {
     await settings.init()
@@ -30,6 +32,7 @@ export function useAppLifecycle(commands: AppCommands): void {
 
     disposers.push(platform.onMenuCommand((command) => void commands.run(command)))
     disposers.push(platform.onOpenFiles(() => void openPendingFiles()))
+    disposers.push(platform.onCloseRequest((quit) => void requestWindowClose(quit)))
     disposers.push(
       workspace.subscribeEvents((events) => void tabs.handleWorkspaceEvents(events)),
     )
@@ -103,10 +106,27 @@ export function useAppLifecycle(commands: AppCommands): void {
     void saveCurrentSession().catch(() => undefined)
   }
 
+  async function requestWindowClose(quit: boolean): Promise<void> {
+    if (closePending) return
+    closePending = true
+    try {
+      if (!(await tabs.confirmCloseAll())) return
+      flushAllEditors()
+      settings.flush()
+      await saveCurrentSession().catch(() => undefined)
+      unloadAllowed = true
+      await platform.confirmCloseWindow(quit)
+    } catch {
+      unloadAllowed = false
+    } finally {
+      closePending = false
+    }
+  }
+
   function onBeforeUnload(event: BeforeUnloadEvent): void {
     flushAllEditors()
     settings.flush()
-    if (!tabs.hasDirty) return
+    if (unloadAllowed || !tabs.hasDirty) return
     event.preventDefault()
     event.returnValue = ''
   }

@@ -587,6 +587,13 @@ export const useTabsStore = defineStore('tabs', () => {
     }
   }
 
+  async function confirmCloseAll(): Promise<boolean> {
+    for (const tab of [...tabs.value]) {
+      if (!(await requestClose(tab))) return false
+    }
+    return true
+  }
+
   async function closeWorkspaceTabs(): Promise<boolean> {
     for (const tab of [...tabs.value]) {
       if (tab.ref.origin !== 'workspace') continue
@@ -922,6 +929,7 @@ export const useTabsStore = defineStore('tabs', () => {
     closeLeft,
     closeRight,
     closeAll,
+    confirmCloseAll,
     closeWorkspaceTabs,
     markDeleted,
     remapWorkspacePath,

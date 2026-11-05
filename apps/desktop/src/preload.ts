@@ -2,6 +2,7 @@ import {
   APP_NAME,
   DESKTOP_APP_NAME_ARG,
   DESKTOP_ASSET_SCHEME,
+  DESKTOP_CLOSE_REQUEST_CHANNEL,
   DESKTOP_DOCUMENT_EVENTS_CHANNEL,
   DESKTOP_INVOKE_CHANNEL,
   DESKTOP_MENU_COMMAND_CHANNEL,
@@ -71,6 +72,11 @@ const bridge: DesktopBridge = {
     const listener = () => callback()
     ipcRenderer.on(DESKTOP_OPEN_FILES_CHANNEL, listener)
     return () => ipcRenderer.removeListener(DESKTOP_OPEN_FILES_CHANNEL, listener)
+  },
+  onCloseRequest(callback: (quit: boolean) => void): () => void {
+    const listener = (_event: unknown, quit: boolean) => callback(quit === true)
+    ipcRenderer.on(DESKTOP_CLOSE_REQUEST_CHANNEL, listener)
+    return () => ipcRenderer.removeListener(DESKTOP_CLOSE_REQUEST_CHANNEL, listener)
   },
   onUpdateEvent(callback: (snapshot: UpdateSnapshot) => void): () => void {
     const listener = (_event: unknown, snapshot: UpdateSnapshot) => callback(snapshot)

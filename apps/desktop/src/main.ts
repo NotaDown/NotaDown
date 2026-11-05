@@ -2,6 +2,7 @@ import {
   APP_NAME,
   DESKTOP_APP_NAME_ARG,
   DESKTOP_ASSET_SCHEME,
+  DESKTOP_CLOSE_REQUEST_CHANNEL,
   DESKTOP_OPEN_FILES_CHANNEL,
   DESKTOP_TITLE_BAR_ARG,
   DESKTOP_UPDATE_EVENTS_CHANNEL,
@@ -17,6 +18,12 @@ import { resolveMenuLocale } from './menu-labels'
 import { queueOpenFiles } from './open-files'
 import { loadSettings } from './state'
 import { createDesktopUpdateService } from './updater'
+import {
+  allowAppQuit,
+  allowWindowClose,
+  isAppQuitAllowed,
+  isWindowCloseAllowed,
+} from './window-close'
 import { stopWatch } from './workspace'
 
 const APP_USER_MODEL_ID = 'com.notadown.app'
@@ -54,7 +61,10 @@ async function recreateWindow(): Promise<void> {
   await resolveWindowChrome()
   const previous = BrowserWindow.getAllWindows()[0] ?? null
   createWindow()
-  previous?.close()
+  if (previous) {
+    allowWindowClose(previous)
+    previous.close()
+  }
 }
 
 function createWindow(): BrowserWindow {
@@ -98,6 +108,19 @@ function createWindow(): BrowserWindow {
   })
 
   window.once('ready-to-show', () => window.show())
+
+  // The renderer decides whether unsaved changes may be discarded, so the
+  // close request is forwarded instead of closing the window right away.
+  window.on('close', (event) => {
+    if (isWindowCloseAllowed(window)) return
+    event.preventDefault()
+    window.webContents.send(DESKTOP_CLOSE_REQUEST_CHANNEL, false)
+  })
+
+  // A dead renderer can no longer answer the close request.
+  window.webContents.on('render-process-gone', () => {
+    allowWindowClose(window)
+  })
 
   window.webContents.setWindowOpenHandler(({ url }) => {
     if (/^(https?:|mailto:)/i.test(url)) void shell.openExternal(url)
@@ -207,7 +230,16 @@ if (!hasLock) {
     })
   })
 
-  app.on('before-quit', () => {
+  app.on('before-quit', (event) => {
+    if (!isAppQuitAllowed()) {
+      const window = BrowserWindow.getAllWindows()[0]
+      if (window && !window.isDestroyed() && !isWindowCloseAllowed(window)) {
+        event.preventDefault()
+        window.webContents.send(DESKTOP_CLOSE_REQUEST_CHANNEL, true)
+        return
+      }
+      allowAppQuit()
+    }
     stopWatch()
     stopAllFileWatches()
   })

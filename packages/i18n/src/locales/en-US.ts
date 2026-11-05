@@ -600,7 +600,7 @@ export const enUS = {
   },
   dialogs: {
     unsavedTitle: 'Save changes to {name}?',
-    unsavedMessage: 'Your changes will be lost if you close this tab without saving.',
+    unsavedMessage: 'Your changes will be lost if you close without saving.',
     saveAndClose: 'Save and close',
     closeWithoutSaving: 'Close without saving',
     closeWindowTitle: 'You have unsaved changes',

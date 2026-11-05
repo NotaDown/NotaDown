@@ -364,6 +364,14 @@ export class DesktopPlatform implements Platform {
     return this.bridge.onOpenFiles(callback)
   }
 
+  onCloseRequest(callback: (quit: boolean) => void): () => void {
+    return this.bridge.onCloseRequest(callback)
+  }
+
+  async confirmCloseWindow(quit: boolean): Promise<void> {
+    await this.bridge.invoke('closeWindow', quit)
+  }
+
   async checkForUpdate(allowPrerelease?: boolean): Promise<UpdateSnapshot> {
     return this.bridge.invoke('checkForUpdate', allowPrerelease)
   }
