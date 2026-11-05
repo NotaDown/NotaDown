@@ -6,6 +6,7 @@ import {
   fuzzyMatch,
   isAbsoluteFilePath,
   isIndexExcludedPath,
+  joinAbsolutePath,
   joinFrontmatter,
   joinPosix,
   openableFileArgs,
@@ -70,6 +71,11 @@ describe('path helpers', () => {
       'C:/docs/notes/images/x.png',
     )
     expect(resolveDocumentPath('/home/me/notes', '/images/x.png')).toBe('/images/x.png')
+  })
+
+  it('joins relative paths onto absolute bases with the base separator style', () => {
+    expect(joinAbsolutePath('C:\\Docs\\Vault\\', 'notes/a.md')).toBe('C:\\Docs\\Vault\\notes\\a.md')
+    expect(joinAbsolutePath('/home/me/vault/', '/notes/a.md')).toBe('/home/me/vault/notes/a.md')
   })
 
   it('normalizes absolute paths without rebasing them', () => {

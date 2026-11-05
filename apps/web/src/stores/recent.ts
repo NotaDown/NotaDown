@@ -1,6 +1,12 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import type { DocumentOrigin, DocumentRef, WorkspaceInfo } from '@notadown/shared'
+import {
+  joinAbsolutePath,
+  normalizeSlashes,
+  type DocumentOrigin,
+  type DocumentRef,
+  type WorkspaceInfo,
+} from '@notadown/shared'
 import { platform } from '@/platform'
 
 export interface RecentDocument {
@@ -19,6 +25,23 @@ export interface RecentFolder {
   path: string | null
   workspace: WorkspaceInfo
   openedAt: number
+}
+
+/** Workspace documents store a path relative to the workspace root; show the real location. */
+export function recentDocumentPath(entry: RecentDocument): string {
+  if (entry.origin === 'workspace' && entry.path && entry.workspace?.rootPath) {
+    return joinAbsolutePath(entry.workspace.rootPath, entry.path)
+  }
+  return entry.path ?? ''
+}
+
+// The same file gets a workspace ref when opened from a folder and a file ref when opened
+// on its own, so dedupe by the resolved path instead of the ref key.
+function recentDocumentIdentity(entry: RecentDocument): string | null {
+  const path = normalizeSlashes(recentDocumentPath(entry))
+  if (/^[a-zA-Z]:\//.test(path) || path.startsWith('//')) return path.toLowerCase()
+  if (path.startsWith('/')) return path
+  return null
 }
 
 const DOCUMENTS_KEY = 'notadown:recent'
@@ -41,10 +64,15 @@ export const useRecentStore = defineStore('recent', () => {
       workspace: workspace ? { ...workspace } : null,
       openedAt: Date.now(),
     }
-    const next = [entry, ...documents.value.filter((item) => item.key !== entry.key)].slice(
-      0,
-      MAX_RECENT,
-    )
+    const identity = recentDocumentIdentity(entry)
+    const next = [
+      entry,
+      ...documents.value.filter(
+        (item) =>
+          item.key !== entry.key &&
+          (identity === null || recentDocumentIdentity(item) !== identity),
+      ),
+    ].slice(0, MAX_RECENT)
     documents.value = next
     persist(DOCUMENTS_KEY, next)
   }
@@ -86,7 +114,18 @@ export const useRecentStore = defineStore('recent', () => {
 })
 
 function loadDocuments(): RecentDocument[] {
-  return load(DOCUMENTS_KEY, isRecentDocument)
+  return dedupeDocuments(load(DOCUMENTS_KEY, isRecentDocument))
+}
+
+function dedupeDocuments(entries: RecentDocument[]): RecentDocument[] {
+  const seen = new Set<string>()
+  return entries.filter((entry) => {
+    const identity = recentDocumentIdentity(entry)
+    if (identity === null) return true
+    if (seen.has(identity)) return false
+    seen.add(identity)
+    return true
+  })
 }
 
 function loadFolders(): RecentFolder[] {

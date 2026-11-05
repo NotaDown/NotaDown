@@ -13,6 +13,7 @@ import {
 import { formatRelativeTime } from '@notadown/i18n'
 import { platform } from '@/platform'
 import {
+  recentDocumentPath,
   useRecentStore,
   type RecentDocument,
   type RecentFolder,
@@ -172,7 +173,7 @@ function removeRecentFolder(event: MouseEvent, entry: RecentFolder): void {
                   <FileText :size="14" class="recent-row__icon" />
                   <span class="recent-row__text">
                     <span class="recent-row__name">{{ entry.name }}</span>
-                    <span class="recent-row__path">{{ entry.path }}</span>
+                    <span class="recent-row__path">{{ recentDocumentPath(entry) }}</span>
                   </span>
                   <span class="recent-row__time">
                     {{ formatRelativeTime(entry.openedAt, settings.locale) }}

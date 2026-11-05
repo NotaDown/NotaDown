@@ -2,6 +2,7 @@ import {
   basename,
   fileDocumentRef,
   isOpenableTextFile,
+  joinAbsolutePath,
   normalizeSlashes,
   type AppSettings,
   type AssetReadResult,
@@ -107,7 +108,7 @@ export class DesktopPlatform implements Platform {
   workspaceAbsolutePath(path: string): string | null {
     const root = this.workspace?.rootPath
     if (!root) return null
-    return joinAbsolute(root, path)
+    return joinAbsolutePath(root, path)
   }
 
   async createWorkspaceFile(path: string, content: string): Promise<void> {
@@ -391,7 +392,7 @@ export class DesktopPlatform implements Platform {
     if (target.scope === 'absolute') return target.path
     const workspace = this.workspace
     if (!workspace?.rootPath) throw new Error('NO_WORKSPACE')
-    return joinAbsolute(workspace.rootPath, target.path)
+    return joinAbsolutePath(workspace.rootPath, target.path)
   }
 
   private defaultSaveDirectory(ref: DocumentRef | null): string | null {
@@ -402,13 +403,6 @@ export class DesktopPlatform implements Platform {
     }
     return this.workspace?.rootPath ?? null
   }
-}
-
-function joinAbsolute(base: string, relative: string): string {
-  const cleanBase = base.replace(/[\\/]+$/, '')
-  const normalizedRelative = normalizeSlashes(relative).replace(/^\/+/, '')
-  if (cleanBase.includes('\\')) return `${cleanBase}\\${normalizedRelative.replace(/\//g, '\\')}`
-  return `${cleanBase}/${normalizedRelative}`
 }
 
 function absoluteDirname(path: string): string {

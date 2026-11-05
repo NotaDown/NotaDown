@@ -110,6 +110,13 @@ export function joinPosix(...parts: string[]): string {
   return segments.join('/')
 }
 
+export function joinAbsolutePath(base: string, relative: string): string {
+  const cleanBase = base.replace(/[\\/]+$/, '')
+  const normalizedRelative = normalizeSlashes(relative).replace(/^\/+/, '')
+  if (cleanBase.includes('\\')) return `${cleanBase}\\${normalizedRelative.replace(/\//g, '\\')}`
+  return `${cleanBase}/${normalizedRelative}`
+}
+
 export function isAbsoluteFilePath(value: string): boolean {
   const clean = normalizeSlashes(value)
   return /^[a-zA-Z]:\//.test(clean) || clean.startsWith('//') || clean.startsWith('/')
