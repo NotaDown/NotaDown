@@ -64,10 +64,11 @@
 }
 
 .nd-editor .milkdown .ProseMirror {
-  max-width: var(--nd-editor-width, 780px);
+  max-width: min(100%, calc(var(--nd-editor-width, 780px) + 44px));
   min-height: 100%;
   margin: 0 auto;
-  padding: var(--nd-editor-padding-top, 64px) 64px 45vh;
+  /* The block handle (66px wide, 16px away) overhangs the block, so the gutter must fit it. */
+  padding: var(--nd-editor-padding-top, 64px) 86px 45vh;
   outline: none;
   font-size: var(--nd-editor-font-size, 16px);
   line-height: var(--nd-line-height, 1.75);
@@ -770,10 +771,10 @@
 }
 
 .nd-source-editor .cm-content {
-  max-width: var(--nd-editor-width, 780px);
+  max-width: min(100%, calc(var(--nd-editor-width, 780px) + 44px));
   min-height: 100%;
   margin: 0 auto;
-  padding: var(--nd-editor-padding-top, 64px) 64px 45vh;
+  padding: var(--nd-editor-padding-top, 64px) 86px 45vh;
   font-size: calc(var(--nd-editor-font-size, 17px) - 1px);
   line-height: var(--nd-line-height, 1.75);
 }
@@ -829,5 +830,13 @@
   .nd-editor .milkdown .ProseMirror th,
   .nd-editor .milkdown .ProseMirror td {
     padding: calc(7px * var(--nd-table-spacing, 0.6)) 9px;
+  }
+}
+
+/* A narrow desktop window still shows the block handle, which needs its gutter. */
+@media (max-width: 720px) and (hover: hover) and (pointer: fine) {
+  .nd-editor .milkdown .ProseMirror,
+  .nd-source-editor .cm-content {
+    padding-inline: 86px;
   }
 }
