@@ -23,6 +23,7 @@ import { useWorkspaceStore } from '@/stores/workspace'
 import { platform } from '@/platform'
 import { describeError } from '@/errors'
 import { useInjectedCommands } from '@/composables/use-app-commands'
+import { useDeleteEntry } from '@/composables/use-delete-entry'
 import PopupMenu from './common/PopupMenu.vue'
 import type { MenuItem } from './common/menu-types'
 
@@ -31,6 +32,7 @@ const tabs = useTabsStore()
 const ui = useUiStore()
 const workspace = useWorkspaceStore()
 const commands = useInjectedCommands()
+const { removeEntry } = useDeleteEntry()
 
 const tabElements = new Map<string, HTMLElement>()
 
@@ -66,6 +68,7 @@ const contextItems = computed<MenuItem[]>(() => {
       label: t('sidebar.rename'),
       shortcut: commands.shortcut('workspace.renameEntry'),
     })
+    items.push({ id: 'delete', label: t('sidebar.delete'), danger: true })
   }
   items.push({ id: inWorkspace ? 'sep-2' : 'sep-1', separator: true })
   if (path && inWorkspace && platform.capabilities.revealInFolder) {
@@ -165,6 +168,10 @@ async function handleMenuSelect(id: string): Promise<void> {
   }
   if (id === 'rename') {
     openRenameDialog(tab)
+    return
+  }
+  if (id === 'delete' && tab.ref.path && tab.ref.origin === 'workspace') {
+    await removeEntry(tab.ref.path, 'file')
     return
   }
   if (id === 'copy-name') {

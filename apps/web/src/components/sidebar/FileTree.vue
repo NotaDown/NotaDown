@@ -36,8 +36,8 @@ import { describeError } from '@/errors'
 import { useWorkspaceStore, type WorkspaceNode } from '@/stores/workspace'
 import { useTabsStore } from '@/stores/tabs'
 import { useUiStore } from '@/stores/ui'
-import { useSettingsStore } from '@/stores/settings'
 import { useInjectedCommands } from '@/composables/use-app-commands'
+import { useDeleteEntry } from '@/composables/use-delete-entry'
 import PopupMenu from '../common/PopupMenu.vue'
 import type { MenuItem } from '../common/menu-types'
 
@@ -62,8 +62,8 @@ const { t } = useI18n()
 const workspace = useWorkspaceStore()
 const tabs = useTabsStore()
 const ui = useUiStore()
-const settings = useSettingsStore()
 const commands = useInjectedCommands()
+const { removeEntry } = useDeleteEntry()
 
 const treeRoot = ref<HTMLElement | null>(null)
 
@@ -427,32 +427,6 @@ function handleContextSelect(id: string): void {
     case 'refresh':
       void workspace.refresh()
       break
-  }
-}
-
-async function removeEntry(path: string, kind: 'file' | 'directory'): Promise<void> {
-  if (settings.settings.confirmDelete) {
-    const message =
-      kind === 'directory'
-        ? t('tree.confirmDeleteFolder')
-        : platform.capabilities.revealInFolder
-          ? t('tree.confirmDeleteFile')
-          : t('tree.confirmDeletePermanent')
-    const confirmed = await ui.confirm({
-      title: t('tree.confirmDeleteTitle', { name: basename(path) }),
-      message,
-      confirmLabel: t('common.delete'),
-      cancelLabel: t('common.cancel'),
-      danger: true,
-    })
-    if (!confirmed) return
-  }
-  try {
-    await workspace.deleteEntry(path)
-    tabs.markDeleted(path, kind === 'directory')
-    ui.toast('success', t('tree.deleted', { name: basename(path) }))
-  } catch (error) {
-    ui.toast('error', t('errors.generic'), describeError(error))
   }
 }
 
