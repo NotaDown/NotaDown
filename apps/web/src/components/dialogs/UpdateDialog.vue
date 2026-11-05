@@ -1,16 +1,38 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { X } from '@lucide/vue'
 import { platform } from '@/platform'
+import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui'
 import { useUpdateStore } from '@/stores/update'
 
 const { t } = useI18n()
 const ui = useUiStore()
+const settings = useSettingsStore()
 const update = useUpdateStore()
 
+const isPrereleaseBuild = platform.version.includes('-')
+const checkPrerelease = ref(false)
+
+watch(
+  () => ui.updateOpen,
+  (open) => {
+    if (open) {
+      checkPrerelease.value =
+        isPrereleaseBuild || settings.settings.checkPrereleaseUpdates
+    }
+  },
+  { immediate: true },
+)
+
 const status = computed(() => update.snapshot?.status ?? 'idle')
+const canChoosePrerelease = computed(() =>
+  ['idle', 'checking', 'not-available', 'error'].includes(status.value),
+)
+const canRecheck = computed(
+  () => status.value === 'not-available' || status.value === 'idle',
+)
 const currentVersion = computed(
   () => update.snapshot?.currentVersion ?? platform.version,
 )
@@ -94,6 +116,10 @@ const message = computed(() => {
 
 function close(): void {
   ui.updateOpen = false
+}
+
+function recheck(): void {
+  void update.check(checkPrerelease.value)
 }
 
 function formatBytes(value: number): string {
@@ -204,6 +230,17 @@ function formatBytes(value: number): string {
           </div>
 
           <footer class="nd-dialog-footer">
+            <label v-if="canChoosePrerelease" class="update-prerelease">
+              <input
+                v-model="checkPrerelease"
+                type="checkbox"
+                :disabled="isPrereleaseBuild || status === 'checking'"
+              />
+              <span>{{ t('update.checkPrerelease') }}</span>
+              <span class="update-prerelease__once">
+                {{ t('update.checkPrereleaseOnce') }}
+              </span>
+            </label>
             <template v-if="status === 'available'">
               <button type="button" class="nd-btn" @click="close">
                 {{ t('update.later') }}
@@ -233,7 +270,7 @@ function formatBytes(value: number): string {
               <button type="button" class="nd-btn" @click="close">
                 {{ t('update.close') }}
               </button>
-              <button type="button" class="nd-btn nd-btn--primary" @click="update.check()">
+              <button type="button" class="nd-btn nd-btn--primary" @click="recheck">
                 {{ t('update.retry') }}
               </button>
             </template>
@@ -252,6 +289,9 @@ function formatBytes(value: number): string {
             <template v-else>
               <button type="button" class="nd-btn" @click="close">
                 {{ t('update.close') }}
+              </button>
+              <button v-if="canRecheck" type="button" class="nd-btn" @click="recheck">
+                {{ t('update.checkAgain') }}
               </button>
             </template>
           </footer>
@@ -275,6 +315,34 @@ function formatBytes(value: number): string {
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.update-prerelease {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: auto;
+  color: var(--nd-text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.update-prerelease input {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  accent-color: var(--nd-accent);
+}
+
+.update-prerelease:has(input:disabled) {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.update-prerelease__once {
+  color: var(--nd-text-muted);
+  font-size: 11px;
 }
 
 .update-versions {
