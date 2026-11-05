@@ -6,8 +6,8 @@
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  /* CodeMirror 的 gutter（z-index 200）和 Crepe 的语言选择器（999）用的是局部层级，
-     不隔离会浮到页面级弹窗之上。 */
+  /* CodeMirror's gutter (z-index 200) and Crepe's language picker (999) use local stacking levels,
+     without isolation they float above page-level dialogs. */
   isolation: isolate;
   background: var(--nd-bg);
   color: var(--nd-text);
@@ -299,7 +299,7 @@
 .nd-editor .milkdown .milkdown-toolbar,
 .nd-editor .milkdown .milkdown-link-preview,
 .nd-editor .milkdown .milkdown-link-edit,
-/* Crepe 收起语言选择器时留下一个空的绝对定位容器，给它描边会渲染成一条细竖线。 */
+/* Crepe leaves an empty absolutely positioned container when the language picker collapses; outlining it renders as a thin vertical line. */
 .nd-editor .milkdown .language-picker:not(:empty),
 .nd-editor .milkdown .milkdown-latex-inline-edit {
   border: 1px solid var(--nd-border);
@@ -313,7 +313,7 @@
   border-radius: 6px;
 }
 
-/* 与拖拽把手菜单（.nd-block-menu）保持同一套尺寸和视觉。 */
+/* Keeps the same size and look as the drag-handle menu (.nd-block-menu). */
 .nd-editor .milkdown .milkdown-slash-menu {
   min-width: 172px;
   padding: 5px;
@@ -793,7 +793,7 @@
   color: var(--nd-text);
 }
 
-/* 合并视图内部编辑器是自适应高度，滚动条只能挂在外层容器上。 */
+/* The editors inside the merge view size themselves, so the scrollbar can only live on the outer container. */
 .nd-diff-editor .cm-mergeView {
   height: 100%;
   overflow-x: hidden;

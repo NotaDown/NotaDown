@@ -174,9 +174,9 @@ export interface SourceEditorOptions {
   largeDocument?: boolean
 }
 
-/** CodeMirror 合并视图自带文案，宿主没有 i18n 时回落英文，所以由调用方注入。 */
+/** CodeMirror's merge view ships its own wording and falls back to English when the host has no i18n, so callers inject it. */
 export interface DiffEditorLabels {
-  /** 折叠的未改动行占位文案，`$` 会被替换成行数。 */
+  /** Placeholder for collapsed unchanged lines; `$` is replaced with the line count. */
   unchangedLines: string
 }
 

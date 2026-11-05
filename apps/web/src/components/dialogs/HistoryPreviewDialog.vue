@@ -64,14 +64,14 @@ const currentStats = computed(() => {
   if (!tab) return null
   return {
     date: tab.mtime === null ? t('sidebar.neverSaved') : formatDateTime(tab.mtime, settings.locale),
-    // 磁盘时间可能落后于编辑器里的内容，用悬浮提示说明还有未保存的更改。
+    // The mtime on disk can lag behind the editor buffer, so a hover hint flags the unsaved changes.
     hint: tabs.isDirty(tab) ? t('tabs.unsaved') : '',
     words: formatNumber(countWords(tab.content).words, settings.locale),
     size: formatSize(byteLength(tab.content)),
   }
 })
 
-/** 只读预览的图片解析只需要文档 ref：优先跟随已打开的 tab，其次按快照路径重建。 */
+/** Image resolution in the read-only preview only needs a document ref: follow the open tab first, then rebuild it from the snapshot path. */
 function stubRef(): DocumentRef | null {
   const item = record.value
   if (!item) return null
@@ -104,7 +104,7 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-/** 与网页版快照同一个口径：UTF-8 编码后的字节数。 */
+/** Same measure as the web snapshots: byte length after UTF-8 encoding. */
 function byteLength(text: string): number {
   return new Blob([text]).size
 }
@@ -193,7 +193,7 @@ async function switchMode(value: SurfaceMode): Promise<void> {
   if (mode.value === value) return
   if (value === 'compare' && !canCompare.value) return
   mode.value = value
-  // 合并视图要在容器可见后创建，否则 CodeMirror 量不到行高。
+  // The merge view must be created after the container becomes visible, otherwise CodeMirror cannot measure line height.
   await nextTick()
   void mountActiveSurface()
 }
@@ -224,7 +224,7 @@ watch(
 watch(
   [() => settings.effectiveMode, () => settings.locale],
   () => {
-    // 主题色和合并视图的短语都在挂载时固化，改了要重建。
+    // Theme colors and the merge view phrases are captured at mount time, so changing them requires a rebuild.
     if (ui.historyRecord && mode.value === 'compare') void mountActiveSurface()
   },
 )
@@ -343,7 +343,7 @@ watch(
 </template>
 
 <style scoped>
-/* 低于确认弹窗（250），高于其余浮层（100/220）。 */
+/* Below the confirm dialog (250), above the other overlays (100/220). */
 .nd-overlay--history {
   z-index: 245;
 }
@@ -353,14 +353,14 @@ watch(
   height: min(720px, 88vh);
 }
 
-/* 放大即铺满遮罩内容盒（遮罩自带 20px 内边距），顺带解除 .nd-dialog 的 80vh 上限。 */
+/* Maximizing fills the overlay content box (the overlay carries 20px of padding) and lifts the 80vh cap of .nd-dialog. */
 .history-dialog--max {
   width: 100%;
   height: 100%;
   max-height: none;
 }
 
-/* 桌面版的系统窗口按钮悬浮在右上角、盖在内容之上，放大态要把弹窗顶边压到那一条下面。 */
+/* The desktop system window buttons float over the top-right corner of the content, so the maximized dialog keeps its top edge below them. */
 .nd-overlay--max.nd-overlay--avoid-controls {
   padding-top: calc(var(--nd-topbar-height) + 8px);
 }
@@ -372,7 +372,7 @@ watch(
   justify-self: end;
 }
 
-/* 三列栅格让切换器落在弹窗正中：两侧轨道各占一半，标题长短不会把它推着偏。 */
+/* Three columns put the switcher in the middle of the dialog: the side tracks split the rest evenly, so the title length cannot push it off center. */
 .history-dialog__header {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -464,14 +464,14 @@ watch(
   flex-direction: column;
 }
 
-/* 表头占掉的高度靠 flex 分配给合并视图，而不是 .nd-diff-editor 自带的 height:100%。 */
+/* The height left over from the header reaches the merge view through flex, not the height:100% that .nd-diff-editor carries. */
 .history-dialog__diff {
   flex: 1;
   min-height: 0;
   height: auto;
 }
 
-/* 两列宽度用 50/50 近似合并视图的分栏，不画分隔线：竖向滚动条会让真实分栏点偏移半根滚动条宽。 */
+/* The two columns approximate the merge view split with 50/50 and no divider: a vertical scrollbar shifts the real split point by half its width. */
 .history-diff__head {
   display: flex;
   flex: 0 0 auto;
@@ -518,7 +518,7 @@ watch(
   text-overflow: ellipsis;
 }
 
-/* 弹窗默认禁止选中文本；只读预览正文要保持可复制。 */
+/* Dialogs disable text selection by default; the read-only preview body has to stay copyable. */
 .history-dialog__preview :deep(.ProseMirror),
 .history-dialog__compare :deep(.cm-content) {
   user-select: text;

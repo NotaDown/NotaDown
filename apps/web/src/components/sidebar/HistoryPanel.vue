@@ -34,7 +34,7 @@ let clock: number | null = null
 
 const active = computed(() => tabs.activeTab)
 const canFilterCurrent = computed(() => tabs.activeDocumentKey !== null)
-// 默认只看当前文档的历史；没有打开任何文档时退回全部。
+// Show only the current document's history by default; fall back to all documents when none is open.
 const showCurrentOnly = computed(() => !showAll.value && canFilterCurrent.value)
 const filterKey = computed(() =>
   showCurrentOnly.value ? (tabs.activeDocumentKey ?? undefined) : undefined,
@@ -86,7 +86,7 @@ function openPreview(record: HistoryRecord, compare: boolean): void {
   ui.openHistoryDialog(record, compare ? 'compare' : 'preview')
 }
 
-/** 整行是主入口：能对比就直接进对比视图。 */
+/** The whole row is the primary entry: go straight to the compare view when a comparison is possible. */
 function openRow(record: HistoryRecord): void {
   openPreview(record, canCompare(record))
 }

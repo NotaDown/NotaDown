@@ -197,6 +197,7 @@ export const enUS = {
     versionWords: 'Words: {value}',
     versionSize: 'File size: {value}',
     neverSaved: 'Not saved yet',
+    // Phrase handed to CodeMirror's merge view; it replaces $ with the line count itself.
     historyUnchangedLines: '$ unchanged lines',
   },
   tree: {

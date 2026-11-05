@@ -6,7 +6,7 @@ import { EditorView, lineNumbers } from '@codemirror/view'
 import { createCodeMirrorTheme } from './codemirror-theme'
 import type { DiffEditor, DiffEditorOptions } from './types'
 
-// 合并视图的高度、滚动由 .nd-diff-editor 的普通 CSS 负责：theme 选择器只能命中编辑器内部元素。
+// Height and scrolling of the merge view belong to plain CSS on .nd-diff-editor: theme selectors only reach elements inside the editor.
 const mergeLayout = EditorView.theme({
   '&.cm-merge-a .cm-changedLine, .cm-deletedChunk': {
     backgroundColor: 'color-mix(in srgb, var(--nd-danger) 10%, transparent)',

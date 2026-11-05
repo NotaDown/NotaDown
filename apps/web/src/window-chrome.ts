@@ -13,7 +13,7 @@ export const usesNativeTitleBar = computed(
 export const desktopPlatform = ref(
   typeof window === 'undefined' ? '' : (window.notadown?.platform ?? ''),
 )
-/** Windows / Linux 的集成标题栏把系统窗口按钮悬浮在右上角，内容要主动让开。 */
+/** The integrated title bar on Windows / Linux floats the system window buttons over the top-right corner, so content has to step aside. */
 export const usesOverlayWindowControls = computed(
   () =>
     platform.kind === 'desktop' &&
