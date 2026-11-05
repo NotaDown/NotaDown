@@ -313,6 +313,71 @@
   border-radius: 6px;
 }
 
+/* 与拖拽把手菜单（.nd-block-menu）保持同一套尺寸和视觉。 */
+.nd-editor .milkdown .milkdown-slash-menu {
+  min-width: 172px;
+  padding: 5px;
+  border-radius: var(--nd-radius-md);
+}
+
+.nd-editor .milkdown .milkdown-slash-menu .tab-group {
+  padding: 0 0 5px;
+  border-bottom: 1px solid var(--nd-border);
+}
+
+.nd-editor .milkdown .milkdown-slash-menu .tab-group ul {
+  padding: 0;
+  gap: 2px;
+}
+
+.nd-editor .milkdown .milkdown-slash-menu .tab-group ul li {
+  padding: 0 9px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 28px;
+  border-radius: var(--nd-radius-sm);
+}
+
+.nd-editor .milkdown .milkdown-slash-menu .menu-groups {
+  padding: 5px 0 0;
+}
+
+.nd-editor .milkdown .milkdown-slash-menu .menu-groups .menu-group h6 {
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.nd-editor .milkdown .milkdown-slash-menu .menu-groups .menu-group li {
+  min-width: 160px;
+  height: 30px;
+  gap: 8px;
+  padding: 0 9px;
+  border-radius: var(--nd-radius-sm);
+}
+
+.nd-editor .milkdown .milkdown-slash-menu .menu-groups .menu-group li.hover,
+.nd-editor .milkdown .milkdown-slash-menu .tab-group ul li:hover {
+  background: var(--nd-surface);
+}
+
+.nd-editor .milkdown .milkdown-slash-menu .menu-groups .menu-group li svg {
+  width: 18px;
+  height: 18px;
+}
+
+.nd-editor .milkdown .milkdown-slash-menu .menu-groups .menu-group li > span {
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.nd-editor .milkdown .milkdown-slash-menu .menu-groups .menu-group + .menu-group::before {
+  margin: 5px 4px;
+  background: var(--nd-border);
+}
+
 .nd-block-menu {
   position: fixed;
   z-index: 400;
