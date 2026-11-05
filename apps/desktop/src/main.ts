@@ -19,6 +19,12 @@ import { stopWatch } from './workspace'
 
 app.setName('NotaDown')
 
+// Keep the unpackaged instance out of the installed app's userData so their
+// single-instance locks (and session/settings files) don't collide.
+if (!app.isPackaged && !app.commandLine.hasSwitch('user-data-dir')) {
+  app.setPath('userData', `${app.getPath('userData')}-dev`)
+}
+
 protocol.registerSchemesAsPrivileged([
   {
     scheme: DESKTOP_ASSET_SCHEME,
