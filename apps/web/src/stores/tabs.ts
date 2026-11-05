@@ -528,7 +528,17 @@ export const useTabsStore = defineStore('tabs', () => {
     const choice = await ui.askUnsaved(tab.name)
     if (choice === 'cancel') return false
     if (choice === 'save') return saveTab(tab)
+    if (tab.ref.origin === 'untitled') {
+      removeTab(tab)
+      return true
+    }
+    discardChanges(tab)
     return true
+  }
+
+  function discardChanges(tab: EditorTab): void {
+    tab.content = tab.savedContent
+    tab.reloadToken += 1
   }
 
   function removeTab(tab: EditorTab): void {
