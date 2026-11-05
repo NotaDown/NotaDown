@@ -16,7 +16,7 @@ import {
   X,
   FileWarning,
 } from '@lucide/vue'
-import { basename } from '@notadown/shared'
+import { basename, extensionOf, sanitizeFileName } from '@notadown/shared'
 import { useTabsStore, type EditorTab } from '@/stores/tabs'
 import { useUiStore } from '@/stores/ui'
 import { useWorkspaceStore } from '@/stores/workspace'
@@ -50,7 +50,6 @@ const contextTab = computed(
 const contextItems = computed<MenuItem[]>(() => {
   const tab = contextTab.value
   const path = tab?.ref.path ?? null
-  const inWorkspace = tab?.ref.origin === 'workspace'
   const index = tab ? tabs.tabs.findIndex((item) => item.key === tab.key) : -1
   const items: MenuItem[] = [
     { id: 'close', label: t('tabs.close') },
@@ -63,7 +62,7 @@ const contextItems = computed<MenuItem[]>(() => {
     { id: 'close-others', label: t('tabs.closeOthers'), disabled: tabs.tabs.length < 2 },
     { id: 'close-all', label: t('tabs.closeAll') },
   ]
-  if (inWorkspace) {
+  if (path) {
     items.push({ id: 'sep-1', separator: true })
     items.push({
       id: 'rename',
@@ -72,7 +71,7 @@ const contextItems = computed<MenuItem[]>(() => {
     })
     items.push({ id: 'delete', label: t('sidebar.delete'), danger: true })
   }
-  items.push({ id: inWorkspace ? 'sep-2' : 'sep-1', separator: true })
+  items.push({ id: path ? 'sep-2' : 'sep-1', separator: true })
   if (path && platform.capabilities.revealInFolder) {
     items.push({ id: 'reveal', label: revealLabel.value })
   }
@@ -172,8 +171,9 @@ async function handleMenuSelect(id: string): Promise<void> {
     openRenameDialog(tab)
     return
   }
-  if (id === 'delete' && tab.ref.path && tab.ref.origin === 'workspace') {
-    await removeEntry(tab.ref.path, 'file')
+  if (id === 'delete' && tab.ref.path) {
+    const origin = tab.ref.origin === 'workspace' ? 'workspace' : 'file'
+    await removeEntry({ path: tab.ref.path, origin })
     return
   }
   if (id === 'copy-name') {
@@ -203,15 +203,19 @@ async function copyToClipboard(value: string): Promise<void> {
   }
 }
 
-const renameDialog = ref<{ path: string; name: string } | null>(null)
+const renameDialog = ref<{
+  path: string
+  name: string
+  origin: 'workspace' | 'file'
+} | null>(null)
 const renameInput = ref<HTMLInputElement | null>(null)
 const renameError = ref('')
 const renameBusy = ref(false)
 
 function openRenameDialog(tab: EditorTab): void {
   const path = tab.ref.path
-  if (tab.ref.origin !== 'workspace' || !path) return
-  renameDialog.value = { path, name: basename(path) }
+  if (!path || tab.ref.origin === 'untitled') return
+  renameDialog.value = { path, name: basename(path), origin: tab.ref.origin }
   renameError.value = ''
   void nextTick(() => {
     renameInput.value?.focus()
@@ -234,7 +238,7 @@ function onWindowKeydown(event: KeyboardEvent): void {
   if (!fromMenu && ui.workArea !== 'editor') return
   if (target.closest('input, textarea, .nd-dialog, .nd-overlay')) return
   const tab = fromMenu ? contextTab.value : tabs.activeTab
-  if (tab?.ref.origin !== 'workspace' || !tab.ref.path) return
+  if (!tab?.ref.path || tab.ref.origin === 'untitled') return
   if (fromMenu) menuOpen.value = false
   event.preventDefault()
   openRenameDialog(tab)
@@ -256,14 +260,24 @@ async function submitRename(): Promise<void> {
   renameError.value = ''
   try {
     const target = current.path
-    const nextPath = await workspace.renameEntry(target, value)
-    if (!nextPath) {
-      renameError.value = t('tree.invalidName')
-      return
+    let nextPath: string
+    if (current.origin === 'workspace') {
+      const renamed = await workspace.renameEntry(target, value)
+      if (!renamed) {
+        renameError.value = t('tree.invalidName')
+        return
+      }
+      nextPath = renamed
+      if (nextPath !== target) tabs.remapWorkspacePath(target, nextPath, false)
+    } else {
+      let nextName = sanitizeFileName(value)
+      const extension = extensionOf(target)
+      if (extension && !extensionOf(nextName)) nextName = `${nextName}.${extension}`
+      nextPath = await platform.renameFile(target, nextName)
+      if (nextPath !== target) tabs.remapFilePath(target, nextPath)
     }
     renameDialog.value = null
     if (nextPath !== target) {
-      tabs.remapWorkspacePath(target, nextPath, false)
       ui.toast('success', t('tree.renamed', { name: basename(nextPath) }))
     }
   } catch (error) {

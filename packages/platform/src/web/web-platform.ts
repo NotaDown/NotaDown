@@ -288,6 +288,14 @@ export class WebPlatform implements Platform {
     throw new Error('UNSUPPORTED')
   }
 
+  async renameFile(): Promise<string> {
+    throw new Error('UNSUPPORTED')
+  }
+
+  async deleteFile(): Promise<void> {
+    throw new Error('UNSUPPORTED')
+  }
+
   async openFileDialog(): Promise<OpenedDocument | null> {
     if (supportsFilePicker()) {
       const picker = fsaWindow().showOpenFilePicker

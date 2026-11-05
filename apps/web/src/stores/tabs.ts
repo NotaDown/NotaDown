@@ -599,7 +599,7 @@ export const useTabsStore = defineStore('tabs', () => {
   function markDeleted(path: string, isDirectory = false): void {
     const clean = normalizeSlashes(path)
     for (const tab of tabs.value) {
-      if (tab.ref.origin !== 'workspace' || !tab.ref.path) continue
+      if (!tab.ref.path) continue
       const affected = isDirectory
         ? tab.ref.path === clean || tab.ref.path.startsWith(`${clean}/`)
         : tab.ref.path === clean
@@ -625,6 +625,21 @@ export const useTabsStore = defineStore('tabs', () => {
         : next
       try {
         tab.ref = platform.workspaceDocumentRef(relative)
+        tab.name = tab.ref.name
+        watchDocumentTab(tab)
+      } catch {
+        tab.missing = true
+      }
+    }
+  }
+
+  function remapFilePath(path: string, nextPath: string): void {
+    const clean = normalizeSlashes(path)
+    for (const tab of tabs.value) {
+      if (tab.ref.origin !== 'file' || !tab.ref.path) continue
+      if (normalizeSlashes(tab.ref.path) !== clean) continue
+      try {
+        tab.ref = platform.documentRefForPath(nextPath)
         tab.name = tab.ref.name
         watchDocumentTab(tab)
       } catch {
@@ -910,6 +925,7 @@ export const useTabsStore = defineStore('tabs', () => {
     closeWorkspaceTabs,
     markDeleted,
     remapWorkspacePath,
+    remapFilePath,
     handleWorkspaceEvents,
     resolveConflict,
     markSavedAs,

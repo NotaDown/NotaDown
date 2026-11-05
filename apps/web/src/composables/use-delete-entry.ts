@@ -7,8 +7,14 @@ import { useTabsStore } from '@/stores/tabs'
 import { useUiStore } from '@/stores/ui'
 import { useWorkspaceStore } from '@/stores/workspace'
 
+export interface RemoveEntryTarget {
+  path: string
+  origin: 'workspace' | 'file'
+  isDirectory?: boolean
+}
+
 export function useDeleteEntry(): {
-  removeEntry: (path: string, kind: 'file' | 'directory') => Promise<void>
+  removeEntry: (target: RemoveEntryTarget) => Promise<void>
 } {
   const { t } = useI18n()
   const settings = useSettingsStore()
@@ -16,14 +22,17 @@ export function useDeleteEntry(): {
   const ui = useUiStore()
   const workspace = useWorkspaceStore()
 
-  async function removeEntry(path: string, kind: 'file' | 'directory'): Promise<void> {
+  async function removeEntry({
+    path,
+    origin,
+    isDirectory = false,
+  }: RemoveEntryTarget): Promise<void> {
     if (settings.settings.confirmDelete) {
-      const message =
-        kind === 'directory'
-          ? t('tree.confirmDeleteFolder')
-          : platform.capabilities.revealInFolder
-            ? t('tree.confirmDeleteFile')
-            : t('tree.confirmDeletePermanent')
+      const message = isDirectory
+        ? t('tree.confirmDeleteFolder')
+        : platform.capabilities.revealInFolder
+          ? t('tree.confirmDeleteFile')
+          : t('tree.confirmDeletePermanent')
       const confirmed = await ui.confirm({
         title: t('tree.confirmDeleteTitle', { name: basename(path) }),
         message,
@@ -34,8 +43,9 @@ export function useDeleteEntry(): {
       if (!confirmed) return
     }
     try {
-      await workspace.deleteEntry(path)
-      tabs.markDeleted(path, kind === 'directory')
+      if (origin === 'file') await platform.deleteFile(path)
+      else await workspace.deleteEntry(path)
+      tabs.markDeleted(path, isDirectory)
       ui.toast('success', t('tree.deleted', { name: basename(path) }))
     } catch (error) {
       ui.toast('error', t('errors.generic'), describeError(error))

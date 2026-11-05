@@ -253,6 +253,22 @@ export async function revealFile(absolutePath: string): Promise<void> {
   shell.showItemInFolder(requireAbsolutePath(absolutePath))
 }
 
+export async function renameFile(absolutePath: string, nextName: string): Promise<string> {
+  const target = requireAbsolutePath(absolutePath)
+  if (!nextName || nextName === '.' || nextName === '..' || /[\\/]/.test(nextName)) {
+    throw new Error('INVALID_PATH')
+  }
+  const next = path.join(path.dirname(target), nextName)
+  if (next === target) return target
+  if (await pathExists(next)) throw new Error('ALREADY_EXISTS')
+  await fs.rename(target, next)
+  return next
+}
+
+export async function deleteFile(absolutePath: string): Promise<void> {
+  await fs.rm(requireAbsolutePath(absolutePath))
+}
+
 export async function openFileDialog(
   window: BrowserWindow | null,
 ): Promise<OpenedDocument | null> {

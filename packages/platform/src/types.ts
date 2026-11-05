@@ -52,6 +52,8 @@ export interface Platform {
   deleteWorkspaceEntry(path: string, isDirectory: boolean): Promise<void>
   revealWorkspaceEntry(path: string): Promise<void>
   revealFile(absolutePath: string): Promise<void>
+  renameFile(absolutePath: string, nextName: string): Promise<string>
+  deleteFile(absolutePath: string): Promise<void>
   workspaceDocumentRef(path: string): DocumentRef
   workspaceAbsolutePath(path: string): string | null
 

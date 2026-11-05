@@ -112,6 +112,11 @@ async function dispatch(
     case 'revealFile':
       await workspace.revealFile(String(args[0] ?? ''))
       return undefined
+    case 'renameFile':
+      return workspace.renameFile(String(args[0] ?? ''), String(args[1] ?? ''))
+    case 'deleteFile':
+      await workspace.deleteFile(String(args[0] ?? ''))
+      return undefined
 
     case 'openFileDialog':
       return workspace.openFileDialog(window)

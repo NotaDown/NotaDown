@@ -142,6 +142,14 @@ export class DesktopPlatform implements Platform {
     await this.bridge.invoke('revealFile', absolutePath)
   }
 
+  async renameFile(absolutePath: string, nextName: string): Promise<string> {
+    return this.bridge.invoke('renameFile', absolutePath, nextName)
+  }
+
+  async deleteFile(absolutePath: string): Promise<void> {
+    await this.bridge.invoke('deleteFile', absolutePath)
+  }
+
   async openFileDialog(): Promise<OpenedDocument | null> {
     return this.bridge.invoke('openFileDialog')
   }

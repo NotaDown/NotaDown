@@ -415,7 +415,13 @@ function handleContextSelect(id: string): void {
       if (target) void duplicateEntry(target)
       break
     case 'delete':
-      if (target) void removeEntry(target, contextKind.value ?? 'file')
+      if (target) {
+        void removeEntry({
+          path: target,
+          origin: 'workspace',
+          isDirectory: contextKind.value === 'directory',
+        })
+      }
       break
     case 'reveal':
       if (target) void revealEntry(target)
