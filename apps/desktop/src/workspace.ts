@@ -240,7 +240,7 @@ export async function moveWorkspaceEntry(
 
 export async function deleteWorkspaceEntry(relativePath: string): Promise<void> {
   const target = resolveWorkspacePath(relativePath)
-  await fs.rm(target, { recursive: true })
+  await shell.trashItem(target)
   invalidateFileIndex()
 }
 
@@ -266,7 +266,7 @@ export async function renameFile(absolutePath: string, nextName: string): Promis
 }
 
 export async function deleteFile(absolutePath: string): Promise<void> {
-  await fs.rm(requireAbsolutePath(absolutePath))
+  await shell.trashItem(path.normalize(requireAbsolutePath(absolutePath)))
 }
 
 export async function openFileDialog(
