@@ -147,9 +147,4 @@ function openShortcuts(): void {
   box-shadow: 0 0 0 2px var(--nd-bg-elevated);
 }
 
-@media (max-width: 720px) {
-  .activity-bar {
-    display: none;
-  }
-}
 </style>

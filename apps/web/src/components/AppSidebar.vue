@@ -150,8 +150,8 @@ function resetWidth(): void {
     z-index: 50;
     top: var(--nd-topbar-height);
     bottom: var(--nd-statusbar-height);
-    left: 0;
-    width: min(84vw, 340px) !important;
+    left: var(--nd-rail-width);
+    width: min(calc(100vw - var(--nd-rail-width)), 340px) !important;
     max-width: none;
     box-shadow: var(--nd-shadow);
   }

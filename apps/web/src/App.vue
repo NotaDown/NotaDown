@@ -114,7 +114,7 @@ const { t } = useI18n()
 @media (max-width: 720px) {
   .app__backdrop {
     position: fixed;
-    inset: var(--nd-topbar-height) 0 var(--nd-statusbar-height) 0;
+    inset: var(--nd-topbar-height) 0 var(--nd-statusbar-height) var(--nd-rail-width);
     z-index: 45;
     display: block;
     border: 0;
