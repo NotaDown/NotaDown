@@ -494,8 +494,8 @@ export const zhCN = {
       downloadSourceHint:
         '镜像只转发安装包字节；版本信息与 SHA-512 优先取自 GitHub，GitHub 无法访问时改用 NotaDown 自建更新源。',
       checkPrerelease: '检查 alpha 版本更新',
-      checkPrereleaseHint:
-        '开启后，正式版也会检查 alpha 等预发布版本；当前安装的是 alpha 版本时始终开启。',
+      checkPrereleaseHint: '开启后即可接收 alpha 版本更新。',
+      checkPrereleaseHintAlpha: '当前为 alpha 版本，始终检查 alpha 版本更新。',
     },
     aboutSection: {
       description: '专注书写的离线优先 Markdown 编辑器。',

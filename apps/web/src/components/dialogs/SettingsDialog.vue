@@ -1059,13 +1059,17 @@ async function clearHistory(): Promise<void> {
                   </label>
                 </div>
 
-                <div class="nd-field-row">
+                <div class="nd-field-row settings-prerelease-row">
                   <div>
                     <label class="nd-field-label" for="settings-check-prerelease">
                       {{ t('settings.updatesSection.checkPrerelease') }}
                     </label>
-                    <p class="nd-field-hint">
+                    <p class="nd-field-hint settings-hint--wide">
                       {{ t('settings.updatesSection.checkPrereleaseHint') }}
+                      <br v-if="isPrereleaseBuild">
+                      <span v-if="isPrereleaseBuild" class="settings-hint-accent">
+                        {{ t('settings.updatesSection.checkPrereleaseHintAlpha') }}
+                      </span>
                     </p>
                   </div>
                   <label class="nd-switch nd-field-control">
@@ -1385,6 +1389,19 @@ async function clearHistory(): Promise<void> {
 
 .settings-history-dir .nd-field-hint {
   word-break: break-all;
+}
+
+.nd-field-row .settings-hint--wide {
+  max-width: none;
+}
+
+.settings-prerelease-row .nd-field-control {
+  min-width: 0;
+}
+
+.settings-hint-accent {
+  color: var(--nd-accent);
+  /* font-weight: 600; */
 }
 
 .storage-modes {
