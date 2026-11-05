@@ -44,11 +44,19 @@ const config = await loadChangelogConfig(cwd, {
   newVersion: version,
 })
 
-// changelogen drops chore(deps)/chore(release) on its own; inclusion is decided solely by the types in the config.
+// changelogen only drops chore(deps) on its own; release commits would otherwise show up under Chores.
 // Revert subjects re-quote the original title (parsed under the original type), which would read as a duplicate entry.
+const isReleaseCommit = (commit) =>
+  commit.type === 'chore' && (commit.scope === 'release' || /^release\b/i.test(commit.description))
+
 const commits = parseCommits(await getGitDiff(config.from, config.to, cwd), config)
   .map((commit) => ({ ...commit, type: commit.type.toLowerCase() }))
-  .filter((commit) => config.types[commit.type] && !commit.message.startsWith('Revert "'))
+  .filter(
+    (commit) =>
+      config.types[commit.type] &&
+      !isReleaseCommit(commit) &&
+      !commit.message.startsWith('Revert "'),
+  )
 
 // changelogen pads both sides of the release heading with a blank line, which renders as two empty lines under it
 const markdown = (await generateMarkDown(commits, config))
