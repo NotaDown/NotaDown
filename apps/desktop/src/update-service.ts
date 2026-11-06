@@ -21,11 +21,11 @@ const GITHUB_PROBE_TIMEOUT_MS = 4000
 // keeps that file in step with project.config.json.
 const GITHUB_FEED = { provider: 'github', ...PROJECT_REPOSITORY } as const
 
-export interface UpdateFeedOptions {
-  provider: 'github'
-  owner: string
-  repo: string
-}
+export type MetadataChannel = 'latest' | 'alpha'
+
+export type UpdateFeedOptions =
+  | { provider: 'github'; owner: string; repo: string }
+  | { provider: 'generic'; url: string; channel: MetadataChannel }
 
 export interface UpdateInfoLike {
   version: string
@@ -157,6 +157,18 @@ async function fetchReleaseChannels(): Promise<ReleaseChannels> {
   return parseReleaseFeed(await response.text())
 }
 
+async function fetchChannelVersion(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(GITHUB_PROBE_TIMEOUT_MS),
+    })
+    if (!response.ok) return null
+    return /^version:\s*(\S+)\s*$/m.exec(await response.text())?.[1] ?? null
+  } catch {
+    return null
+  }
+}
+
 function normalizeReleaseNotes(value: unknown): string | null {
   if (typeof value === 'string') return value.trim() || null
   if (!Array.isArray(value)) return null
@@ -260,8 +272,12 @@ export function createUpdateService(
   const metadataBaseUrl =
     options.metadataBaseUrl?.trim().replace(/\/+$/, '') || null
   const canCheckMetadata = Boolean(metadataBaseUrl && updater.setFeedURL)
-  const channelFile = runtime.platform === 'linux' ? 'latest-linux.yml' : 'latest.yml'
-  const metadataChannelUrl = metadataBaseUrl ? `${metadataBaseUrl}/${channelFile}` : null
+  // electron-builder writes the channel file as `<channel>.yml`, plus a
+  // platform suffix on Linux.
+  const metadataChannelFile = (channel: MetadataChannel): string =>
+    `${channel}${runtime.platform === 'linux' ? '-linux' : ''}.yml`
+  const metadataChannelUrl = (channel: MetadataChannel): string | null =>
+    metadataBaseUrl ? `${metadataBaseUrl}/${metadataChannelFile(channel)}` : null
   // Same request GitHubProvider starts with, so a probe failure means its check
   // would fail too.
   const githubProbeUrl = GITHUB_LATEST_RELEASE_URL
@@ -441,9 +457,11 @@ export function createUpdateService(
     patch({ status: 'not-available', version: info?.version ?? null })
   }
 
-  async function checkFirstPartyMetadata(): Promise<UpdateCheckResultLike | null> {
+  async function checkFirstPartyMetadata(
+    channel: MetadataChannel,
+  ): Promise<UpdateCheckResultLike | null> {
     if (!metadataBaseUrl || !updater.setFeedURL) throw new Error('NO_METADATA_SOURCE')
-    updater.setFeedURL(metadataBaseUrl)
+    updater.setFeedURL({ provider: 'generic', url: metadataBaseUrl, channel })
     try {
       return await updater.checkForUpdates()
     } finally {
@@ -452,6 +470,23 @@ export function createUpdateService(
       // setFeedURL has no "restore packaged config" form, hence the explicit options.
       updater.setFeedURL(GITHUB_FEED)
     }
+  }
+
+  // The generic provider has no prerelease fallback of its own, so a bucket
+  // published before the alpha channel existed would fail outright instead of
+  // offering the stable update it does have.
+  async function checkSelfHosted(
+    wantsPrerelease: boolean,
+  ): Promise<{ result: UpdateCheckResultLike | null; channel: MetadataChannel }> {
+    if (wantsPrerelease) {
+      try {
+        return { result: await checkFirstPartyMetadata('alpha'), channel: 'alpha' }
+      } catch {
+        // Same fallback as GitHubProvider: keep the stable update reachable
+        // when the alpha channel cannot be read.
+      }
+    }
+    return { result: await checkFirstPartyMetadata('latest'), channel: 'latest' }
   }
 
   async function check(allowPrerelease = false): Promise<UpdateSnapshot> {
@@ -494,13 +529,16 @@ export function createUpdateService(
 
     fallbackActive = canCheckMetadata
     deferredError = null
+    let metadataSource: UpdateMetadataSource = 'github'
+    let metadataChannel: MetadataChannel = 'latest'
     try {
       let result: UpdateCheckResultLike | null
-      let metadataSource: UpdateMetadataSource = 'github'
       if (canCheckMetadata && !(await githubAnswers(githubProbeUrl))) {
         metadataSource = 'self-hosted'
         try {
-          result = await checkFirstPartyMetadata()
+          const selfHosted = await checkSelfHosted(wantsPrerelease)
+          result = selfHosted.result
+          metadataChannel = selfHosted.channel
         } catch (metadataError) {
           throw new Error(
             `GitHub is unreachable and the fallback update channel also failed: ${errorMessage(metadataError)}`,
@@ -514,7 +552,9 @@ export function createUpdateService(
           patch({ status: 'checking', error: null })
           metadataSource = 'self-hosted'
           try {
-            result = await checkFirstPartyMetadata()
+            const selfHosted = await checkSelfHosted(wantsPrerelease)
+            result = selfHosted.result
+            metadataChannel = selfHosted.channel
           } catch {
             // The GitHub failure is the reason the user cannot update; the
             // metadata one is only a consequence of it.
@@ -525,7 +565,8 @@ export function createUpdateService(
       applyCheckResult(result)
       patch({
         metadataSource,
-        metadataUrl: metadataSource === 'self-hosted' ? metadataChannelUrl : null,
+        metadataUrl:
+          metadataSource === 'self-hosted' ? metadataChannelUrl(metadataChannel) : null,
         downloadUrl: state.status === 'available' ? resolveMirrorTarget()?.url ?? null : null,
       })
     } catch (error) {
@@ -539,13 +580,26 @@ export function createUpdateService(
 
     if (wantsPrerelease) {
       const channels = await releaseChannels
+      let stableVersion = channels?.stableVersion ?? null
+      let prereleaseVersion = channels?.prereleaseVersion ?? null
+      // The GitHub feed is the usual source for both channels; when it is
+      // unreachable the self-hosted bucket still knows what it publishes.
+      if (metadataSource === 'self-hosted' && metadataBaseUrl) {
+        const base = metadataBaseUrl
+        const [stable, prerelease] = await Promise.all([
+          stableVersion ?? fetchChannelVersion(`${base}/${metadataChannelFile('latest')}`),
+          prereleaseVersion ?? fetchChannelVersion(`${base}/${metadataChannelFile('alpha')}`),
+        ])
+        stableVersion = stable
+        prereleaseVersion = prerelease
+      }
       const target = state.version
       patch({
         stableVersion:
-          channels?.stableVersion ??
+          stableVersion ??
           (target !== null && !target.includes('-') ? target : null),
         prereleaseVersion:
-          channels?.prereleaseVersion ??
+          prereleaseVersion ??
           (target !== null && target.includes('-') ? target : null),
       })
     }

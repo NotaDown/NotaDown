@@ -12,6 +12,7 @@ import {
   getUnsupportedReason,
   parseReleaseFeed,
   type UpdateCheckResultLike,
+  type UpdateFeedOptions,
   type UpdaterAdapter,
   type UpdateRuntime,
 } from '../src/update-service'
@@ -23,6 +24,18 @@ const MIRROR_HOSTS = UPDATE_MIRRORS.map((mirror) => new URL(mirror).host)
 const INSTALLER_ASSET = 'NotaDown.1.3.0-x64.exe'
 const GITHUB_INSTALLER_URL = githubReleaseDownloadUrl('v1.3.0', INSTALLER_ASSET)
 const MIRRORED_INSTALLER_URL = `${MIRROR_PRIMARY}/${GITHUB_INSTALLER_URL}`
+const METADATA_BASE = 'https://updates.example.test'
+
+const selfHostedFeed = (channel: 'latest' | 'alpha') => ({
+  provider: 'generic',
+  url: METADATA_BASE,
+  channel,
+})
+
+const missingChannelError = () =>
+  Object.assign(new Error('Cannot find channel "alpha.yml" update info'), {
+    code: 'ERR_UPDATER_CHANNEL_FILE_NOT_FOUND',
+  })
 
 class FakeUpdater implements UpdaterAdapter {
   autoDownload = true
@@ -33,7 +46,7 @@ class FakeUpdater implements UpdaterAdapter {
   checkForUpdates = vi.fn<() => Promise<UpdateCheckResultLike | null>>(async () => null)
   downloadUpdate = vi.fn<() => Promise<unknown>>(async () => undefined)
   quitAndInstall = vi.fn<(isSilent?: boolean, isForceRunAfter?: boolean) => void>()
-  setFeedURL = vi.fn<(options: string | { provider: 'github'; owner: string; repo: string }) => void>()
+  setFeedURL = vi.fn<(options: string | UpdateFeedOptions) => void>()
 
   private listeners = new Map<string, ((...args: never[]) => void)[]>()
 
@@ -354,7 +367,7 @@ describe('createUpdateService', () => {
     const state = await service.check()
 
     expect(updater.checkForUpdates).toHaveBeenCalledTimes(1)
-    expect(updater.setFeedURL).toHaveBeenNthCalledWith(1, 'https://updates.example.test')
+    expect(updater.setFeedURL).toHaveBeenNthCalledWith(1, selfHostedFeed('latest'))
     expect(updater.setFeedURL).toHaveBeenNthCalledWith(2, {
       provider: 'github',
       owner: 'NotaDown',
@@ -365,25 +378,64 @@ describe('createUpdateService', () => {
       version: '1.3.0',
       error: null,
       metadataSource: 'self-hosted',
-      metadataUrl: 'https://updates.example.test/latest.yml',
+      metadataUrl: `${METADATA_BASE}/latest.yml`,
     })
     expect(events.some((event) => event.status === 'error')).toBe(false)
   })
 
-  it('reports only the stable channel when it falls back to self-hosted metadata', async () => {
+  it('checks the alpha channel of the self-hosted source', async () => {
     const { updater, service } = setup(
-      {},
-      { metadataBaseUrl: 'https://updates.example.test' },
+      { currentVersion: '0.3.0' },
+      { metadataBaseUrl: METADATA_BASE },
     )
-    stubGithubReachable(false)
-    updater.checkForUpdates.mockResolvedValue({ updateInfo: { version: '1.3.0' } })
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: string | URL | Request) => {
+        const url = String(input)
+        if (url === GITHUB_LATEST_RELEASE_URL || url.endsWith('/releases.atom')) {
+          throw new DOMException('The operation was aborted due to timeout', 'TimeoutError')
+        }
+        if (url === `${METADATA_BASE}/latest.yml`) return new Response('version: 0.3.0')
+        if (url === `${METADATA_BASE}/alpha.yml`) {
+          return new Response('version: 0.3.0-alpha.5')
+        }
+        return new Response('{}', { status: 200 })
+      }),
+    )
+    updater.checkForUpdates.mockImplementationOnce(async () => {
+      updater.emit('update-not-available', { version: '0.3.0-alpha.5' })
+      return { updateInfo: { version: '0.3.0-alpha.5' } }
+    })
 
     const state = await service.check(true)
 
+    expect(updater.setFeedURL).toHaveBeenNthCalledWith(1, selfHostedFeed('alpha'))
+    expect(state).toMatchObject({
+      status: 'not-available',
+      version: '0.3.0-alpha.5',
+      metadataSource: 'self-hosted',
+      metadataUrl: `${METADATA_BASE}/alpha.yml`,
+      stableVersion: '0.3.0',
+      prereleaseVersion: '0.3.0-alpha.5',
+    })
+  })
+
+  it('keeps the stable update when the self-hosted source has no alpha channel', async () => {
+    const { updater, service } = setup({}, { metadataBaseUrl: METADATA_BASE })
+    stubGithubReachable(false)
+    updater.checkForUpdates
+      .mockRejectedValueOnce(missingChannelError())
+      .mockResolvedValueOnce({ updateInfo: { version: '1.3.0' } })
+
+    const state = await service.check(true)
+
+    expect(updater.setFeedURL).toHaveBeenNthCalledWith(1, selfHostedFeed('alpha'))
+    expect(updater.setFeedURL).toHaveBeenNthCalledWith(3, selfHostedFeed('latest'))
     expect(state).toMatchObject({
       status: 'available',
       version: '1.3.0',
       metadataSource: 'self-hosted',
+      metadataUrl: `${METADATA_BASE}/latest.yml`,
       stableVersion: '1.3.0',
       prereleaseVersion: null,
     })
@@ -407,7 +459,7 @@ describe('createUpdateService', () => {
 
     const state = await service.check()
 
-    expect(updater.setFeedURL).toHaveBeenNthCalledWith(1, 'https://updates.example.test')
+    expect(updater.setFeedURL).toHaveBeenNthCalledWith(1, selfHostedFeed('latest'))
     expect(updater.setFeedURL).toHaveBeenNthCalledWith(2, {
       provider: 'github',
       owner: 'NotaDown',
@@ -418,7 +470,7 @@ describe('createUpdateService', () => {
       version: '1.3.0',
       error: null,
       metadataSource: 'self-hosted',
-      metadataUrl: 'https://updates.example.test/latest.yml',
+      metadataUrl: `${METADATA_BASE}/latest.yml`,
     })
     expect(events.some((event) => event.status === 'error')).toBe(false)
   })
