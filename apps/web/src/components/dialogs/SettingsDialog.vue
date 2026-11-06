@@ -1036,6 +1036,9 @@ async function clearHistory(): Promise<void> {
                     <option value="github">
                       {{ t('settings.updatesSection.downloadSourceGithub') }}
                     </option>
+                    <option value="mirror">
+                      {{ t('settings.updatesSection.downloadSourceMirror') }}
+                    </option>
                   </select>
                   <p class="nd-field-hint">
                     {{ t('settings.updatesSection.downloadSourceHint') }}

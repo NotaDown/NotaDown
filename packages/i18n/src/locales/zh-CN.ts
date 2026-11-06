@@ -493,6 +493,7 @@ export const zhCN = {
       downloadSource: '更新包下载',
       downloadSourceAuto: '优先使用 GitHub Release，无法访问时自动选择合适镜像（推荐）',
       downloadSourceGithub: '仅使用 GitHub Release',
+      downloadSourceMirror: '仅通过镜像源下载',
       downloadSourceHint:
         '镜像只转发安装包字节；版本信息与 SHA-512 优先取自 GitHub，GitHub 无法访问时改用 NotaDown 自建更新源。',
       checkPrerelease: '检查 alpha 版本更新',

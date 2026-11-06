@@ -588,6 +588,53 @@ describe('createUpdateService', () => {
     })
   })
 
+  it('downloads only from a mirror when the source is mirror', async () => {
+    const { updater, service } = setup()
+    updater.emit('update-available', { version: '1.3.0' })
+    provideUpdateFiles(updater)
+
+    const urls: string[] = []
+    updater.downloadUpdate.mockImplementation(async () => {
+      const update = updater.updateInfoAndProvider!
+      urls.push(update.provider.resolveFiles(update.info)[0].url.href)
+    })
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: string | URL | Request) => {
+        if (String(input).startsWith('https://gh-proxy.com/')) {
+          return new Response(null, {
+            status: 206,
+            headers: {
+              'content-type': 'application/octet-stream',
+              'content-range': 'bytes 0-0/1000',
+            },
+          })
+        }
+        return new Response('forbidden', { status: 403 })
+      }),
+    )
+
+    await service.download('mirror')
+
+    expect(urls).toEqual([
+      'https://gh-proxy.com/https://github.com/NotaDown/NotaDown/releases/download/v1.3.0/NotaDown.1.3.0-x64.exe',
+    ])
+    expect(updater.downloadUpdate).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not fall back to GitHub when a mirror-only download has no target', async () => {
+    const { updater, service } = setup()
+    updater.emit('update-available', { version: '1.3.0' })
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(service.download('mirror')).rejects.toThrow('No update mirror answered')
+
+    expect(updater.downloadUpdate).not.toHaveBeenCalled()
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(service.getState()).toMatchObject({ status: 'error' })
+  })
+
   it('tries another mirror when the first mirror download fails', async () => {
     const { updater, service } = setup()
     updater.emit('update-available', { version: '1.3.0' })

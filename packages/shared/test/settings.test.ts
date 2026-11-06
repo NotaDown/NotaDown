@@ -46,6 +46,9 @@ describe('normalizeSettings', () => {
       'github',
     )
     expect(normalizeSettings({ updateDownloadSource: 'mirror' }).updateDownloadSource).toBe(
+      'mirror',
+    )
+    expect(normalizeSettings({ updateDownloadSource: 'cdn' }).updateDownloadSource).toBe(
       DEFAULT_SETTINGS.updateDownloadSource,
     )
   })

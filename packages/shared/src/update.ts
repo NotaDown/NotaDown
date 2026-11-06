@@ -10,7 +10,7 @@ export type UpdateStatus =
 
 export type UpdateUnsupportedReason = 'development' | 'platform'
 
-export type UpdateDownloadSource = 'auto' | 'github'
+export type UpdateDownloadSource = 'auto' | 'github' | 'mirror'
 
 export type UpdateMetadataSource = 'github' | 'self-hosted'
 

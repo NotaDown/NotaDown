@@ -495,6 +495,7 @@ export const enUS = {
       downloadSourceAuto:
         'Prefer GitHub Releases, fall back to a mirror when unreachable (Recommended)',
       downloadSourceGithub: 'Use GitHub Releases only',
+      downloadSourceMirror: 'Use mirrors only',
       downloadSourceHint:
         'Mirrors only relay installer bytes. Version metadata and the SHA-512 checksum come from GitHub, or from the NotaDown update source when GitHub is unreachable.',
       checkPrerelease: 'Check for alpha updates',

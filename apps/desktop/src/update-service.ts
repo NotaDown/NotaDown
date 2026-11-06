@@ -566,17 +566,20 @@ export function createUpdateService(
       downloadUrl: resolved?.url ?? state.downloadUrl,
     })
 
-    const target = source === 'auto' ? resolved : null
-    // The update was found through the self-hosted channel because github.com
-    // was unreachable at check time, so a direct attempt would only hang until
-    // its own timeout before the mirrors get a chance.
-    const skipDirect = target !== null && state.metadataSource === 'self-hosted'
+    const target = source === 'github' ? null : resolved
+    // A mirror-only download never touches GitHub. Auto also skips the direct
+    // attempt when github.com was unreachable at check time, because it would
+    // only hang until its own timeout before the mirrors get a chance.
+    const skipDirect =
+      source === 'mirror' || (target !== null && state.metadataSource === 'self-hosted')
     fallbackActive = target !== null
     deferredError = null
 
     try {
       let lastError: unknown = new Error(
-        'GitHub is unreachable and no update mirror answered',
+        source === 'mirror'
+          ? 'No update mirror answered'
+          : 'GitHub is unreachable and no update mirror answered',
       )
       if (!skipDirect) {
         try {

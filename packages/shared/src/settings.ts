@@ -106,7 +106,7 @@ const IMAGE_MODES = new Set([
   'global-attachments',
   'base64',
 ])
-const UPDATE_DOWNLOAD_SOURCES = new Set(['auto', 'github'])
+const UPDATE_DOWNLOAD_SOURCES = new Set(['auto', 'github', 'mirror'])
 
 export function normalizeSettings(input: unknown): AppSettings {
   const source = input && typeof input === 'object' ? (input as Record<string, unknown>) : {}
