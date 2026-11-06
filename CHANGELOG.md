@@ -2,6 +2,29 @@
 
 English is canonical; entries are generated from conventional commits by `pnpm changelog`.
 
+## v0.4.0-alpha.1
+
+### 🚀 Features
+
+- **update:** Show stable and alpha versions in the update dialog (9dd6c2c)
+- **settings:** Add mirror-only update download source (0a17348)
+- **release:** Publish alpha channel files to the self-hosted update source (65700a5)
+- **release:** Route mirror download links through an EdgeOne redirect (859dbe9)
+
+### 🩹 Bug Fixes
+
+- **update:** Check the alpha channel when using self-hosted metadata (9abd623)
+
+### ♻️ Refactoring
+
+- Centralize project repository and update source configuration (003cead)
+- **release:** Deduplicate download link URL construction (34ca79f)
+
+### 📖 Documentation
+
+- **infra:** Make the EdgeOne redirect page English-first (caf130b)
+
+
 ## v0.3.0
 
 ### 🚀 Features
