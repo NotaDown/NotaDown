@@ -1,0 +1,20 @@
+{
+  "outputDirectory": "./public",
+  "redirects": [
+    {
+      "source": "/gh",
+      "destination": "/",
+      "statusCode": 302
+    },
+    {
+      "source": "/gh/",
+      "destination": "/",
+      "statusCode": 302
+    },
+    {
+      "source": "/gh/*",
+      "destination": "https://v6.gh-proxy.org/:splat",
+      "statusCode": 302
+    }
+  ]
+}

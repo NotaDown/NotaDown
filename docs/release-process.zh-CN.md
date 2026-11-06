@@ -5,7 +5,7 @@
 1. 修改仓库根 [package.json](../package.json) 的 `version`。它是唯一被纳入版本管理的版本号：网页构建把它注入 `__APP_VERSION__`，[apps/desktop/scripts/builder.mjs](../apps/desktop/scripts/builder.mjs) 在打包时写入桌面端清单文件，安装包元数据、`app.getVersion()` 与产物文件名都取自这里。各 workspace 包不再自带版本号。
 2. 执行 `pnpm changelog`，由上次发布以来的 conventional commits 生成 `## v1.2.3` 小节并写入 [CHANGELOG.md](../CHANGELOG.md)
 3. `git add package.json CHANGELOG.md` → `git commit -m "chore: release v1.2.3"` → `git push`
-4. `git tag v1.2.3` → `git push origin v1.2.3`，触发 [release.yml](../.github/workflows/release.yml)：`validate` 校验 tag 与根版本一致，`web` 与 `desktop` 在三个平台并行构建，`publish` 取 CHANGELOG.md 中对应的 `## v1.2.3` 小节，追加各平台下载链接（每个链接附 gh-proxy 国内镜像），然后创建 GitHub Release。正式版下 `web` 任务还会上传一份 Pages 产物，Release 创建完成后由 `pages` 任务部署。
+4. `git tag v1.2.3` → `git push origin v1.2.3`，触发 [release.yml](../.github/workflows/release.yml)：`validate` 校验 tag 与根版本一致，`web` 与 `desktop` 在三个平台并行构建，`publish` 取 CHANGELOG.md 中对应的 `## v1.2.3` 小节，追加各平台下载链接（国内镜像链接经由 EdgeOne 跳转域名），然后创建 GitHub Release。正式版下 `web` 任务还会上传一份 Pages 产物，Release 创建完成后由 `pages` 任务部署。
 5. 打开验证。
 6. 确认 `metadata` 任务把频道文件传到了自建更新源（正式版刷新 `latest*.yml`，预发布版刷新 `alpha*.yml`）。该任务失败时在 Actions 里单独重跑它即可，见下节。
 7. 正式版发布后确认 `pages` 任务把网页版部署上线了（预发布版跳过）。该任务失败时同样在 Actions 里单独重跑它，见下节。
@@ -16,7 +16,10 @@
 | --- | --- |
 | 仓库 | https://github.com/NotaDown/NotaDown |
 | Releases | https://github.com/NotaDown/NotaDown/releases |
+| 下载跳转 | https://notadown-redirect.brookzhang.com/gh |
 | 网页版 | https://notadown.brookzhang.com |
+
+Release 里的国内镜像链接统一走 EdgeOne 跳转域名。镜像目标配置在 [infra/edgeone-redirect/edgeone.json](../infra/edgeone-redirect/edgeone.json)，换镜像只需修改该文件并重新部署 EdgeOne Pages 项目，已发布的 Release 链接不受影响。
 
 发布产物（版本号以 `1.2.3` 为例）：
 

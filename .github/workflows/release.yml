@@ -146,8 +146,8 @@ jobs:
       - name: Write download links
         run: |
           base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}"
-          mirror_base=$(node -p "require('./project.config.json').releaseNotes.mirror")
-          mirror="${mirror_base}/${base}"
+          mirror_base=$(node -p "require('./project.config.json').releaseNotes.mirrorBase")
+          mirror="${mirror_base}/github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}"
           asset() { find artifacts -maxdepth 1 -type f -name "$1" -printf '%f\n' -quit; }
           link() { printf '[%s](%s/%s) ([国内镜像](%s/%s))' "$1" "$base" "$2" "$mirror" "$2"; }
 

@@ -4,7 +4,7 @@
     "repo": "NotaDown"
   },
   "releaseNotes": {
-    "mirror": "https://v6.gh-proxy.org"
+    "mirrorBase": "https://notadown-redirect.brookzhang.com/gh"
   },
   "update": {
     "metadataBaseUrl": "https://notadown-dl.brookzhang.com/updater",

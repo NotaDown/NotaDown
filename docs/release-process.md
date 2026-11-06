@@ -5,7 +5,7 @@ English | [简体中文](./release-process.zh-CN.md)
 1. Update `version` in the repo root [package.json](../package.json). It is the only tracked version: the web build injects it into `__APP_VERSION__`, and [apps/desktop/scripts/builder.mjs](../apps/desktop/scripts/builder.mjs) writes it into the desktop manifest at packaging time, which is what the installer metadata, `app.getVersion()` and the artifact names use. Workspace packages carry no version of their own.
 2. Run `pnpm changelog` to append the `## v1.2.3` section to [CHANGELOG.md](../CHANGELOG.md), generated from the conventional commits since the last release
 3. `git add package.json CHANGELOG.md` → `git commit -m "chore: release v1.2.3"` → `git push`
-4. `git tag v1.2.3` → `git push origin v1.2.3` to trigger [release.yml](../.github/workflows/release.yml): `validate` checks the tag against the root version, `web` and `desktop` build in parallel on three platforms, `publish` takes the matching `## v1.2.3` section from CHANGELOG.md, appends per-platform download links (each with a gh-proxy mirror), and opens the GitHub Release. On a stable tag `web` also uploads a Pages artifact, which the `pages` job deploys once the release is out.
+4. `git tag v1.2.3` → `git push origin v1.2.3` to trigger [release.yml](../.github/workflows/release.yml): `validate` checks the tag against the root version, `web` and `desktop` build in parallel on three platforms, `publish` takes the matching `## v1.2.3` section from CHANGELOG.md, appends per-platform download links (each with a mirror link on the EdgeOne redirect domain), and opens the GitHub Release. On a stable tag `web` also uploads a Pages artifact, which the `pages` job deploys once the release is out.
 5. Open and verify.
 6. Check that the `metadata` job uploaded the channel files to the self-hosted source (a stable release refreshes `latest*.yml`, a prerelease refreshes `alpha*.yml`). If it fails, re-run that job on its own, see below.
 7. For a stable release, check that the `pages` job deployed the web edition (prereleases skip it). If it fails, re-run that job on its own, see below.
@@ -16,7 +16,10 @@ A tag whose version carries a hyphen suffix (`v1.2.3-beta.1`, `v1.2.3-rc.1`) pub
 | --- | --- |
 | Repository | https://github.com/NotaDown/NotaDown |
 | Releases | https://github.com/NotaDown/NotaDown/releases |
+| Download redirect | https://notadown-redirect.brookzhang.com/gh |
 | Web edition | https://notadown.brookzhang.com |
+
+Release-note mirror links go through the EdgeOne redirect domain. The mirror target lives in [infra/edgeone-redirect/edgeone.json](../infra/edgeone-redirect/edgeone.json), so switching mirrors only requires updating that file and redeploying the EdgeOne Pages project; existing releases keep working.
 
 Release assets (version shown as `1.2.3`):
 
