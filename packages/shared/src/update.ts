@@ -18,6 +18,8 @@ export interface UpdateSnapshot {
   status: UpdateStatus
   currentVersion: string
   version: string | null
+  stableVersion: string | null
+  prereleaseVersion: string | null
   releaseNotes: string | null
   releaseDate: string | null
   progress: number | null

@@ -104,6 +104,8 @@ export const zhCN = {
     checking: '正在检查更新…',
     currentVersion: '当前版本',
     latestVersion: '最新版本',
+    latestStableVersion: '最新正式版本',
+    latestAlphaVersion: '最新 alpha 版本',
     releaseNotes: '更新日志',
     noReleaseNotes: '该版本没有提供更新日志。',
     upToDate: '当前已是最新版本。',

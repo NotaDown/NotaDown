@@ -19,6 +19,8 @@ const GITHUB_PROBE_TIMEOUT_MS = 4000
 // these options afterwards.
 const GITHUB_FEED = { provider: 'github', owner: 'NotaDown', repo: 'NotaDown' } as const
 
+const GITHUB_RELEASE_FEED_URL = `https://github.com/${GITHUB_FEED.owner}/${GITHUB_FEED.repo}/releases.atom`
+
 export interface UpdateFeedOptions {
   provider: 'github'
   owner: string
@@ -78,6 +80,11 @@ export interface UpdaterAdapter {
   disableDifferentialDownload?: boolean
 }
 
+export interface ReleaseChannels {
+  stableVersion: string | null
+  prereleaseVersion: string | null
+}
+
 export interface UpdateRuntime {
   currentVersion: string
   platform: string
@@ -123,6 +130,31 @@ async function githubAnswers(url: string): Promise<boolean> {
   } catch {
     return false
   }
+}
+
+// The feed is newest-first, so the first stable and the first prerelease tag
+// are the latest release on each channel.
+export function parseReleaseFeed(xml: string): ReleaseChannels {
+  let stableVersion: string | null = null
+  let prereleaseVersion: string | null = null
+  for (const match of xml.matchAll(/href="[^"]*\/releases\/tag\/([^"/]+)"/g)) {
+    const version = match[1].replace(/^v/, '')
+    if (!/^\d+\.\d+\.\d+/.test(version)) continue
+    if (version.includes('-')) prereleaseVersion ??= version
+    else stableVersion ??= version
+    if (stableVersion !== null && prereleaseVersion !== null) break
+  }
+  return { stableVersion, prereleaseVersion }
+}
+
+async function fetchReleaseChannels(): Promise<ReleaseChannels> {
+  const response = await fetch(GITHUB_RELEASE_FEED_URL, {
+    headers: { Accept: 'application/atom+xml, application/xml, text/xml, */*' },
+    redirect: 'follow',
+    signal: AbortSignal.timeout(GITHUB_PROBE_TIMEOUT_MS),
+  })
+  if (!response.ok) throw new Error(`HTTP ${response.status}`)
+  return parseReleaseFeed(await response.text())
 }
 
 function normalizeReleaseNotes(value: unknown): string | null {
@@ -238,6 +270,8 @@ export function createUpdateService(
     status: unsupportedReason ? 'unsupported' : 'idle',
     currentVersion: runtime.currentVersion,
     version: null,
+    stableVersion: null,
+    prereleaseVersion: null,
     releaseNotes: null,
     releaseDate: null,
     progress: null,
@@ -434,11 +468,17 @@ export function createUpdateService(
 
     // A prerelease build always follows its own channel; a stable build only
     // sees prereleases when the user opted in.
-    updater.allowPrerelease = runtime.currentVersion.includes('-') || allowPrerelease
+    const wantsPrerelease = runtime.currentVersion.includes('-') || allowPrerelease
+    updater.allowPrerelease = wantsPrerelease
+    const releaseChannels = wantsPrerelease
+      ? fetchReleaseChannels().catch(() => null)
+      : Promise.resolve(null)
 
     patch({
       status: 'checking',
       version: null,
+      stableVersion: null,
+      prereleaseVersion: null,
       releaseNotes: null,
       releaseDate: null,
       progress: null,
@@ -494,6 +534,19 @@ export function createUpdateService(
     } finally {
       fallbackActive = false
       deferredError = null
+    }
+
+    if (wantsPrerelease) {
+      const channels = await releaseChannels
+      const target = state.version
+      patch({
+        stableVersion:
+          channels?.stableVersion ??
+          (target !== null && !target.includes('-') ? target : null),
+        prereleaseVersion:
+          channels?.prereleaseVersion ??
+          (target !== null && target.includes('-') ? target : null),
+      })
     }
     return snapshot()
   }

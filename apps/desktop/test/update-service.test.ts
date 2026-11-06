@@ -3,6 +3,7 @@ import type { UpdateSnapshot } from '@notadown/shared'
 import {
   createUpdateService,
   getUnsupportedReason,
+  parseReleaseFeed,
   type UpdateCheckResultLike,
   type UpdaterAdapter,
   type UpdateRuntime,
@@ -84,6 +85,16 @@ function provideUpdateFiles(updater: FakeUpdater, version = '1.3.0'): void {
   }
 }
 
+function releaseFeed(tags: string[]): string {
+  const entries = tags
+    .map(
+      (tag) =>
+        `<entry><link rel="alternate" type="text/html" href="https://github.com/NotaDown/NotaDown/releases/tag/${tag}"/></entry>`,
+    )
+    .join('')
+  return `<feed>${entries}</feed>`
+}
+
 function stubGithubReachable(reachable = true) {
   const fetchMock = vi.fn(async () => {
     if (!reachable) {
@@ -97,6 +108,34 @@ function stubGithubReachable(reachable = true) {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+})
+
+describe('parseReleaseFeed', () => {
+  it('takes the newest stable and prerelease tags in feed order', () => {
+    const feed = releaseFeed([
+      'v0.3.0-alpha.5',
+      'v0.3.0',
+      'v0.2.3',
+      'v0.3.0-alpha.4',
+      'v0.2.2',
+    ])
+
+    expect(parseReleaseFeed(feed)).toEqual({
+      stableVersion: '0.3.0',
+      prereleaseVersion: '0.3.0-alpha.5',
+    })
+  })
+
+  it('leaves channels missing from the feed empty', () => {
+    expect(parseReleaseFeed(releaseFeed(['v0.2.3', 'v0.2.2']))).toEqual({
+      stableVersion: '0.2.3',
+      prereleaseVersion: null,
+    })
+    expect(parseReleaseFeed('not xml')).toEqual({
+      stableVersion: null,
+      prereleaseVersion: null,
+    })
+  })
 })
 
 describe('getUnsupportedReason', () => {
@@ -136,6 +175,7 @@ describe('createUpdateService', () => {
 
   it('lets a stable build opt into prerelease updates per check', async () => {
     const { updater, service } = setup()
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 500 })))
 
     await service.check()
     expect(updater.allowPrerelease).toBe(false)
@@ -149,10 +189,53 @@ describe('createUpdateService', () => {
 
   it('keeps prerelease checks on for a prerelease build regardless of the flag', async () => {
     const { updater, service } = setup({ currentVersion: '1.0.0-alpha.1' })
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 500 })))
 
     await service.check(false)
 
     expect(updater.allowPrerelease).toBe(true)
+  })
+
+  it('reports both channels when a prerelease check runs', async () => {
+    const { updater, service } = setup()
+    const fetchMock = vi.fn(async (input: string | URL | Request) => {
+      if (String(input).endsWith('/releases.atom')) {
+        return new Response(releaseFeed(['v0.4.0-alpha.2', 'v0.3.1', 'v0.3.0']), {
+          status: 200,
+        })
+      }
+      return new Response('{}', { status: 200 })
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    updater.checkForUpdates.mockImplementation(async () => {
+      updater.emit('update-available', { version: '0.4.0-alpha.2' })
+      return null
+    })
+
+    const state = await service.check(true)
+
+    expect(state).toMatchObject({
+      status: 'available',
+      version: '0.4.0-alpha.2',
+      stableVersion: '0.3.1',
+      prereleaseVersion: '0.4.0-alpha.2',
+    })
+  })
+
+  it('leaves the channel split empty for a stable check', async () => {
+    const { updater, service } = setup()
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    updater.checkForUpdates.mockResolvedValue({ updateInfo: { version: '1.3.0' } })
+
+    const state = await service.check()
+
+    expect(state).toMatchObject({
+      version: '1.3.0',
+      stableVersion: null,
+      prereleaseVersion: null,
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it('marks an available update from the event payload', async () => {
@@ -273,6 +356,25 @@ describe('createUpdateService', () => {
       metadataUrl: 'https://updates.example.test/latest.yml',
     })
     expect(events.some((event) => event.status === 'error')).toBe(false)
+  })
+
+  it('reports only the stable channel when it falls back to self-hosted metadata', async () => {
+    const { updater, service } = setup(
+      {},
+      { metadataBaseUrl: 'https://updates.example.test' },
+    )
+    stubGithubReachable(false)
+    updater.checkForUpdates.mockResolvedValue({ updateInfo: { version: '1.3.0' } })
+
+    const state = await service.check(true)
+
+    expect(state).toMatchObject({
+      status: 'available',
+      version: '1.3.0',
+      metadataSource: 'self-hosted',
+      stableVersion: '1.3.0',
+      prereleaseVersion: null,
+    })
   })
 
   it('checks the first-party metadata when the GitHub check fails', async () => {

@@ -37,6 +37,15 @@ const currentVersion = computed(
   () => update.snapshot?.currentVersion ?? platform.version,
 )
 const latestVersion = computed(() => update.snapshot?.version ?? null)
+const latestStableVersion = computed(() => update.snapshot?.stableVersion ?? null)
+const latestPrereleaseVersion = computed(
+  () => update.snapshot?.prereleaseVersion ?? null,
+)
+// Only a prerelease-channel check populates these, so the single "latest
+// version" card can never fall back to a prerelease from an earlier check.
+const showChannelVersions = computed(
+  () => latestStableVersion.value !== null || latestPrereleaseVersion.value !== null,
+)
 const showVersions = computed(
   () => Boolean(latestVersion.value) || status.value === 'not-available',
 )
@@ -163,7 +172,25 @@ function formatBytes(value: number): string {
                 <span class="update-versions__label">{{ t('update.currentVersion') }}</span>
                 <strong class="update-versions__value">{{ currentVersion }}</strong>
               </div>
-              <div v-if="latestVersion">
+              <template v-if="showChannelVersions">
+                <div>
+                  <span class="update-versions__label">
+                    {{ t('update.latestStableVersion') }}
+                  </span>
+                  <strong class="update-versions__value">
+                    {{ latestStableVersion ?? '—' }}
+                  </strong>
+                </div>
+                <div>
+                  <span class="update-versions__label">
+                    {{ t('update.latestAlphaVersion') }}
+                  </span>
+                  <strong class="update-versions__value">
+                    {{ latestPrereleaseVersion ?? '—' }}
+                  </strong>
+                </div>
+              </template>
+              <div v-else-if="latestVersion">
                 <span class="update-versions__label">{{ t('update.latestVersion') }}</span>
                 <strong class="update-versions__value">{{ latestVersion }}</strong>
               </div>
@@ -347,7 +374,7 @@ function formatBytes(value: number): string {
 
 .update-versions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 10px;
 }
 

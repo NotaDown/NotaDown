@@ -104,6 +104,8 @@ export const enUS = {
     checking: 'Checking for updates…',
     currentVersion: 'Current version',
     latestVersion: 'Latest version',
+    latestStableVersion: 'Latest stable version',
+    latestAlphaVersion: 'Latest alpha version',
     releaseNotes: 'What’s new',
     noReleaseNotes: 'No release notes were provided for this version.',
     upToDate: 'NotaDown is up to date.',

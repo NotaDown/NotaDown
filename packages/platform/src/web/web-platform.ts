@@ -682,6 +682,8 @@ export class WebPlatform implements Platform {
       status: 'unsupported',
       currentVersion: this.version,
       version: null,
+      stableVersion: null,
+      prereleaseVersion: null,
       releaseNotes: null,
       releaseDate: null,
       progress: null,
