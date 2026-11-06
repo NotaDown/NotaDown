@@ -18,7 +18,7 @@ export function githubReleaseDownloadUrl(tag: string, asset: string): string {
 }
 
 // Where the updater looks when github.com itself is unreachable. The channel
-// files (latest.yml, latest-linux.yml) are uploaded here at release time; see
+// files (latest*.yml, alpha*.yml) are uploaded here at release time; see
 // docs/release-process.md.
 export const UPDATE_METADATA_BASE_URL = config.update.metadataBaseUrl
 

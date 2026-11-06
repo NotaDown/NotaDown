@@ -219,8 +219,10 @@ jobs:
   # jobs") without rebuilding the release. See docs/release-process.md.
   metadata:
     needs: publish
-    # Stable releases only: the generic update channel has no prerelease filter.
-    if: startsWith(github.ref, 'refs/tags/') && !contains(github.ref_name, '-')
+    # Every release refreshes the self-hosted channels: a stable tag updates
+    # latest*.yml, a prerelease tag (or the newest prerelease, for a stable
+    # release) updates alpha*.yml.
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -264,6 +266,7 @@ jobs:
                 region: ap-shanghai
                 endpoint: cos.ap-shanghai.myqcloud.com
           EOF
-          ./coscli --config-path "$config" cp update-metadata/latest.yml cos://notadown/updater/latest.yml
-          ./coscli --config-path "$config" cp update-metadata/latest-linux.yml cos://notadown/updater/latest-linux.yml
+          for file in update-metadata/*.yml; do
+            ./coscli --config-path "$config" cp "$file" "cos://notadown/updater/$(basename "$file")"
+          done
           rm -f "$config"
