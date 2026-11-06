@@ -1,0 +1,18 @@
+{
+  "repository": {
+    "owner": "NotaDown",
+    "repo": "NotaDown"
+  },
+  "releaseNotes": {
+    "mirror": "https://v6.gh-proxy.org"
+  },
+  "update": {
+    "metadataBaseUrl": "https://notadown-dl.brookzhang.com/updater",
+    "mirrors": [
+      "https://gh-proxy.com",
+      "https://ghproxy.net",
+      "https://ghproxy.homeboyc.cn",
+      "https://github.akams.cn"
+    ]
+  }
+}

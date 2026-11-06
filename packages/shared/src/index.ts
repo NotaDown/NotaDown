@@ -1,5 +1,6 @@
 export * from './constants'
 export * from './types'
+export * from './project'
 export * from './update'
 export * from './settings'
 export * from './themes'

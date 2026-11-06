@@ -1,11 +1,14 @@
 import {
-  UPDATE_RELEASES_URL,
+  GITHUB_LATEST_RELEASE_URL,
+  GITHUB_RELEASES_FEED_URL,
+  GITHUB_RELEASES_URL,
+  PROJECT_REPOSITORY,
+  UPDATE_MIRRORS,
   type UpdateDownloadSource,
   type UpdateMetadataSource,
   type UpdateSnapshot,
   type UpdateUnsupportedReason,
 } from '@notadown/shared'
-import { UPDATE_MIRRORS } from './update-sources'
 
 const MIRROR_PROBE_TIMEOUT_MS = 6000
 
@@ -14,12 +17,9 @@ const MIRROR_PROBE_TIMEOUT_MS = 6000
 // first so the first-party source takes over as soon as GitHub stops answering.
 const GITHUB_PROBE_TIMEOUT_MS = 4000
 
-// Mirrors the `publish` block in electron-builder.yml. setFeedURL has no
-// "restore packaged config" form, so a metadata check swaps the feed back with
-// these options afterwards.
-const GITHUB_FEED = { provider: 'github', owner: 'NotaDown', repo: 'NotaDown' } as const
-
-const GITHUB_RELEASE_FEED_URL = `https://github.com/${GITHUB_FEED.owner}/${GITHUB_FEED.repo}/releases.atom`
+// Mirrors the `publish` block in electron-builder.yml; the project-config test
+// keeps that file in step with project.config.json.
+const GITHUB_FEED = { provider: 'github', ...PROJECT_REPOSITORY } as const
 
 export interface UpdateFeedOptions {
   provider: 'github'
@@ -148,7 +148,7 @@ export function parseReleaseFeed(xml: string): ReleaseChannels {
 }
 
 async function fetchReleaseChannels(): Promise<ReleaseChannels> {
-  const response = await fetch(GITHUB_RELEASE_FEED_URL, {
+  const response = await fetch(GITHUB_RELEASES_FEED_URL, {
     headers: { Accept: 'application/atom+xml, application/xml, text/xml, */*' },
     redirect: 'follow',
     signal: AbortSignal.timeout(GITHUB_PROBE_TIMEOUT_MS),
@@ -264,7 +264,7 @@ export function createUpdateService(
   const metadataChannelUrl = metadataBaseUrl ? `${metadataBaseUrl}/${channelFile}` : null
   // Same request GitHubProvider starts with, so a probe failure means its check
   // would fail too.
-  const githubProbeUrl = `https://github.com/${GITHUB_FEED.owner}/${GITHUB_FEED.repo}/releases/latest`
+  const githubProbeUrl = GITHUB_LATEST_RELEASE_URL
 
   let state: UpdateSnapshot = {
     status: unsupportedReason ? 'unsupported' : 'idle',
@@ -280,7 +280,7 @@ export function createUpdateService(
     bytesPerSecond: null,
     error: null,
     reason: unsupportedReason,
-    manualDownloadUrl: UPDATE_RELEASES_URL,
+    manualDownloadUrl: GITHUB_RELEASES_URL,
     metadataSource: null,
     metadataUrl: null,
     downloadUrl: null,
@@ -449,6 +449,7 @@ export function createUpdateService(
     } finally {
       // The channel file lists absolute GitHub asset URLs, so the installer
       // still comes from GitHub or, on failure, from the mirror fallback.
+      // setFeedURL has no "restore packaged config" form, hence the explicit options.
       updater.setFeedURL(GITHUB_FEED)
     }
   }

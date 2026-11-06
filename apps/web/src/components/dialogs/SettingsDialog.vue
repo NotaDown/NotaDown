@@ -20,6 +20,7 @@ import {
 } from '@lucide/vue'
 import {
   DEFAULT_SETTINGS,
+  GITHUB_REPO_URL,
   THEMES,
   buildImageFileName,
   getThemeTokens,
@@ -50,7 +51,6 @@ const ui = useUiStore()
 const isDesktop = platform.kind === 'desktop'
 const isPrereleaseBuild = platform.version.includes('-')
 const canDefaultAppSettings = platform.capabilities.defaultAppSettings
-const REPOSITORY_URL = 'https://github.com/NotaDown/NotaDown'
 
 const draft = reactive<AppSettings>({ ...settings.settings })
 const section = ref<SettingsSection>(ui.settingsSection)
@@ -306,7 +306,7 @@ async function openDefaultAppSettings(): Promise<void> {
 
 async function openRepository(): Promise<void> {
   try {
-    await platform.openExternal(REPOSITORY_URL)
+    await platform.openExternal(GITHUB_REPO_URL)
   } catch {
     ui.toast('error', t('toasts.openFailed'))
   }
@@ -1116,12 +1116,12 @@ async function clearHistory(): Promise<void> {
                     <dd>
                       <a
                         class="settings-about__link"
-                        :href="REPOSITORY_URL"
+                        :href="GITHUB_REPO_URL"
                         target="_blank"
                         rel="noopener noreferrer"
                         @click.prevent="openRepository"
                       >
-                        {{ REPOSITORY_URL }}
+                        {{ GITHUB_REPO_URL }}
                         <ExternalLink :size="12" />
                       </a>
                     </dd>

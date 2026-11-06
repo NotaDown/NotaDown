@@ -33,5 +33,3 @@ export interface UpdateSnapshot {
   metadataUrl: string | null
   downloadUrl: string | null
 }
-
-export const UPDATE_RELEASES_URL = 'https://github.com/NotaDown/NotaDown/releases'

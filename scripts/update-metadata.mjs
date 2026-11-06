@@ -3,13 +3,16 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 // Produces the channel files served by the first-party metadata source
-// (apps/desktop/src/update-sources.ts) from an already published release.
-// Upload the output to the bucket's `updater/` prefix.
+// (project.config.json) from an already published release. Upload the output to
+// the bucket's `updater/` prefix.
 
-const repo = 'NotaDown/NotaDown'
 const channelFiles = ['latest.yml', 'latest-linux.yml']
 const outDir = fileURLToPath(new URL('../update-metadata/', import.meta.url))
 const { version } = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
+const { repository } = JSON.parse(
+  readFileSync(new URL('../project.config.json', import.meta.url), 'utf8'),
+)
+const repo = `${repository.owner}/${repository.repo}`
 
 const tagIndex = process.argv.indexOf('--tag')
 const tag = tagIndex === -1 ? `v${version}` : process.argv[tagIndex + 1]

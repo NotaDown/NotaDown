@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { UPDATE_RELEASES_URL, type UpdateSnapshot } from '@notadown/shared'
+import { githubReleaseTagUrl, type UpdateSnapshot } from '@notadown/shared'
 import { i18n } from '@/i18n'
 import { platform } from '@/platform'
 import { describeError } from '@/errors'
@@ -126,7 +126,7 @@ export const useUpdateStore = defineStore('update', () => {
   function openReleases(): void {
     const current = snapshot.value
     const url = current?.version
-      ? `${UPDATE_RELEASES_URL}/tag/v${current.version}`
+      ? githubReleaseTagUrl(`v${current.version}`)
       : current?.manualDownloadUrl
     if (!url) return
     void platform.openExternal(url).catch(() => undefined)

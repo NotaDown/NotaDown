@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { UpdateSnapshot } from '@notadown/shared'
+import {
+  GITHUB_LATEST_RELEASE_URL,
+  GITHUB_REPO_URL,
+  UPDATE_MIRRORS,
+  githubReleaseDownloadUrl,
+  githubReleaseTagUrl,
+  type UpdateSnapshot,
+} from '@notadown/shared'
 import {
   createUpdateService,
   getUnsupportedReason,
@@ -8,6 +15,14 @@ import {
   type UpdaterAdapter,
   type UpdateRuntime,
 } from '../src/update-service'
+
+const GITHUB_HOST = new URL(GITHUB_REPO_URL).host
+const MIRROR_PRIMARY = UPDATE_MIRRORS[0]
+const MIRROR_SECONDARY = UPDATE_MIRRORS[1]
+const MIRROR_HOSTS = UPDATE_MIRRORS.map((mirror) => new URL(mirror).host)
+const INSTALLER_ASSET = 'NotaDown.1.3.0-x64.exe'
+const GITHUB_INSTALLER_URL = githubReleaseDownloadUrl('v1.3.0', INSTALLER_ASSET)
+const MIRRORED_INSTALLER_URL = `${MIRROR_PRIMARY}/${GITHUB_INSTALLER_URL}`
 
 class FakeUpdater implements UpdaterAdapter {
   autoDownload = true
@@ -76,9 +91,7 @@ function provideUpdateFiles(updater: FakeUpdater, version = '1.3.0'): void {
     provider: {
       resolveFiles: (info) =>
         (info.files ?? []).map((file) => ({
-          url: new URL(
-            `https://github.com/NotaDown/NotaDown/releases/download/v${version}/${file.url}`,
-          ),
+          url: new URL(githubReleaseDownloadUrl(`v${version}`, file.url)),
           info: file,
         })),
     },
@@ -89,7 +102,7 @@ function releaseFeed(tags: string[]): string {
   const entries = tags
     .map(
       (tag) =>
-        `<entry><link rel="alternate" type="text/html" href="https://github.com/NotaDown/NotaDown/releases/tag/${tag}"/></entry>`,
+        `<entry><link rel="alternate" type="text/html" href="${githubReleaseTagUrl(tag)}"/></entry>`,
     )
     .join('')
   return `<feed>${entries}</feed>`
@@ -285,8 +298,7 @@ describe('createUpdateService', () => {
     expect(state).toMatchObject({
       status: 'available',
       metadataSource: 'github',
-      downloadUrl:
-        'https://github.com/NotaDown/NotaDown/releases/download/v1.3.0/NotaDown.1.3.0-x64.exe',
+      downloadUrl: GITHUB_INSTALLER_URL,
     })
   })
 
@@ -465,7 +477,7 @@ describe('createUpdateService', () => {
       metadataUrl: null,
     })
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://github.com/NotaDown/NotaDown/releases/latest',
+      GITHUB_LATEST_RELEASE_URL,
       expect.objectContaining({ headers: { Accept: 'application/json' } }),
     )
     expect(updater.setFeedURL).not.toHaveBeenCalled()
@@ -538,9 +550,7 @@ describe('createUpdateService', () => {
     expect(fetchMock).not.toHaveBeenCalled()
     expect(updater.downloadUpdate).toHaveBeenCalledTimes(1)
     expect(updater.disableDifferentialDownload).toBe(false)
-    expect(service.getState().downloadUrl).toBe(
-      'https://github.com/NotaDown/NotaDown/releases/download/v1.3.0/NotaDown.1.3.0-x64.exe',
-    )
+    expect(service.getState().downloadUrl).toBe(GITHUB_INSTALLER_URL)
   })
 
   it('falls back to a mirror when the GitHub download fails', async () => {
@@ -558,7 +568,7 @@ describe('createUpdateService', () => {
 
     const fetchMock = vi.fn(async (input: string | URL | Request) => {
       const url = String(input)
-      if (url.startsWith('https://gh-proxy.com/')) {
+      if (url.startsWith(`${MIRROR_PRIMARY}/`)) {
         return new Response(null, {
           status: 206,
           headers: {
@@ -567,24 +577,21 @@ describe('createUpdateService', () => {
           },
         })
       }
-      if (url.startsWith('https://ghproxy.net/')) throw new Error('blocked')
+      if (url.startsWith(`${MIRROR_SECONDARY}/`)) throw new Error('blocked')
       return new Response('forbidden', { status: 403 })
     })
     vi.stubGlobal('fetch', fetchMock)
 
     await service.download('auto')
 
-    expect(mirroredUrl).toBe(
-      'https://gh-proxy.com/https://github.com/NotaDown/NotaDown/releases/download/v1.3.0/NotaDown.1.3.0-x64.exe',
-    )
+    expect(mirroredUrl).toBe(MIRRORED_INSTALLER_URL)
     expect(updater.downloadUpdate).toHaveBeenCalledTimes(2)
     expect(fetchMock).toHaveBeenCalledTimes(4)
     expect(updater.disableDifferentialDownload).toBe(false)
     expect(service.getState()).toMatchObject({
       status: 'downloading',
       error: null,
-      downloadUrl:
-        'https://gh-proxy.com/https://github.com/NotaDown/NotaDown/releases/download/v1.3.0/NotaDown.1.3.0-x64.exe',
+      downloadUrl: MIRRORED_INSTALLER_URL,
     })
   })
 
@@ -601,7 +608,7 @@ describe('createUpdateService', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn(async (input: string | URL | Request) => {
-        if (String(input).startsWith('https://gh-proxy.com/')) {
+        if (String(input).startsWith(`${MIRROR_PRIMARY}/`)) {
           return new Response(null, {
             status: 206,
             headers: {
@@ -616,9 +623,7 @@ describe('createUpdateService', () => {
 
     await service.download('mirror')
 
-    expect(urls).toEqual([
-      'https://gh-proxy.com/https://github.com/NotaDown/NotaDown/releases/download/v1.3.0/NotaDown.1.3.0-x64.exe',
-    ])
+    expect(urls).toEqual([MIRRORED_INSTALLER_URL])
     expect(updater.downloadUpdate).toHaveBeenCalledTimes(1)
   })
 
@@ -653,8 +658,8 @@ describe('createUpdateService', () => {
       vi.fn(async (input: string | URL | Request) => {
         const url = String(input)
         if (
-          url.startsWith('https://gh-proxy.com/') ||
-          url.startsWith('https://ghproxy.net/')
+          url.startsWith(`${MIRROR_PRIMARY}/`) ||
+          url.startsWith(`${MIRROR_SECONDARY}/`)
         ) {
           return new Response(null, {
             status: 206,
@@ -670,7 +675,7 @@ describe('createUpdateService', () => {
 
     await service.download('auto')
 
-    expect(hosts).toEqual(['github.com', 'gh-proxy.com', 'ghproxy.net'])
+    expect(hosts).toEqual([GITHUB_HOST, ...MIRROR_HOSTS.slice(0, 2)])
   })
 
   it('skips the direct GitHub download when the update came from the self-hosted channel', async () => {
@@ -696,7 +701,7 @@ describe('createUpdateService', () => {
       'fetch',
       vi.fn(async (input: string | URL | Request) => {
         const url = String(input)
-        if (url.startsWith('https://gh-proxy.com/')) {
+        if (url.startsWith(`${MIRROR_PRIMARY}/`)) {
           return new Response(null, {
             status: 206,
             headers: {
@@ -711,9 +716,7 @@ describe('createUpdateService', () => {
 
     await service.download('auto')
 
-    expect(urls).toEqual([
-      'https://gh-proxy.com/https://github.com/NotaDown/NotaDown/releases/download/v1.3.0/NotaDown.1.3.0-x64.exe',
-    ])
+    expect(urls).toEqual([MIRRORED_INSTALLER_URL])
   })
 
   it('still tries GitHub directly when the update came from GitHub', async () => {

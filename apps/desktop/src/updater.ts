@@ -2,8 +2,7 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { app } from 'electron'
 import { autoUpdater } from 'electron-updater'
-import type { UpdateSnapshot } from '@notadown/shared'
-import { UPDATE_METADATA_BASE_URL } from './update-sources'
+import { UPDATE_METADATA_BASE_URL, type UpdateSnapshot } from '@notadown/shared'
 import {
   createUpdateService,
   type UpdaterAdapter,
